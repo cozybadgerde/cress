@@ -1,0 +1,37 @@
+# .github/workflows/ci.yml
+#
+# The check list and tool versions live in the Taskfile (single source). CI just
+# installs Task plus the pinned tools and runs `task check`, so there is no
+# second copy of "what green means" to drift out of sync. govulncheck is
+# deliberately not part of this gate - it runs weekly in security.yml instead.
+
+name: ci
+
+on:
+  push:
+    branches: [trunk, main]
+  pull_request:
+
+env:
+  TASK_VERSION: v3.51.1
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+
+      - name: install task
+        run: curl -sSfL https://taskfile.dev/install.sh | sh -s -- -b /usr/local/bin "${TASK_VERSION}"
+
+      - name: put tool bindir on PATH
+        run: echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: install pinned tools
+        run: task tools
+
+      - name: check
+        run: task check

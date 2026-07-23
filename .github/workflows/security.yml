@@ -1,0 +1,39 @@
+# .github/workflows/security.yml
+# Weekly dependency vulnerability scan (govulncheck).
+#
+# Kept out of the per-commit gate on purpose: a newly-disclosed stdlib/dep vuln
+# can turn the build red on a commit that changed nothing, and may not be fixable
+# until upstream ships a patch. Running it weekly surfaces disclosures without
+# freezing day-to-day work. Scheduled runs execute this workflow as it exists on
+# the default branch (trunk); workflow_dispatch adds a manual run button.
+
+name: security
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch:
+
+env:
+  TASK_VERSION: v3.51.1
+
+jobs:
+  vuln:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+
+      - name: install task
+        run: curl -sSfL https://taskfile.dev/install.sh | sh -s -- -b /usr/local/bin "${TASK_VERSION}"
+
+      - name: put tool bindir on PATH
+        run: echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: install govulncheck
+        run: task tools:vuln
+
+      - name: scan
+        run: task vuln

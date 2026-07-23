@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/cozybadgerde/cress/trunk/schema/config.schema.json",
+  "title": "cress configuration",
+  "description": "Schema for a cress site config file (cress.toml): the site metadata and the flat navigation list.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "site": {
+      "description": "Site-wide metadata shared by every rendered page.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "description": "Site name, shown in the header and page titles.",
+          "type": "string"
+        },
+        "description": {
+          "description": "Optional site tagline, exposed to templates (e.g. a meta description).",
+          "type": "string"
+        },
+        "base_url": {
+          "description": "Canonical site root, e.g. \"https://example.com\". In-site links stay root-relative; this is exposed to templates for absolute links.",
+          "type": "string"
+        },
+        "theme": {
+          "description": "Theme to render with. Empty resolves to the built-in default theme \"cress\". Any other name must match a directory under themes/.",
+          "type": "string"
+        },
+        "logo": {
+          "description": "Path or URL to a logo image rendered in the navigation. Empty falls back to the theme's default logo. Typically a file in static/, e.g. \"/logo.svg\".",
+          "type": "string"
+        },
+        "favicon": {
+          "description": "Path or URL to a favicon. Empty falls back to the theme's default favicon. Typically a file in static/, e.g. \"/favicon.png\".",
+          "type": "string"
+        },
+        "accent": {
+          "description": "Accent color used as a soft highlight (e.g. on links). A CSS hex value; empty resolves to #9cb43b.",
+          "type": "string",
+          "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$"
+        }
+      }
+    },
+    "nav": {
+      "description": "Explicit, flat navigation as a table of label -> content file (e.g. Home = \"index.md\"). Entries appear in the order written.",
+      "type": "object",
+      "additionalProperties": {
+        "description": "Content file the entry links to, relative to content/ (e.g. \"about.md\").",
+        "type": "string"
+      }
+    }
+  }
+}

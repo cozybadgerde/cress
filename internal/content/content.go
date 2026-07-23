@@ -1,0 +1,165 @@
+// Package content discovers Markdown pages under a site's content directory and
+// parses each file's YAML front matter, producing the page model the builder
+// renders. It performs no Markdown-to-HTML conversion; that is the render
+// package's job.
+package content
+
+import (
+	"bytes"
+	"fmt"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/adrg/frontmatter"
+)
+
+const (
+	mdExt   = ".md"
+	htmlExt = ".html"
+	// indexName is the basename (without extension) treated as a directory
+	// index: content/guide/index.md serves the /guide/ URL.
+	indexName = "index"
+)
+
+// Page is a single source document ready to be rendered.
+type Page struct {
+	// SourcePath is the file path relative to the content root, in slash form
+	// (e.g. "guide/setup.md").
+	SourcePath string
+	// OutputPath is where the rendered file lands relative to the output root,
+	// in slash form (e.g. "guide/setup.html").
+	OutputPath string
+	// URL is the site-root-relative URL for the page (e.g. "/guide/setup.html",
+	// or "/guide/" for an index file).
+	URL string
+	// Title is the page title: front-matter "title", else the first H1, else the
+	// file's base name.
+	Title string
+	// Draft marks a page excluded from a normal build.
+	Draft bool
+	// Meta is the parsed front matter, passed through verbatim to templates.
+	Meta map[string]any
+	// Body is the Markdown body with front matter stripped.
+	Body []byte
+}
+
+// Collect walks root and parses every Markdown file into a Page. The returned
+// pages are ordered by their source path for deterministic output.
+func Collect(root string) ([]*Page, error) {
+	var pages []*Page
+	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() || !strings.EqualFold(filepath.Ext(path), mdExt) {
+			return nil
+		}
+		rel, err := filepath.Rel(root, path)
+		if err != nil {
+			return fmt.Errorf("resolving %s: %w", path, err)
+		}
+		page, err := parseFile(path, filepath.ToSlash(rel))
+		if err != nil {
+			return fmt.Errorf("%s: %w", rel, err)
+		}
+		pages = append(pages, page)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return pages, nil
+}
+
+// parseFile reads one Markdown file at absPath, whose path relative to the
+// content root is relSlash.
+func parseFile(absPath, relSlash string) (*Page, error) {
+	// #nosec G304 -- absPath comes from walking the site's own content tree.
+	src, err := os.ReadFile(absPath)
+	if err != nil {
+		return nil, err
+	}
+
+	meta, body, err := splitFrontMatter(src)
+	if err != nil {
+		return nil, err
+	}
+
+	out := strings.TrimSuffix(relSlash, mdExt) + htmlExt
+	page := &Page{
+		SourcePath: relSlash,
+		OutputPath: out,
+		URL:        urlFor(out),
+		Title:      titleFor(meta, body, relSlash),
+		Draft:      draftFor(meta),
+		Meta:       meta,
+		Body:       body,
+	}
+	return page, nil
+}
+
+// urlFor maps a slash-form output path to a site-root-relative URL. An index
+// file collapses to its directory URL ("index.html" -> "/", "a/index.html" ->
+// "/a/").
+func urlFor(outSlash string) string {
+	url := "/" + outSlash
+	if strings.HasSuffix(outSlash, indexName+htmlExt) {
+		return strings.TrimSuffix(url, indexName+htmlExt)
+	}
+	return url
+}
+
+// titleFor resolves a page title, preferring front-matter title, then the first
+// H1 heading, then the file's base name.
+func titleFor(meta map[string]any, body []byte, relSlash string) string {
+	if t, ok := meta["title"].(string); ok && strings.TrimSpace(t) != "" {
+		return t
+	}
+	if h := firstHeading(body); h != "" {
+		return h
+	}
+	base := filepath.Base(relSlash)
+	return strings.TrimSuffix(base, filepath.Ext(base))
+}
+
+// draftFor reads the boolean "draft" front-matter flag, defaulting to false.
+func draftFor(meta map[string]any) bool {
+	draft, _ := meta["draft"].(bool)
+	return draft
+}
+
+// firstHeading returns the text of the first ATX H1 ("# ...") in the body,
+// ignoring lines inside fenced code blocks. It returns "" when none is found.
+func firstHeading(body []byte) string {
+	inFence := false
+	for _, raw := range bytes.Split(body, []byte("\n")) {
+		line := strings.TrimRight(string(raw), "\r")
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "```") || strings.HasPrefix(trimmed, "~~~") {
+			inFence = !inFence
+			continue
+		}
+		if inFence {
+			continue
+		}
+		if rest, ok := strings.CutPrefix(line, "# "); ok {
+			return strings.TrimSpace(rest)
+		}
+	}
+	return ""
+}
+
+// splitFrontMatter separates a leading YAML front-matter block, delimited by
+// lines containing only "---", from the Markdown body. When the source has no
+// front matter it returns an empty meta map and the source unchanged; a
+// malformed block is reported as an error.
+func splitFrontMatter(src []byte) (map[string]any, []byte, error) {
+	meta := map[string]any{}
+	body, err := frontmatter.Parse(bytes.NewReader(src), &meta)
+	if err != nil {
+		return nil, nil, fmt.Errorf("front matter: %w", err)
+	}
+	return meta, body, nil
+}

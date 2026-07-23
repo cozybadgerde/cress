@@ -1,0 +1,71 @@
+# https://goreleaser.com — release config for cress.
+# Validate with `goreleaser check`; build locally with `task snapshot`.
+version: 2
+
+project_name: cress
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: cress
+    main: ./cmd/cress
+    binary: cress
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X github.com/cozybadgerde/cress/internal/version.Version={{ .Version }}
+
+archives:
+  - id: cress
+    formats:
+      - tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE*
+
+release:
+  # auto = flag the release as a prerelease when the tag has a semver suffix
+  # (-alpha, -rc, …); a clean vX.Y.Z stays stable.
+  prerelease: auto
+  github:
+    owner: cozybadgerde
+    name: cress
+
+checksum:
+  name_template: checksums.txt
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-snapshot"
+
+changelog:
+  sort: asc
+  use: git # build from git log; no forge API needed
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\(.+\))??!?:.*$'
+      order: 0
+    - title: Bug fixes
+      regexp: '^.*?fix(\(.+\))??!?:.*$'
+      order: 1
+    - title: Performance
+      regexp: '^.*?perf(\(.+\))??!?:.*$'
+      order: 2
+    - title: Other changes
+      order: 999
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - '^ci:'
+      - '^refactor:'
+      - '^Merge '

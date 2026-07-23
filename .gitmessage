@@ -1,0 +1,15 @@
+#<--- subject (<= 50 chars) ------------------------>
+
+#<--- body & footer (wrap at 72) ----------------------------------->
+#
+# <type>(<scope>): <subject>
+#
+#   types:   feat fix docs refactor perf test build ci chore revert
+#   scope:   optional, e.g. (render), (config)
+#   subject: concise, no trailing period
+#
+# Body (optional): explain what changed and why, not how.
+#
+# Footer (optional):
+#   - resolves: #123
+#   BREAKING CHANGE: <what changed and how to migrate>

@@ -1,0 +1,36 @@
+# .github/workflows/release.yml
+# Publishes a GoReleaser release to GitHub on a version tag (vX.Y.Z).
+# Release config lives in .goreleaser.yaml; validate it with `goreleaser check`.
+#
+# GITHUB_TOKEN is the automatic, repo-scoped token GitHub mints per job. A tag
+# push carries the write access GoReleaser needs to create the release and
+# upload assets, so no extra secret is required.
+
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # full history + tags, for the changelog
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          version: v2.16.0        # pinned
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

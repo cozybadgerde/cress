@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ with .Page.Title }}{{ . }} · {{ end }}{{ .Site.Title }}</title>
+    {{ with .Site.Description }}<meta name="description" content="{{ . }}" />{{ end }}
+    {{ with .Site.Favicon }}<link rel="icon" href="{{ . }}" />{{ end }}
+    <link rel="stylesheet" href="/style.css" />
+    <style>
+      :root {
+        --accent: {{ .Site.Accent }};
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-title" href="/">
+        {{ with .Site.Logo }}<img class="site-logo" src="{{ . }}" alt="" />{{ end }}
+        <span>{{ .Site.Title }}</span>
+      </a>
+      {{ with .Nav }}
+      <nav class="site-nav">
+        {{ range . }}<a href="{{ .URL }}"{{ if .Active }} aria-current="page"{{ end }}>{{ .Title }}</a>{{ end }}
+      </nav>
+      {{ end }}
+    </header>
+
+    <main class="page">
+      {{ .Page.HTML }}
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        Made with <a href="https://github.com/cozybadgerde/cress">Cress</a>.
+        Fresh little sites, fast.
+      </p>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+# build output
+/bin/
+/dist/
+/build/
+
+# rendered site output (the default `cress build` target)
+/public/
+
+# editor / OS
+.DS_Store
+*.swp

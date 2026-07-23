@@ -1,0 +1,22 @@
+#:schema https://raw.githubusercontent.com/cozybadgerde/cress/trunk/schema/config.schema.json
+
+[site]
+title = "My cozy site"
+description = "A fresh little site made with Cress."
+base_url = "https://example.com"
+# The built-in theme. Drop a theme under themes/<name> and name it here to swap.
+theme = "cress"
+
+# White-label branding. Replace static/logo.png and static/favicon.png with
+# your own, or point these at other files you drop in static/.
+logo = "/logo.png"
+favicon = "/favicon.png"
+# Soft accent color (hex), used as a highlight on links and more.
+accent = "#9cb43b"
+
+# Navigation is an explicit table of "label = content file", in this order.
+# A label with spaces is quoted, as TOML requires.
+[nav]
+Home = "index.md"
+About = "about.md"
+"Style guide" = "styleguide.md"

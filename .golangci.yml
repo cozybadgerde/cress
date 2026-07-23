@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=https://golangci-lint.run/jsonschema/golangci.jsonschema.json
+version: "2"
+
+formatters:
+  enable:
+    - gofmt
+
+linters:
+  default: none
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - bodyclose
+    - noctx
+    - revive
+    - misspell
+    - whitespace
+    - gosec
+  settings:
+    revive:
+      rules:
+        - name: exported
+        - name: package-comments
+        - name: var-naming
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+  exclusions:
+    rules:
+      # Test fixtures legitimately use relaxed file permissions (G301/G306);
+      # gosec's perm checks do not apply to non-shipped test code.
+      - path: _test\.go
+        linters:
+          - gosec

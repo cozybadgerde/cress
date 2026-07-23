@@ -1,0 +1,106 @@
+---
+title: Style guide
+---
+
+# Style guide
+
+This page shows every Markdown element Cress supports, rendered by the current
+theme. It has two jobs. If you are writing content, it is a menu of what you can
+reach for. If you are building a theme, it is a checklist of what to style.
+
+Keep it as a reference, or delete it once you have found your feet.
+
+## Headings
+
+The page title above is the only level-one heading. Use `##` down to `######`
+for the structure inside a page.
+
+## Heading level two
+
+### Heading level three
+
+#### Heading level four
+
+##### Heading level five
+
+###### Heading level six
+
+## Text
+
+Regular paragraphs need no ceremony. You can make text **bold**, _italic_,
+**_both at once_**, or ~~struck through~~. Inline `code` sits between backticks,
+and [links](https://github.com/cozybadgerde/cress) point wherever you like.
+Bare URLs become links on their own, like https://cozybadger.de.
+
+> Blockquotes are good for asides and pull quotes.
+>
+> They can run to several paragraphs.
+
+## Lists
+
+Unordered lists use dashes:
+
+- Cress sprouts
+- A curious mouse
+- A cup of tea
+
+Ordered lists count:
+
+1. Write some Markdown
+2. Run `cress build`
+3. Ship a fresh little site
+
+Lists nest, and task lists show progress:
+
+- Content
+  - Pages
+  - Navigation
+- Theme
+  - [x] Templates
+  - [x] Styles
+  - [ ] A dark-mode tweak
+
+## Code
+
+Inline `code` is handy mid-sentence. For longer snippets, fence a block and tag
+it with a language so themes can style it:
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("Fresh little sites, fast.")
+}
+```
+
+```css
+.site-title {
+  color: var(--accent);
+}
+```
+
+## Tables
+
+Columns can be left, centre, or right aligned:
+
+| Feature       | Markdown     | Aligned |
+| :------------ | :----------: | ------: |
+| Bold          | `**text**`   |     yes |
+| Inline code   | `` `code` `` |     yes |
+| Strikethrough | `~~text~~`   |     yes |
+
+## Images
+
+Images scale to fit their column:
+
+![The Cress logo](/logo.png)
+
+## Dividers
+
+Three dashes on their own line make a horizontal rule:
+
+---
+
+That is the whole toolbox. Happy writing.

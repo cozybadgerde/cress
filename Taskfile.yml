@@ -1,0 +1,202 @@
+# https://taskfile.dev — common dev commands for cress.
+# Install: https://taskfile.dev/installation/  •  Run `task --list`.
+#
+# This Taskfile is the single source of truth for "what green means": CI installs
+# Task plus the pinned tools and runs `task check`, so local and CI never drift.
+# Kept deliberately aligned with peek's and peep's Taskfiles so the tools share
+# one shape.
+version: "3"
+
+vars:
+  BIN: cress
+  PKG: ./cmd/cress
+  # Pinned tool versions — the single source for both `task tools` and CI.
+  GOLANGCI_VERSION: v2.12.2
+  GOSEC_VERSION: v2.27.1
+  GOVULN_VERSION: v1.3.0
+  GOMARKLINT_VERSION: v3.2.3
+  GOCYCLO_VERSION: v0.6.0
+  GOCOGNIT_VERSION: v1.2.1
+  SHELLCHECK_VERSION: v0.11.0
+  TAPLO_VERSION: 0.10.0
+  # Flags for every `go test` run: no result cache (-count=1), randomized
+  # order to catch inter-test coupling (-shuffle=on, prints a reproducible
+  # seed), and a per-package hang guard (-timeout).
+  TEST_FLAGS: -count=1 -shuffle=on -timeout 120s
+
+tasks:
+  # --- Meta & tooling ---
+
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+    silent: true
+
+  setup:
+    desc: Configure the repo for development (commit template, deps)
+    cmds:
+      - git config commit.template .gitmessage
+      - go mod download
+
+  tools:
+    desc: Install all pinned dev tools (matches CI)
+    cmds:
+      - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b "$(go env GOPATH)/bin" {{.GOLANGCI_VERSION}}
+      - go install github.com/securego/gosec/v2/cmd/gosec@{{.GOSEC_VERSION}}
+      - task: tools:vuln
+      - go install github.com/shinagawa-web/gomarklint/v3@{{.GOMARKLINT_VERSION}}
+      - go install github.com/fzipp/gocyclo/cmd/gocyclo@{{.GOCYCLO_VERSION}}
+      - go install github.com/uudashr/gocognit/cmd/gocognit@{{.GOCOGNIT_VERSION}}
+      - |
+        os=$(uname -s | tr '[:upper:]' '[:lower:]')
+        arch=$(uname -m); [ "$arch" = "arm64" ] && arch=aarch64
+        url="https://github.com/koalaman/shellcheck/releases/download/{{.SHELLCHECK_VERSION}}/shellcheck-{{.SHELLCHECK_VERSION}}.${os}.${arch}.tar.xz"
+        curl -sSfL "$url" | tar -xJ -C /tmp
+        install -m 0755 "/tmp/shellcheck-{{.SHELLCHECK_VERSION}}/shellcheck" "$(go env GOPATH)/bin/shellcheck"
+      - |
+        os=$(uname -s | tr '[:upper:]' '[:lower:]')
+        arch=$(uname -m); [ "$arch" = "arm64" ] && arch=aarch64
+        url="https://github.com/tamasfe/taplo/releases/download/{{.TAPLO_VERSION}}/taplo-${os}-${arch}.gz"
+        curl -sSfL "$url" | gunzip > /tmp/taplo
+        install -m 0755 /tmp/taplo "$(go env GOPATH)/bin/taplo"
+
+  tools:vuln:
+    desc: Install only govulncheck (for the scheduled security pipeline)
+    cmds:
+      - go install golang.org/x/vuln/cmd/govulncheck@{{.GOVULN_VERSION}}
+
+  # --- Build, run, deps ---
+
+  build:
+    desc: Build the cress binary into build/
+    cmds:
+      - go build -o build/{{.BIN}} {{.PKG}}
+
+  run:
+    desc: "Run cress (pass args after --, e.g. task run -- build)"
+    cmds:
+      - go run {{.PKG}} {{.CLI_ARGS}}
+
+  tidy:
+    desc: Tidy go.mod / go.sum
+    cmds:
+      - go mod tidy
+
+  # --- Format ---
+
+  fmt:
+    desc: Format all Go source (writes)
+    cmds:
+      - gofmt -l -w .
+
+  fmt:check:
+    desc: Check Go formatting (non-writing); fails if any file needs gofmt
+    cmds:
+      - |
+        unformatted="$(gofmt -l .)"
+        if [ -n "$unformatted" ]; then
+          echo "gofmt needed on:"; echo "$unformatted"; exit 1
+        fi
+
+  # --- Vet & lint ---
+
+  vet:
+    desc: Run go vet
+    cmds:
+      - go vet ./...
+
+  lint:
+    desc: Run all linters (go, md, sh)
+    cmds:
+      - task: lint:go
+      - task: lint:md
+      - task: lint:sh
+
+  lint:go:
+    desc: Lint Go with golangci-lint
+    cmds:
+      - golangci-lint run ./...
+
+  lint:md:
+    desc: Lint Markdown with gomarklint
+    cmds:
+      - gomarklint *.md docs/
+
+  lint:sh:
+    desc: Lint shell scripts with shellcheck
+    cmds:
+      - shellcheck scripts/*.sh
+
+  # --- Security ---
+
+  sec:
+    desc: Scan for security issues with gosec
+    cmds:
+      - gosec ./...
+
+  vuln:
+    desc: Check dependencies for known vulnerabilities (govulncheck)
+    cmds:
+      - govulncheck ./...
+
+  # --- Test ---
+
+  test:
+    desc: Run unit tests
+    cmds:
+      - go test {{.TEST_FLAGS}} ./...
+
+  test:race:
+    desc: Run unit tests with the race detector
+    cmds:
+      - go test {{.TEST_FLAGS}} -race ./...
+
+  test:cover:
+    desc: Run unit tests with a coverage summary (local)
+    cmds:
+      - go test {{.TEST_FLAGS}} -cover ./...
+
+  # --- Full gate ---
+
+  check:
+    desc: Full gate — fmt:check, vet, lint, sec, test, test:race
+    cmds:
+      - task: fmt:check
+      - task: vet
+      - task: lint
+      - task: sec
+      - task: test
+      - task: test:race
+
+  # --- Audit (local, deliberately not part of `check`/CI) ---
+
+  audit:complexity:
+    desc: Report functions over the complexity budget (gocyclo / gocognit, > 15)
+    cmds:
+      - gocyclo -over 15 .
+      - gocognit -over 15 .
+
+  audit:schema:
+    desc: Validate the bundled starter config against the config JSON Schema (taplo)
+    cmds:
+      - taplo lint --schema "file://$PWD/schema/config.schema.json" internal/scaffold/builtin/cress.toml
+
+  # --- Release ---
+
+  snapshot:
+    desc: Build a local snapshot release (no publish)
+    cmds:
+      - goreleaser release --snapshot --clean
+
+  release:
+    desc: Build and publish a release (needs a tag)
+    cmds:
+      - goreleaser release --clean
+
+  # --- Cleanup ---
+
+  clean:
+    desc: Remove build artifacts (build/, dist/, and rendered public/)
+    cmds:
+      - rm -rf {{.BIN}} bin/ build/ dist/ public/
