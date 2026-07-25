@@ -54,8 +54,9 @@ setup; drop a directory under `themes/` when you want your own.
   goldmark. Your content files stay free of layout.
 - **Folders are your site map.** The content tree maps straight to the output
   tree. No sections model to learn.
-- **Explicit navigation.** A flat `[nav]` table in `cress.toml`, mkdocs-style.
-  What you list is what shows up, in the order you write it.
+- **Explicit navigation.** Flat `[nav.main]` and `[nav.footer]` tables in
+  `cress.toml`, mkdocs-style. What you list is what shows up, in the order you
+  write it.
 - **One place for styling.** The theme owns every template and stylesheet. The
   built-in theme is cozy and light or dark aware out of the box.
 - **White-label ready.** Set a logo, favicon, and accent color in `cress.toml`.

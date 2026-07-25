@@ -31,10 +31,14 @@ base_url = "https://example.com/"
 logo = "/logo.svg"
 favicon = "/favicon.png"
 
-[nav]
+[nav.main]
 Home = "index.md"
 Docs = "docs/index.md"
 About = "about.md"
+
+[nav.footer]
+Imprint = "imprint.md"
+Privacy = "privacy.md"
 `)
 
 	cfg, err := config.Load(path)
@@ -56,18 +60,59 @@ About = "about.md"
 	if cfg.Site.BaseURL != "https://example.com" {
 		t.Errorf("base_url = %q, want trailing slash trimmed", cfg.Site.BaseURL)
 	}
-	wantOrder := []config.NavItem{
+	assertNavOrder(t, "nav.main", cfg.Nav.Main, []config.NavItem{
 		{Title: "Home", Path: "index.md"},
 		{Title: "Docs", Path: "docs/index.md"},
 		{Title: "About", Path: "about.md"},
+	})
+	assertNavOrder(t, "nav.footer", cfg.Nav.Footer, []config.NavItem{
+		{Title: "Imprint", Path: "imprint.md"},
+		{Title: "Privacy", Path: "privacy.md"},
+	})
+}
+
+// assertNavOrder checks one navigation group entry by entry, order included.
+func assertNavOrder(t *testing.T, group string, got, want []config.NavItem) {
+	t.Helper()
+	if len(got) != len(want) {
+		t.Fatalf("[%s] = %+v, want %d entries", group, got, len(want))
 	}
-	if len(cfg.Nav) != len(wantOrder) {
-		t.Fatalf("nav = %+v, want %d entries", cfg.Nav, len(wantOrder))
-	}
-	for i, want := range wantOrder {
-		if cfg.Nav[i] != want {
-			t.Errorf("nav[%d] = %+v, want %+v (order must follow the file)", i, cfg.Nav[i], want)
+	for i := range want {
+		if got[i] != want[i] {
+			t.Errorf("[%s][%d] = %+v, want %+v (order must follow the file)", group, i, got[i], want[i])
 		}
+	}
+}
+
+func TestLoad_navGroupsAreOptional_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	path := writeConfig(t, "[site]\ntitle = \"Site\"\n\n[nav.main]\nHome = \"index.md\"\n")
+
+	cfg, err := config.Load(path)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if len(cfg.Nav.Main) != 1 {
+		t.Errorf("nav.main = %+v, want 1 entry", cfg.Nav.Main)
+	}
+	if cfg.Nav.Footer != nil {
+		t.Errorf("nav.footer = %+v, want nil when the table is absent", cfg.Nav.Footer)
+	}
+}
+
+func TestLoad_unknownNavGroup_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	// A mistyped group must fail rather than silently rendering nothing.
+	path := writeConfig(t, "[site]\ntitle = \"Site\"\n\n[nav.sidebar]\nHome = \"index.md\"\n")
+
+	if _, err := config.Load(path); err == nil {
+		t.Fatal("expected an error for an unknown nav group")
 	}
 }
 

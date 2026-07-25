@@ -19,7 +19,7 @@
         {{ with .Site.Logo }}<img class="site-logo" src="{{ . }}" alt="" />{{ end }}
         <span>{{ .Site.Title }}</span>
       </a>
-      {{ with .Nav }}
+      {{ with .Nav.Main }}
       <nav class="site-nav">
         {{ range . }}<a href="{{ .URL }}"{{ if .Active }} aria-current="page"{{ end }}>{{ .Title }}</a>{{ end }}
       </nav>
@@ -31,6 +31,11 @@
     </main>
 
     <footer class="site-footer">
+      {{ with .Nav.Footer }}
+      <nav class="footer-nav" aria-label="Secondary">
+        {{ range . }}<a href="{{ .URL }}"{{ if .Active }} aria-current="page"{{ end }}>{{ .Title }}</a>{{ end }}
+      </nav>
+      {{ end }}
       <p>
         Made with <a href="https://github.com/cozybadgerde/cress">Cress</a>.
         Fresh little sites, fast.

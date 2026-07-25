@@ -80,8 +80,8 @@ A cozy static site generator: Markdown plus a small TOML config plus a theme,
 rendered into a directory of static HTML. `cress build` renders a site,
 `cress init` scaffolds a new one, and `cress serve` previews it with rebuild on
 change. It is deliberately less opinionated than Hugo: the content folder tree
-maps straight to the output tree, navigation is an explicit flat list, and the
-theme is the only place styling lives.
+maps straight to the output tree, navigation is an explicit flat list per menu,
+and the theme is the only place styling lives.
 
 ## Architecture / data flow
 
@@ -92,12 +92,12 @@ theme  ─┘
 ```
 
 - **`config`** loads `cress.toml`: the `[site]` metadata (title, description,
-  base_url, theme, plus the white-label `logo`/`favicon`/`accent`) and a flat
-  `[nav]` table (label = content path). Unknown keys are rejected as typos. An
-  empty theme resolves to the built-in default; an empty `accent` resolves to
-  `#9cb43b` and is validated as a hex color (it is interpolated into CSS). The
-  `[nav]` order is recovered from the TOML parse metadata, since decoded tables
-  are otherwise unordered.
+  base_url, theme, plus the white-label `logo`/`favicon`/`accent`) and the
+  `[nav.main]`/`[nav.footer]` tables (label = content path). The group names are
+  fixed, so unknown keys are rejected as typos. An empty theme resolves to the
+  built-in default; an empty `accent` resolves to `#9cb43b` and is validated as
+  a hex color (it is interpolated into CSS). Each group's order is recovered
+  from the TOML parse metadata, since decoded tables are otherwise unordered.
 - **`content`** walks `content/`, splits YAML front matter from the Markdown
   body, and produces a `Page` for each file. It maps the source path to an
   output path and URL (`about.md` -> `about.html`; an `index` file collapses to
@@ -140,8 +140,9 @@ theme  ─┘
   as `/x.html`; an `index` file collapses to its directory (`/`, `/guide/`). The
   builder writes root-relative links, so a site is served from its domain root.
 - **Navigation is explicit.** There are no automatic list or section pages. A
-  `[nav]` entry (label = content path) points at a content file; a missing
-  target is a warning, not a hard error, so the rest of the build still succeeds.
+  `[nav.main]` or `[nav.footer]` entry (label = content path) points at a content
+  file; a missing target is a warning naming its group, not a hard error, so the
+  rest of the build still succeeds. Themes read `.Nav.Main` and `.Nav.Footer`.
 - **Embedded assets:** the default theme (`internal/theme/builtin/cress`) and the
   starter site (`internal/scaffold/builtin`) are embedded with `go:embed`. Both
   are copied verbatim, so edits to those files change what ships.

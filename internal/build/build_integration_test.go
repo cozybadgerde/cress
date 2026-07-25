@@ -24,8 +24,8 @@ func TestBuild_integration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("build: %v", err)
 	}
-	if res.Pages != 3 {
-		t.Errorf("rendered %d pages, want 3 (index, about, styleguide)", res.Pages)
+	if res.Pages != 5 {
+		t.Errorf("rendered %d pages, want 5 (index, about, styleguide, imprint, privacy)", res.Pages)
 	}
 	if len(res.Warnings) != 0 {
 		t.Errorf("unexpected warnings: %v", res.Warnings)
@@ -55,6 +55,9 @@ func TestBuild_integration(t *testing.T) {
 	}
 	if !strings.Contains(index, `href="/about.html"`) {
 		t.Error("index.html missing nav link to about")
+	}
+	if !strings.Contains(index, `class="footer-nav"`) || !strings.Contains(index, `href="/imprint.html"`) {
+		t.Errorf("index.html missing the footer nav:\n%s", index)
 	}
 	if !strings.Contains(index, "Fresh little sites, fast.") {
 		t.Error("index.html missing rendered body content")
@@ -86,8 +89,8 @@ func TestBuild_draftsAndStatic_integration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("build: %v", err)
 	}
-	if res.Pages != 3 {
-		t.Errorf("rendered %d pages, want 3 (draft excluded)", res.Pages)
+	if res.Pages != 5 {
+		t.Errorf("rendered %d pages, want 5 (draft excluded)", res.Pages)
 	}
 	out := filepath.Join(root, build.OutputDir)
 	if _, err := os.Stat(filepath.Join(out, "secret.html")); !os.IsNotExist(err) {
@@ -102,8 +105,8 @@ func TestBuild_draftsAndStatic_integration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("build --drafts: %v", err)
 	}
-	if res.Pages != 4 {
-		t.Errorf("rendered %d pages with drafts, want 4", res.Pages)
+	if res.Pages != 6 {
+		t.Errorf("rendered %d pages with drafts, want 6", res.Pages)
 	}
 	if _, err := os.Stat(filepath.Join(out, "secret.html")); err != nil {
 		t.Errorf("draft page should render with --drafts: %v", err)

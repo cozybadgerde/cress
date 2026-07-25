@@ -25,6 +25,8 @@ func TestCreate_integration(t *testing.T) {
 		filepath.Join("content", "index.md"),
 		filepath.Join("content", "about.md"),
 		filepath.Join("content", "styleguide.md"),
+		filepath.Join("content", "imprint.md"),
+		filepath.Join("content", "privacy.md"),
 		filepath.Join("static", "logo.png"),
 		filepath.Join("static", "favicon.png"),
 	} {
@@ -37,8 +39,10 @@ func TestCreate_integration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read cress.toml: %v", err)
 	}
-	if !strings.Contains(string(cfg), "[nav]") {
-		t.Errorf("scaffolded cress.toml missing [nav] table:\n%s", cfg)
+	for _, table := range []string{"[nav.main]", "[nav.footer]"} {
+		if !strings.Contains(string(cfg), table) {
+			t.Errorf("scaffolded cress.toml missing %s table:\n%s", table, cfg)
+		}
 	}
 }
 

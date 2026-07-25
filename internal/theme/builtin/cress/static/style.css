@@ -186,3 +186,20 @@ body {
 .site-footer a {
   color: var(--accent);
 }
+
+.footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.footer-nav a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.footer-nav a:hover,
+.footer-nav a[aria-current="page"] {
+  color: var(--accent);
+}

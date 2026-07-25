@@ -49,8 +49,15 @@ type Result struct {
 // renderContext is the data passed to a theme's template for one page.
 type renderContext struct {
 	Site config.Site
-	Nav  []navLink
+	Nav  navView
 	Page pageView
+}
+
+// navView is the resolved navigation as a template sees it: one slice per menu,
+// so a theme can place the primary and secondary links independently.
+type navView struct {
+	Main   []navLink
+	Footer []navLink
 }
 
 // navLink is one resolved navigation entry; Active marks the current page.
@@ -144,13 +151,21 @@ func guardOutput(root, outPath string) error {
 	return nil
 }
 
-// resolveNav maps each configured nav entry's content path to its page URL.
-// Entries pointing at an unknown file are dropped and reported as warnings.
-func resolveNav(items []config.NavItem, pages []*content.Page) ([]navLink, []string) {
+// resolveNav resolves every navigation group against the collected pages.
+func resolveNav(nav config.Nav, pages []*content.Page) (navView, []string) {
 	bySource := make(map[string]*content.Page, len(pages))
 	for _, p := range pages {
 		bySource[p.SourcePath] = p
 	}
+	main, mainWarnings := resolveNavGroup("nav.main", nav.Main, bySource)
+	footer, footerWarnings := resolveNavGroup("nav.footer", nav.Footer, bySource)
+	return navView{Main: main, Footer: footer}, append(mainWarnings, footerWarnings...)
+}
+
+// resolveNavGroup maps one group's entries to their page URLs. Entries pointing
+// at an unknown file are dropped and reported as warnings naming the group, so
+// the rest of the menu still renders.
+func resolveNavGroup(group string, items []config.NavItem, bySource map[string]*content.Page) ([]navLink, []string) {
 	var (
 		links    []navLink
 		warnings []string
@@ -158,7 +173,7 @@ func resolveNav(items []config.NavItem, pages []*content.Page) ([]navLink, []str
 	for _, item := range items {
 		page, ok := bySource[filepath.ToSlash(item.Path)]
 		if !ok {
-			warnings = append(warnings, fmt.Sprintf("nav entry %q points at missing content %q", item.Title, item.Path))
+			warnings = append(warnings, fmt.Sprintf("%s entry %q points at missing content %q", group, item.Title, item.Path))
 			continue
 		}
 		title := item.Title
@@ -171,7 +186,7 @@ func resolveNav(items []config.NavItem, pages []*content.Page) ([]navLink, []str
 }
 
 // writePage renders one page through the theme and writes it to the output tree.
-func writePage(outPath string, thm *theme.Theme, renderer *render.Renderer, site config.Site, nav []navLink, page *content.Page) error {
+func writePage(outPath string, thm *theme.Theme, renderer *render.Renderer, site config.Site, nav navView, page *content.Page) error {
 	body, err := renderer.Markdown(page.Body)
 	if err != nil {
 		return fmt.Errorf("%s: %w", page.SourcePath, err)
@@ -198,10 +213,19 @@ func writePage(outPath string, thm *theme.Theme, renderer *render.Renderer, site
 	return nil
 }
 
-// activeNav returns a copy of nav with the entry matching currentURL flagged.
-func activeNav(nav []navLink, currentURL string) []navLink {
-	out := make([]navLink, len(nav))
-	copy(out, nav)
+// activeNav returns a copy of nav with the entries matching currentURL flagged,
+// in every group: a footer link to the current page is current too.
+func activeNav(nav navView, currentURL string) navView {
+	return navView{
+		Main:   activeLinks(nav.Main, currentURL),
+		Footer: activeLinks(nav.Footer, currentURL),
+	}
+}
+
+// activeLinks returns a copy of links with the entry matching currentURL flagged.
+func activeLinks(links []navLink, currentURL string) []navLink {
+	out := make([]navLink, len(links))
+	copy(out, links)
 	for i := range out {
 		out[i].Active = out[i].URL == currentURL
 	}

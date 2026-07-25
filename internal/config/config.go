@@ -1,5 +1,6 @@
 // Package config loads cress's TOML site configuration (cress.toml): the site
-// metadata (title, base URL, theme) and the explicit, flat navigation list.
+// metadata (title, base URL, theme) and the explicit navigation, grouped into a
+// primary and a secondary menu.
 package config
 
 import (
@@ -22,8 +23,14 @@ const DefaultTheme = "cress"
 // the green from the default logo.
 const DefaultAccent = "#9cb43b"
 
-// navTable is the TOML table holding the navigation (label = content path).
-const navTable = "nav"
+// The TOML tables holding the navigation. Each group under [nav] is a table of
+// label = content path; the group names are fixed, so a mistyped one is caught
+// by the unknown-key check rather than silently rendering nothing.
+const (
+	navTable  = "nav"
+	navMain   = "main"
+	navFooter = "footer"
+)
 
 // ErrNotFound is returned by Load when the config file does not exist. Callers
 // distinguish it (with errors.Is) to point the user at `cress init`.
@@ -32,8 +39,19 @@ var ErrNotFound = errors.New("config not found")
 // Config is a cress site's top-level configuration.
 type Config struct {
 	Site Site
-	// Nav is the site navigation in document order, built from the [nav] table.
-	Nav []NavItem
+	// Nav is the site navigation, built from the [nav] tables.
+	Nav Nav
+}
+
+// Nav is the site navigation, split into the menus a theme renders separately.
+// Both groups are optional and independent; each keeps the order its entries
+// were written in.
+type Nav struct {
+	// Main is the primary menu, from [nav.main]. Themes render it in the header.
+	Main []NavItem
+	// Footer is the secondary menu, from [nav.footer], for the links that belong
+	// out of the way: legal pages, social links, and the like.
+	Footer []NavItem
 }
 
 // Site holds the metadata shared by every rendered page.
@@ -68,12 +86,18 @@ type NavItem struct {
 	Path  string
 }
 
-// document is the on-disk shape decoded from cress.toml. Navigation is a table
-// of label -> content path; TOML tables are unordered, so Load recovers the
-// authoring order from the parse metadata.
+// document is the on-disk shape decoded from cress.toml.
 type document struct {
-	Site Site              `toml:"site"`
-	Nav  map[string]string `toml:"nav"`
+	Site Site        `toml:"site"`
+	Nav  navDocument `toml:"nav"`
+}
+
+// navDocument is the on-disk [nav] table: one sub-table per menu, each mapping
+// label -> content path. TOML tables are unordered, so Load recovers the
+// authoring order from the parse metadata.
+type navDocument struct {
+	Main   map[string]string `toml:"main"`
+	Footer map[string]string `toml:"footer"`
 }
 
 // Load reads and parses the config at path. A missing file yields ErrNotFound
@@ -102,7 +126,13 @@ func Load(path string) (*Config, error) {
 		return nil, fmt.Errorf("config %s: unknown key(s): %s", path, strings.Join(keys, ", "))
 	}
 
-	cfg := &Config{Site: doc.Site, Nav: orderedNav(md, doc.Nav)}
+	cfg := &Config{
+		Site: doc.Site,
+		Nav: Nav{
+			Main:   orderedNav(md, navMain, doc.Nav.Main),
+			Footer: orderedNav(md, navFooter, doc.Nav.Footer),
+		},
+	}
 	cfg.normalize()
 	if !isHexColor(cfg.Site.Accent) {
 		return nil, fmt.Errorf("config %s: invalid accent color %q (want a hex value like %q)", path, cfg.Site.Accent, DefaultAccent)
@@ -110,19 +140,19 @@ func Load(path string) (*Config, error) {
 	return cfg, nil
 }
 
-// orderedNav rebuilds the navigation in the order the entries appear in the
-// source, using the parse metadata (a decoded map alone loses that order).
-func orderedNav(md toml.MetaData, entries map[string]string) []NavItem {
+// orderedNav rebuilds one navigation group in the order its entries appear in
+// the source, using the parse metadata (a decoded map alone loses that order).
+func orderedNav(md toml.MetaData, group string, entries map[string]string) []NavItem {
 	if len(entries) == 0 {
 		return nil
 	}
 	nav := make([]NavItem, 0, len(entries))
 	seen := make(map[string]bool, len(entries))
 	for _, key := range md.Keys() {
-		if len(key) != 2 || key[0] != navTable {
+		if len(key) != 3 || key[0] != navTable || key[1] != group {
 			continue
 		}
-		label := key[1]
+		label := key[2]
 		if seen[label] {
 			continue
 		}

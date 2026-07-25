@@ -36,7 +36,7 @@ description = "A fresh little site made with Cress."
 base_url = "https://example.com"
 theme = "cress"
 
-[nav]
+[nav.main]
 Home = "index.md"
 About = "about.md"
 ```
@@ -107,20 +107,34 @@ its own keys.
 
 ## Navigation
 
-Navigation is an explicit, flat table under `[nav]`. Each entry is a label on
-the left and the content file it links to on the right:
+Navigation is explicit. There are two menus, each a flat table under `[nav]`,
+and each entry is a label on the left with the content file it links to on the
+right:
 
 ```toml
-[nav]
+[nav.main]
 Home = "index.md"
 Guide = "guide/index.md"
 About = "about.md"
+
+[nav.footer]
+Imprint = "imprint.md"
+Privacy = "privacy.md"
 ```
 
-Cress resolves each path to the page's URL, and the menu follows the order the
+`[nav.main]` is the primary menu, which the theme renders in the header.
+`[nav.footer]` is the secondary menu for links that belong out of the way:
+legal pages, social links, and the like. Both are optional, and a theme that
+only wants one menu can ignore the other.
+
+Cress resolves each path to the page's URL, and each menu follows the order its
 entries are written in. An entry pointing at a missing file is reported as a
-warning and dropped, so the rest of the menu still renders. A label with spaces
-needs quoting, as TOML requires: `"Blog Posts" = "blog.md"`.
+warning naming its group and then dropped, so the rest of the menu still
+renders. A label with spaces needs quoting, as TOML requires:
+`"Blog Posts" = "blog.md"`.
+
+Those two group names are the only ones cress knows. A mistyped `[nav.mian]` is
+rejected as an unknown key rather than silently rendering nothing.
 
 ## Themes
 
@@ -145,8 +159,9 @@ Templates use Go's `html/template`. The `page.html` template receives:
 
 - `.Site`: the `[site]` config (`.Site.Title`, `.Site.Description`,
   `.Site.BaseURL`, `.Site.Logo`, `.Site.Favicon`, `.Site.Accent`).
-- `.Nav`: the resolved navigation, each entry with `.Title`, `.URL`, and
-  `.Active` (true on the current page).
+- `.Nav`: the resolved navigation, as `.Nav.Main` and `.Nav.Footer`. Each is a
+  list of entries with `.Title`, `.URL`, and `.Active` (true on the current
+  page). A group with no entries is empty, so `{{ with .Nav.Footer }}` skips it.
 - `.Page`: the current page, with `.Page.Title`, `.Page.URL`, `.Page.HTML` (the
   rendered Markdown body), and `.Page.Meta` (the raw front matter).
 

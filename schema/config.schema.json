@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/cozybadgerde/cress/trunk/schema/config.schema.json",
   "title": "cress configuration",
-  "description": "Schema for a cress site config file (cress.toml): the site metadata and the flat navigation list.",
+  "description": "Schema for a cress site config file (cress.toml): the site metadata and the grouped navigation tables.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -43,7 +43,24 @@
       }
     },
     "nav": {
-      "description": "Explicit, flat navigation as a table of label -> content file (e.g. Home = \"index.md\"). Entries appear in the order written.",
+      "description": "Explicit navigation, grouped into the menus a theme renders separately. Both groups are optional.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "main": {
+          "$ref": "#/$defs/navGroup",
+          "description": "Primary menu, rendered in the header."
+        },
+        "footer": {
+          "$ref": "#/$defs/navGroup",
+          "description": "Secondary menu, rendered in the footer: legal pages, social links, and the like."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "navGroup": {
+      "description": "One menu, as a table of label -> content file (e.g. Home = \"index.md\"). Entries appear in the order written.",
       "type": "object",
       "additionalProperties": {
         "description": "Content file the entry links to, relative to content/ (e.g. \"about.md\").",

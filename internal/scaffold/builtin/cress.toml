@@ -14,9 +14,15 @@ favicon = "/favicon.png"
 # Soft accent color (hex), used as a highlight on links and more.
 accent = "#9cb43b"
 
-# Navigation is an explicit table of "label = content file", in this order.
-# A label with spaces is quoted, as TOML requires.
-[nav]
+# Navigation is explicit: one table of "label = content file" per menu, each
+# rendered in the order written. A label with spaces is quoted, as TOML requires.
+# The primary menu, rendered in the header.
+[nav.main]
 Home = "index.md"
 About = "about.md"
 "Style guide" = "styleguide.md"
+
+# The secondary menu, rendered in the footer. Both groups are optional.
+[nav.footer]
+Imprint = "imprint.md"
+Privacy = "privacy.md"
