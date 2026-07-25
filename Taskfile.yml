@@ -12,9 +12,9 @@ vars:
   PKG: ./cmd/cress
   # Pinned tool versions — the single source for both `task tools` and CI.
   GOLANGCI_VERSION: v2.12.2
-  GOSEC_VERSION: v2.27.1
-  GOVULN_VERSION: v1.3.0
-  GOMARKLINT_VERSION: v3.2.3
+  GOSEC_VERSION: v2.28.0
+  GOVULN_VERSION: v1.6.0
+  GOMARKLINT_VERSION: v3.3.0
   GOCYCLO_VERSION: v0.6.0
   GOCOGNIT_VERSION: v1.2.1
   SHELLCHECK_VERSION: v0.11.0
