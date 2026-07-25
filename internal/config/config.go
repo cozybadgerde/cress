@@ -67,11 +67,12 @@ type Site struct {
 	// Theme names the theme to render with. Empty resolves to DefaultTheme.
 	Theme string `toml:"theme"`
 	// Logo is a path or URL to a logo image, rendered in the navigation. Empty
-	// falls back to the theme's default logo. Typically a file in static/, e.g.
-	// "/logo.svg".
+	// means no logo is rendered, unless the theme supplies its own fallback.
+	// Typically a file in static/, e.g. "/logo.svg".
 	Logo string `toml:"logo"`
-	// Favicon is a path or URL to a favicon. Empty falls back to the theme's
-	// default favicon. Typically a file in static/, e.g. "/favicon.png".
+	// Favicon is a path or URL to a favicon. Empty means no icon link is
+	// rendered, unless the theme supplies its own fallback. Typically a file in
+	// static/, e.g. "/favicon.png".
 	Favicon string `toml:"favicon"`
 	// Accent is the CSS accent color (a hex value like "#9cb43b") the theme uses
 	// as a soft highlight. Empty resolves to DefaultAccent.

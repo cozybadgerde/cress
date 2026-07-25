@@ -28,11 +28,11 @@
           "type": "string"
         },
         "logo": {
-          "description": "Path or URL to a logo image rendered in the navigation. Empty falls back to the theme's default logo. Typically a file in static/, e.g. \"/logo.svg\".",
+          "description": "Path or URL to a logo image rendered in the navigation. Empty means no logo is rendered, unless the theme supplies its own fallback. Typically a file in static/, e.g. \"/logo.svg\".",
           "type": "string"
         },
         "favicon": {
-          "description": "Path or URL to a favicon. Empty falls back to the theme's default favicon. Typically a file in static/, e.g. \"/favicon.png\".",
+          "description": "Path or URL to a favicon. Empty means no icon link is rendered, unless the theme supplies its own fallback. Typically a file in static/, e.g. \"/favicon.png\".",
           "type": "string"
         },
         "accent": {
