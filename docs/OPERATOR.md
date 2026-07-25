@@ -45,9 +45,9 @@ Scaffold a new site into a directory:
 cress init my-site
 ```
 
-This writes `cress.toml`, a `content/` directory with two pages, and an empty
-`static/` directory. For what these files contain and how to author them, see
-the [user guide](./USER.md).
+This writes `cress.toml`, a `content/` directory with a handful of starter
+pages, and a `static/` directory holding the default logo and favicon. For what
+these files contain and how to author them, see the [user guide](./USER.md).
 
 ## Build
 
@@ -102,5 +102,6 @@ of its domain.
   message names the offending keys.
 - **`theme ... not found`**: the `theme` name has no matching directory under
   `themes/`. Use `cress` for the built-in theme, or add the theme directory.
-- **A nav entry is missing**: a warning like `nav entry ... points at missing
-  content` means the `path` does not match a file under `content/`.
+- **A nav entry is missing**: a warning like `nav.main entry ... points at
+  missing content` names the group and means the path does not match a file
+  under `content/`.
