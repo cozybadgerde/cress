@@ -74,6 +74,9 @@ Run the full gate before opening a pull request:
 task check
 ```
 
+Every step runs even when an earlier one fails, and the failures are listed
+together at the end, so one red step does not hide the others.
+
 Other common tasks (see `task --list` for all of them):
 
 ```bash
@@ -81,5 +84,5 @@ task build            # build the binary into build/
 task run -- build     # run cress with arguments
 task test             # unit tests
 task lint             # go, markdown, and shell linters
-task audit:schema     # validate the starter config against the JSON Schema
+task audit            # complexity and schema audits, not part of check
 ```

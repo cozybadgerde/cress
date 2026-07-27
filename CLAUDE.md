@@ -168,8 +168,11 @@ pinned tools and runs `task check`, so local and CI never drift. Don't run raw
 | `task test`         | Unit tests                                            |
 | `task lint`         | golangci-lint + gomarklint + shellcheck               |
 | `task tools`        | Install all pinned dev tools (matches CI)             |
-| `task audit:schema` | Validate the bundled starter config against its schema |
+| `task audit`        | Complexity and schema audits; not part of `check`/CI  |
 | `task run -- <args>`| Run cress with args (e.g. `task run -- build`)        |
+
+Aggregate tasks (`check`, `lint`, `audit`) run every step even when one fails,
+then report the failures together, so one red step never hides the rest.
 
 CI lives in `.github/workflows/` (`ci`, `release`, `security`). Default branch
 is `trunk`; releases fire on `v*` tags via goreleaser.
