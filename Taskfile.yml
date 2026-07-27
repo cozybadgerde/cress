@@ -23,6 +23,8 @@ vars:
   # order to catch inter-test coupling (-shuffle=on, prints a reproducible
   # seed), and a per-package hang guard (-timeout).
   TEST_FLAGS: -count=1 -shuffle=on -timeout 120s
+  # Cyclomatic / cognitive complexity budget for `audit:complexity`.
+  COMPLEXITY_BUDGET: 15
 
 tasks:
   # --- Meta & tooling ---
@@ -32,6 +34,25 @@ tasks:
     cmds:
       - task --list
     silent: true
+
+  # Runs every task named in STEPS even when one of them fails, then reports
+  # the failures together. Task stops a `cmds` list at the first non-zero exit,
+  # which would otherwise let one failing step hide every later one — a gate
+  # that reports a single problem per run is a gate you have to run repeatedly.
+  run-all:
+    internal: true
+    silent: true
+    cmds:
+      - |
+        failed=""
+        for step in {{.STEPS}}; do
+          printf '\n=== %s ===\n' "$step"
+          task "$step" || failed="$failed $step"
+        done
+        if [ -n "$failed" ]; then
+          printf '\nFAILED:%s\n' "$failed"
+          exit 1
+        fi
 
   setup:
     desc: Configure the repo for development (commit template, deps)
@@ -107,11 +128,10 @@ tasks:
       - go vet ./...
 
   lint:
-    desc: Run all linters (go, md, sh)
+    desc: Run all linters (go, md, sh); every linter runs even if one fails
     cmds:
-      - task: lint:go
-      - task: lint:md
-      - task: lint:sh
+      - task: run-all
+        vars: {STEPS: "lint:go lint:md lint:sh"}
 
   lint:go:
     desc: Lint Go with golangci-lint
@@ -160,22 +180,34 @@ tasks:
   # --- Full gate ---
 
   check:
-    desc: Full gate — fmt:check, vet, lint, sec, test, test:race
+    desc: Full gate — fmt:check, vet, lint, sec, test, test:race (all steps run)
     cmds:
-      - task: fmt:check
-      - task: vet
-      - task: lint
-      - task: sec
-      - task: test
-      - task: test:race
+      - task: run-all
+        vars: {STEPS: "fmt:check vet lint sec test test:race"}
 
   # --- Audit (local, deliberately not part of `check`/CI) ---
 
-  audit:complexity:
-    desc: Report functions over the complexity budget (gocyclo / gocognit, > 15)
+  audit:
+    desc: Run every audit (complexity, schema); not part of `check`
     cmds:
-      - gocyclo -over 15 .
-      - gocognit -over 15 .
+      - task: run-all
+        vars: {STEPS: "audit:complexity audit:schema"}
+
+  audit:complexity:
+    desc: "Report functions over the complexity budget (gocyclo / gocognit, > {{.COMPLEXITY_BUDGET}})"
+    cmds:
+      - task: run-all
+        vars: {STEPS: "audit:complexity:cyclo audit:complexity:cognit"}
+
+  # No desc: implementation details of audit:complexity, but callable because
+  # run-all invokes its steps through the CLI, which skips internal tasks.
+  audit:complexity:cyclo:
+    cmds:
+      - gocyclo -over {{.COMPLEXITY_BUDGET}} .
+
+  audit:complexity:cognit:
+    cmds:
+      - gocognit -over {{.COMPLEXITY_BUDGET}} .
 
   audit:schema:
     desc: Validate the bundled starter config against the config JSON Schema (taplo)
