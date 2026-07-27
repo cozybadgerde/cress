@@ -103,7 +103,10 @@ Front-matter fields Cress understands:
 - `draft`: when `true`, the page is skipped unless you build with `--drafts`.
 
 Any other field is passed through to the theme untouched, so a theme can read
-its own keys.
+its own keys. Unlike `cress.toml`, front matter is deliberately permissive: an
+unknown key is never an error, so notes written in Obsidian or another editor
+that adds front-matter fields of its own build without being edited first. The
+trade-off is that a misspelled `title` is ignored rather than reported.
 
 ## Navigation
 
