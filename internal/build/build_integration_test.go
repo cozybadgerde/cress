@@ -40,36 +40,21 @@ func TestBuild_integration(t *testing.T) {
 		}
 	}
 
-	index := readFile(t, filepath.Join(out, "index.html"))
-	if !strings.Contains(index, "<title>Welcome · My cozy site</title>") {
-		t.Errorf("index.html missing composed title:\n%s", index)
-	}
-	if !strings.Contains(index, "--accent: #9cb43b") {
-		t.Error("index.html missing injected accent color")
-	}
-	if !strings.Contains(index, `<link rel="icon" href="/favicon.png"`) {
-		t.Error("index.html missing default favicon link")
-	}
-	if !strings.Contains(index, `class="site-logo"`) {
-		t.Error("index.html missing nav logo")
-	}
-	if !strings.Contains(index, `href="/about.html"`) {
-		t.Error("index.html missing nav link to about")
-	}
-	if !strings.Contains(index, `class="footer-nav"`) || !strings.Contains(index, `href="/imprint.html"`) {
-		t.Errorf("index.html missing the footer nav:\n%s", index)
-	}
-	if !strings.Contains(index, "Fresh little sites, fast.") {
-		t.Error("index.html missing rendered body content")
-	}
+	assertMarkers(t, "index.html", readFile(t, filepath.Join(out, "index.html")), []marker{
+		{"<title>Welcome · My cozy site</title>", "the composed title"},
+		{"--accent: #9cb43b", "the injected accent color"},
+		{`<link rel="icon" href="/favicon.png"`, "the default favicon link"},
+		{`class="site-logo"`, "the nav logo"},
+		{`href="/about.html"`, "the nav link to about"},
+		{`class="footer-nav"`, "the footer nav"},
+		{`href="/imprint.html"`, "the footer nav link to imprint"},
+		{"Fresh little sites, fast.", "the rendered body content"},
+	})
 
-	about := readFile(t, filepath.Join(out, "about.html"))
-	if !strings.Contains(about, `aria-current="page"`) {
-		t.Error("about.html should mark its own nav entry active")
-	}
-	if !strings.Contains(about, `<code class="language-go">`) {
-		t.Error("about.html should render the fenced code block with a language class")
-	}
+	assertMarkers(t, "about.html", readFile(t, filepath.Join(out, "about.html")), []marker{
+		{`aria-current="page"`, "its own nav entry marked active"},
+		{`<code class="language-go">`, "the fenced code block's language class"},
+	})
 }
 
 func TestBuild_draftsAndStatic_integration(t *testing.T) {
@@ -121,6 +106,28 @@ func TestBuild_refusesSiteRootOutput(t *testing.T) {
 
 	if _, err := build.Build(build.Options{Root: root, Output: "."}); err == nil {
 		t.Fatal("expected an error when output is the site root")
+	}
+}
+
+// marker is one substring a rendered document must contain, with a
+// human-readable name for the failure message.
+type marker struct{ substr, desc string }
+
+// assertMarkers checks every marker against doc, reporting each miss
+// separately so one failure does not mask the others. The document is dumped
+// once at the end when anything is missing, since the site it was built from
+// lives in a t.TempDir() that is gone by the time the failure is read.
+func assertMarkers(t *testing.T, name, doc string, markers []marker) {
+	t.Helper()
+	missing := false
+	for _, m := range markers {
+		if !strings.Contains(doc, m.substr) {
+			t.Errorf("%s is missing %s (%q)", name, m.desc, m.substr)
+			missing = true
+		}
+	}
+	if missing {
+		t.Logf("%s was:\n%s", name, doc)
 	}
 }
 
