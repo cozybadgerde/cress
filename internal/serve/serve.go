@@ -108,13 +108,9 @@ func watchLoop(ctx context.Context, watcher *fsnotify.Watcher, srv *http.Server,
 			if !ok {
 				return nil
 			}
-			if ignoreEvent(event.Name, outPath) {
-				continue
+			if relevantEvent(watcher, event, outPath) {
+				timer.Reset(debounce)
 			}
-			if event.Has(fsnotify.Create) {
-				addIfDir(watcher, event.Name)
-			}
-			timer.Reset(debounce)
 
 		case err, ok := <-watcher.Errors:
 			if !ok {
@@ -123,15 +119,35 @@ func watchLoop(ctx context.Context, watcher *fsnotify.Watcher, srv *http.Server,
 			logf("watch error: %v", err)
 
 		case <-timer.C:
-			res, err := build.Build(buildOpts)
-			if err != nil {
-				logf("rebuild failed: %v", err)
-				continue
-			}
-			reportWarnings(logf, res)
-			logf("rebuilt %d page(s)", res.Pages)
+			rebuild(buildOpts, logf)
 		}
 	}
+}
+
+// relevantEvent reports whether event should trigger a rebuild. A newly created
+// directory is added to the watch set on the way through, so files written into
+// it afterwards are noticed too.
+func relevantEvent(watcher *fsnotify.Watcher, event fsnotify.Event, outPath string) bool {
+	if ignoreEvent(event.Name, outPath) {
+		return false
+	}
+	if event.Has(fsnotify.Create) {
+		addIfDir(watcher, event.Name)
+	}
+	return true
+}
+
+// rebuild renders the site again and logs the outcome. A failed build is
+// reported and swallowed: the preview server keeps serving the last good
+// output so a typo in the config does not end the session.
+func rebuild(buildOpts build.Options, logf func(string, ...any)) {
+	res, err := build.Build(buildOpts)
+	if err != nil {
+		logf("rebuild failed: %v", err)
+		return
+	}
+	reportWarnings(logf, res)
+	logf("rebuilt %d page(s)", res.Pages)
 }
 
 // watchSources registers the source directories (content, themes, static, each
