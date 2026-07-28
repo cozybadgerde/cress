@@ -92,12 +92,13 @@ theme  ─┘
 ```
 
 - **`config`** loads `cress.toml`: the `[site]` metadata (title, description,
-  base_url, theme, plus the white-label `logo`/`favicon`/`accent`) and the
-  `[nav.main]`/`[nav.footer]` tables (label = content path). The group names are
-  fixed, so unknown keys are rejected as typos. An empty theme resolves to the
-  built-in default; an empty `accent` resolves to `#9cb43b` and is validated as
-  a hex color (it is interpolated into CSS). Each group's order is recovered
-  from the TOML parse metadata, since decoded tables are otherwise unordered.
+  base_url, theme, plus the white-label `logo`/`favicon`/`accent`/`accent_dark`)
+  and the `[nav.main]`/`[nav.footer]` tables (label = content path). The group
+  names are fixed, so unknown keys are rejected as typos. An empty theme
+  resolves to the built-in default. The accents get no default at all: an unset
+  one stays unset so the theme's own applies, and a set one is validated as a
+  hex color (it is interpolated into CSS). Each group's order is recovered from
+  the TOML parse metadata, since decoded tables are otherwise unordered.
 - **`content`** walks `content/`, splits YAML front matter from the Markdown
   body, and produces a `Page` for each file. It maps the source path to an
   output path and URL (`about.md` -> `about.html`; an `index` file collapses to

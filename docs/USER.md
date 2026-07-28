@@ -53,25 +53,36 @@ Unknown keys are rejected, so a typo fails the build instead of being ignored.
 
 ### White-label branding
 
-Three optional fields make the site your own:
+Four optional fields make the site your own:
 
 - `logo`: a path or URL to a logo image, shown in the navigation. `cress init`
   drops a placeholder at `static/logo.png`; replace it with your own, or point
   this field at another file in `static/`.
 - `favicon`: a path or URL to a favicon. `cress init` drops a placeholder at
   `static/favicon.png`; replace it the same way.
-- `accent`: the accent color, a soft highlight the theme uses on links and other
-  touches. A CSS hex value, for example `accent = "#9cb43b"` (the default).
+- `accent`: the accent color, a highlight the theme uses on links and other
+  touches. A CSS hex value, for example `accent = "#4f7a4a"`.
+- `accent_dark`: the accent for readers whose system prefers a dark color
+  scheme. Leave it out and `accent` applies to both.
 
 ```toml
 [site]
 logo = "/logo.png"
 favicon = "/favicon.png"
-accent = "#9cb43b"
+accent = "#4f7a4a"
+accent_dark = "#9ccb8f"
 ```
 
-Leaving `logo` or `favicon` empty simply omits it. An invalid `accent` (anything
-that is not a hex color like `#9cb43b`) fails the build with a clear message.
+Leaving `logo` or `favicon` empty simply omits it. An accent that is not a hex
+color fails the build with a clear message.
+
+**Leaving the accents out is a real choice, not a shortcut.** cress has no
+default accent of its own; unset, the theme picks one, and the built-in theme
+picks a different value per color scheme. That matters more than it sounds: no
+single color reaches the WCAG AA contrast ratio of 4.5:1 against both a light
+and a dark background, so a brand color that reads beautifully in one scheme
+can be close to invisible in the other. Set `accent` alone only if your color
+survives both; otherwise set `accent_dark` as well.
 
 ## Content and front matter
 

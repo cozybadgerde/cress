@@ -51,8 +51,9 @@ Privacy = "privacy.md"
 	if cfg.Site.Theme != config.DefaultTheme {
 		t.Errorf("theme = %q, want default %q", cfg.Site.Theme, config.DefaultTheme)
 	}
-	if cfg.Site.Accent != config.DefaultAccent {
-		t.Errorf("accent = %q, want default %q", cfg.Site.Accent, config.DefaultAccent)
+	// An unset accent stays unset, so the theme's own per-scheme accent applies.
+	if cfg.Site.Accent != "" || cfg.Site.AccentDark != "" {
+		t.Errorf("accent/accent_dark = %q/%q, want both empty when unset", cfg.Site.Accent, cfg.Site.AccentDark)
 	}
 	if cfg.Site.Logo != "/logo.svg" || cfg.Site.Favicon != "/favicon.png" {
 		t.Errorf("logo/favicon not passed through: %q, %q", cfg.Site.Logo, cfg.Site.Favicon)
@@ -128,15 +129,41 @@ func TestLoad_unknownKey_integration(t *testing.T) {
 	}
 }
 
-func TestLoad_invalidAccent_integration(t *testing.T) {
+func TestLoad_accents_integration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
 
-	path := writeConfig(t, "[site]\naccent = \"not-a-color\"\n")
-
-	if _, err := config.Load(path); err == nil {
-		t.Fatal("expected an error for an invalid accent color")
+	for _, tc := range []struct {
+		name            string
+		body            string
+		wantErr         bool
+		accent, accent2 string
+	}{
+		{name: "invalid accent", body: "accent = \"not-a-color\"\n", wantErr: true},
+		{name: "invalid accent_dark", body: "accent_dark = \"not-a-color\"\n", wantErr: true},
+		{name: "both set", body: "accent = \"#4f7a4a\"\naccent_dark = \"#9ccb8f\"\n", accent: "#4f7a4a", accent2: "#9ccb8f"},
+		// Only a light accent: it applies to both schemes, which is what the
+		// theme's cascade does when no dark override is emitted.
+		{name: "accent only", body: "accent = \"#4f7a4a\"\n", accent: "#4f7a4a"},
+		// Coherent on its own: the theme's accent in light, this one in dark.
+		{name: "accent_dark only", body: "accent_dark = \"#9ccb8f\"\n", accent2: "#9ccb8f"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg, err := config.Load(writeConfig(t, "[site]\n"+tc.body))
+			if tc.wantErr {
+				if err == nil {
+					t.Fatalf("Load(%q) = nil error, want one", tc.body)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("Load(%q): %v", tc.body, err)
+			}
+			if cfg.Site.Accent != tc.accent || cfg.Site.AccentDark != tc.accent2 {
+				t.Errorf("accent/accent_dark = %q/%q, want %q/%q", cfg.Site.Accent, cfg.Site.AccentDark, tc.accent, tc.accent2)
+			}
+		})
 	}
 }
 

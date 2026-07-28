@@ -44,7 +44,6 @@ func TestBuild_integration(t *testing.T) {
 
 	assertMarkers(t, "index.html", readFile(t, filepath.Join(out, "index.html")), []marker{
 		{"<title>Welcome · My cozy site</title>", "the composed title"},
-		{"--accent: #9cb43b", "the injected accent color"},
 		{`<link rel="icon" href="/favicon.png"`, "the default favicon link"},
 		{`class="site-logo"`, "the nav logo"},
 		{`href="/about.html"`, "the nav link to about"},
@@ -57,6 +56,55 @@ func TestBuild_integration(t *testing.T) {
 		{`aria-current="page"`, "its own nav entry marked active"},
 		{`<code class="language-go">`, "the fenced code block's language class"},
 	})
+}
+
+func TestBuild_accentOverrides_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	const dark = "@media (prefers-color-scheme: dark)"
+	for _, tc := range []struct {
+		name       string
+		site       string
+		want, omit []string
+	}{
+		// The scaffolded site sets no accent, so the theme's own per-scheme pair
+		// in style.css is left to apply. Emitting a :root block here is the bug
+		// that made both of the theme's values unreachable.
+		{name: "unset", site: "", omit: []string{"--accent:", dark}},
+		{name: "light only", site: "accent = \"#3e2723\"\n", want: []string{"--accent: #3e2723"}, omit: []string{dark}},
+		{
+			name: "both",
+			site: "accent = \"#3e2723\"\naccent_dark = \"#d7b8a3\"\n",
+			want: []string{"--accent: #3e2723", dark, "--accent: #d7b8a3"},
+		},
+		{name: "dark only", site: "accent_dark = \"#d7b8a3\"\n", want: []string{dark, "--accent: #d7b8a3"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			root := t.TempDir()
+			if _, err := scaffold.Create(root, false); err != nil {
+				t.Fatalf("scaffold: %v", err)
+			}
+			writeSiteFile(t, filepath.Join(root, "cress.toml"), "[site]\ntitle = \"S\"\n"+tc.site)
+
+			if _, err := build.Build(build.Options{Root: root}); err != nil {
+				t.Fatalf("build: %v", err)
+			}
+			doc := readFile(t, filepath.Join(root, build.OutputDir, "index.html"))
+
+			for _, want := range tc.want {
+				if !strings.Contains(doc, want) {
+					t.Errorf("rendered page is missing %q", want)
+				}
+			}
+			for _, omit := range tc.omit {
+				if strings.Contains(doc, omit) {
+					t.Errorf("rendered page should not contain %q", omit)
+				}
+			}
+		})
+	}
 }
 
 func TestBuild_draftsAndStatic_integration(t *testing.T) {

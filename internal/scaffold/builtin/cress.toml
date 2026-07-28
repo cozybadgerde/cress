@@ -11,8 +11,11 @@ theme = "cress"
 # your own, or point these at other files you drop in static/.
 logo = "/logo.png"
 favicon = "/favicon.png"
-# Soft accent color (hex), used as a highlight on links and more.
-accent = "#9cb43b"
+# Accent color (hex), used as a highlight on links and more. Left unset, the
+# theme picks its own, including a variant for dark mode. Set accent_dark too if
+# your color is only legible against one of the two backgrounds.
+# accent = "#4f7a4a"
+# accent_dark = "#9ccb8f"
 
 # Navigation is explicit: one table of "label = content file" per menu, each
 # rendered in the order written. A label with spaces is quoted, as TOML requires.

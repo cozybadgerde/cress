@@ -36,7 +36,12 @@
           "type": "string"
         },
         "accent": {
-          "description": "Accent color used as a soft highlight (e.g. on links). A CSS hex value; empty resolves to #9cb43b.",
+          "description": "Accent color used as a highlight (e.g. on links). A CSS hex value. Leave it unset and the theme's own accent applies, including any per-scheme variant it defines.",
+          "type": "string",
+          "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$"
+        },
+        "accent_dark": {
+          "description": "Accent color for readers who prefer a dark color scheme. A CSS hex value; unset means accent applies to both. No single color clears WCAG AA contrast against a light and a dark background at once, so an accent legible in one scheme needs this for the other.",
           "type": "string",
           "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$"
         }

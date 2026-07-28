@@ -19,9 +19,10 @@ const FileName = "cress.toml"
 // to the embedded default theme shipped in the binary.
 const DefaultTheme = "cress"
 
-// DefaultAccent is the accent color used when the config leaves it unset. It is
-// the green from the default logo.
-const DefaultAccent = "#9cb43b"
+// exampleAccent is the color named in the error message for an invalid accent.
+// It is an example, not a default: an unset accent stays unset so the theme's
+// own accent applies.
+const exampleAccent = "#4f7a4a"
 
 // The TOML tables holding the navigation. Each group under [nav] is a table of
 // label = content path; the group names are fixed, so a mistyped one is caught
@@ -74,9 +75,15 @@ type Site struct {
 	// rendered, unless the theme supplies its own fallback. Typically a file in
 	// static/, e.g. "/favicon.png".
 	Favicon string `toml:"favicon"`
-	// Accent is the CSS accent color (a hex value like "#9cb43b") the theme uses
-	// as a soft highlight. Empty resolves to DefaultAccent.
+	// Accent is the CSS accent color (a hex value like "#4f7a4a") the theme uses
+	// as a highlight. Empty means the theme's own accent applies, including any
+	// per-scheme variant it defines; cress supplies no default of its own.
 	Accent string `toml:"accent"`
+	// AccentDark replaces Accent when the reader prefers a dark color scheme.
+	// Empty means Accent applies to both. No single color clears WCAG AA contrast
+	// against a light and a dark background at once, so an accent legible in one
+	// scheme needs this to be legible in the other.
+	AccentDark string `toml:"accent_dark"`
 }
 
 // NavItem is one entry in the site navigation. Title is the link label; Path
@@ -135,10 +142,27 @@ func Load(path string) (*Config, error) {
 		},
 	}
 	cfg.normalize()
-	if !isHexColor(cfg.Site.Accent) {
-		return nil, fmt.Errorf("config %s: invalid accent color %q (want a hex value like %q)", path, cfg.Site.Accent, DefaultAccent)
+	if err := validateAccents(path, cfg.Site); err != nil {
+		return nil, err
 	}
 	return cfg, nil
+}
+
+// validateAccents rejects a set accent that is not a hex color. The values are
+// interpolated into the theme's stylesheet, so restricting their shape keeps
+// arbitrary text out of the rendered CSS. An unset one is left unset rather
+// than defaulted: the theme is the only place that knows its own backgrounds,
+// and therefore the only place that can pick a legible accent for each scheme.
+func validateAccents(path string, site Site) error {
+	for _, accent := range []struct{ key, value string }{
+		{"accent", site.Accent},
+		{"accent_dark", site.AccentDark},
+	} {
+		if accent.value != "" && !isHexColor(accent.value) {
+			return fmt.Errorf("config %s: invalid %s color %q (want a hex value like %q)", path, accent.key, accent.value, exampleAccent)
+		}
+	}
+	return nil
 }
 
 // orderedNav rebuilds one navigation group in the order its entries appear in
@@ -167,9 +191,6 @@ func orderedNav(md toml.MetaData, group string, entries map[string]string) []Nav
 func (c *Config) normalize() {
 	if strings.TrimSpace(c.Site.Theme) == "" {
 		c.Site.Theme = DefaultTheme
-	}
-	if strings.TrimSpace(c.Site.Accent) == "" {
-		c.Site.Accent = DefaultAccent
 	}
 	c.Site.BaseURL = strings.TrimRight(c.Site.BaseURL, "/")
 }
