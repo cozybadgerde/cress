@@ -14,12 +14,12 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #1c1b19;
+    --bg: #2a2724;
     --fg: #e7e4dd;
     --muted: #a49f96;
     --accent: #9ccb8f;
-    --border: #34322e;
-    --code-bg: #26241f;
+    --border: #423e39;
+    --code-bg: #34302a;
   }
 }
 
