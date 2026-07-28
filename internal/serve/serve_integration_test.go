@@ -21,7 +21,7 @@ func TestServe_integration(t *testing.T) {
 	}
 
 	root := t.TempDir()
-	if err := scaffold.Create(root, false); err != nil {
+	if _, err := scaffold.Create(root, false); err != nil {
 		t.Fatalf("scaffold: %v", err)
 	}
 	addr := freeAddr(t)

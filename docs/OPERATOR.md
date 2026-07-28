@@ -49,6 +49,12 @@ This writes `cress.toml`, a `content/` directory with a handful of starter
 pages, and a `static/` directory holding the default logo and favicon. For what
 these files contain and how to author them, see the [user guide](./USER.md).
 
+The target directory has to be empty, though dotfiles do not count, so
+`git init` first and then `cress init` works. To scaffold into a directory that
+already holds other files, add `--force` (`-f`). Like the build, `cress init`
+never overwrites: a starter file that is already there is left alone and
+counted in the summary, so re-running it only fills in what is missing.
+
 ## Build
 
 Render the site into `public/`:

@@ -18,7 +18,7 @@ func TestBuild_integration(t *testing.T) {
 	}
 
 	root := t.TempDir()
-	if err := scaffold.Create(root, false); err != nil {
+	if _, err := scaffold.Create(root, false); err != nil {
 		t.Fatalf("scaffold: %v", err)
 	}
 
@@ -65,7 +65,7 @@ func TestBuild_draftsAndStatic_integration(t *testing.T) {
 	}
 
 	root := t.TempDir()
-	if err := scaffold.Create(root, false); err != nil {
+	if _, err := scaffold.Create(root, false); err != nil {
 		t.Fatalf("scaffold: %v", err)
 	}
 	writeSiteFile(t, filepath.Join(root, "content", "secret.md"), "---\ntitle: Secret\ndraft: true\n---\nhidden\n")
@@ -106,7 +106,7 @@ func TestBuild_neverDeletesOutput_integration(t *testing.T) {
 	}
 
 	root := t.TempDir()
-	if err := scaffold.Create(root, false); err != nil {
+	if _, err := scaffold.Create(root, false); err != nil {
 		t.Fatalf("scaffold: %v", err)
 	}
 	if _, err := build.Build(build.Options{Root: root}); err != nil {
@@ -146,7 +146,7 @@ func TestBuild_ignoresDotEntriesInOutput_integration(t *testing.T) {
 	}
 
 	root := t.TempDir()
-	if err := scaffold.Create(root, false); err != nil {
+	if _, err := scaffold.Create(root, false); err != nil {
 		t.Fatalf("scaffold: %v", err)
 	}
 	if _, err := build.Build(build.Options{Root: root}); err != nil {
@@ -175,7 +175,7 @@ func TestBuild_collapsesManyStaleWarnings_integration(t *testing.T) {
 	}
 
 	root := t.TempDir()
-	if err := scaffold.Create(root, false); err != nil {
+	if _, err := scaffold.Create(root, false); err != nil {
 		t.Fatalf("scaffold: %v", err)
 	}
 	if _, err := build.Build(build.Options{Root: root}); err != nil {
@@ -204,7 +204,7 @@ func TestBuild_collapsesManyStaleWarnings_integration(t *testing.T) {
 
 func TestBuild_refusesSiteRootOutput(t *testing.T) {
 	root := t.TempDir()
-	if err := scaffold.Create(root, false); err != nil {
+	if _, err := scaffold.Create(root, false); err != nil {
 		t.Fatalf("scaffold: %v", err)
 	}
 
