@@ -139,10 +139,12 @@ theme  ─┘
 - **URLs are flat and root-relative.** `content/x.md` -> `public/x.html`, linked
   as `/x.html`; an `index` file collapses to its directory (`/`, `/guide/`). The
   builder writes root-relative links, so a site is served from its domain root.
-- **Navigation is explicit.** There are no automatic list or section pages. A
-  `[nav.main]` or `[nav.footer]` entry (label = content path) points at a content
-  file; a missing target is a warning naming its group, not a hard error, so the
-  rest of the build still succeeds. Themes read `.Nav.Main` and `.Nav.Footer`.
+- **Navigation is explicit.** A `[nav.main]` or `[nav.footer]` entry (label =
+  content path) points at a content file; a missing target is a warning naming
+  its group, not a hard error, so the rest of the build still succeeds. Themes
+  read `.Nav.Main` and `.Nav.Footer`. There are no automatic list or section
+  pages in 1.x - a scope decision for the initial release, not a permanent one
+  (see #23).
 - **Embedded assets:** the default theme (`internal/theme/builtin/cress`) and the
   starter site (`internal/scaffold/builtin`) are embedded with `go:embed`. Both
   are copied verbatim, so edits to those files change what ships.
@@ -152,9 +154,9 @@ theme  ─┘
 
 ## Roadmap notes
 
-Planned but out of scope for v0.1: internationalization (i18n). Deliberately not
-planned: plugins or a JS ecosystem, data files, shortcodes, taxonomies, and
-pagination.
+Out of scope for 1.0: internationalization (i18n), and automatic list or section
+pages (see #23, a candidate for 2.0). Deliberately not planned at any version:
+plugins or a JS ecosystem, data files, shortcodes, taxonomies, and pagination.
 
 ## Build / test / lint
 
