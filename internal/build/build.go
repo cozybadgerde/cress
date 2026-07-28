@@ -11,6 +11,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/cozybadgerde/cress/internal/config"
 	"github.com/cozybadgerde/cress/internal/content"
@@ -27,6 +28,11 @@ const (
 )
 
 const outputDirPerm = 0o755
+
+// staleWarningLimit caps how many stale files are named one by one. Past it a
+// single summary line stands in, so a bulk rename cannot bury the rest of the
+// build's output.
+const staleWarningLimit = 10
 
 // Options configures a build.
 type Options struct {
@@ -75,8 +81,10 @@ type pageView struct {
 	HTML  template.HTML
 }
 
-// Build renders the site described by opts and returns a summary. It replaces
-// the output directory's contents.
+// Build renders the site described by opts and returns a summary. It only ever
+// creates and overwrites files: nothing in the output directory is deleted, so
+// a build can never destroy content it did not produce. Files left over from an
+// earlier build are reported as warnings instead.
 func Build(opts Options) (*Result, error) {
 	root := opts.Root
 	if root == "" {
@@ -110,11 +118,12 @@ func Build(opts Options) (*Result, error) {
 	nav, warnings := resolveNav(cfg.Nav, pages)
 	renderer := render.New()
 
-	if err := resetDir(outPath); err != nil {
+	if err := ensureDir(outPath); err != nil {
 		return nil, err
 	}
 
-	written := 0
+	written := make(map[string]bool, len(pages))
+	rendered := 0
 	for _, page := range pages {
 		if page.Draft && !opts.Drafts {
 			continue
@@ -122,14 +131,21 @@ func Build(opts Options) (*Result, error) {
 		if err := writePage(outPath, thm, renderer, cfg.Site, nav, page); err != nil {
 			return nil, err
 		}
-		written++
+		written[page.OutputPath] = true
+		rendered++
 	}
 
-	if err := copyStatic(outPath, thm.StaticFS(), filepath.Join(root, StaticDir)); err != nil {
+	if err := copyStatic(outPath, thm.StaticFS(), filepath.Join(root, StaticDir), written); err != nil {
 		return nil, err
 	}
 
-	return &Result{Pages: written, Output: outPath, Warnings: warnings}, nil
+	stale, err := staleFiles(outPath, written)
+	if err != nil {
+		return nil, err
+	}
+	warnings = append(warnings, staleWarnings(outPath, stale)...)
+
+	return &Result{Pages: rendered, Output: outPath, Warnings: warnings}, nil
 }
 
 // guardOutput refuses to use an output path that would clobber the site itself.
@@ -232,36 +248,93 @@ func activeLinks(links []navLink, currentURL string) []navLink {
 	return out
 }
 
-// resetDir removes destDir and recreates it empty.
-func resetDir(destDir string) error {
-	if err := os.RemoveAll(destDir); err != nil {
-		return fmt.Errorf("clearing %s: %w", destDir, err)
-	}
+// ensureDir creates destDir if it does not exist, leaving any existing contents
+// alone. The builder deliberately has no counterpart that clears it: no rule
+// about which paths are safe to delete can hold across every machine, CI runner
+// and platform, and not deleting needs no such rule. Removing output is
+// `cress clean`'s job, where the user asking is the consent.
+func ensureDir(destDir string) error {
 	if err := os.MkdirAll(destDir, outputDirPerm); err != nil {
 		return fmt.Errorf("creating %s: %w", destDir, err)
 	}
 	return nil
 }
 
+// staleFiles reports files under outPath that this build did not write, in
+// slash form relative to outPath. Because a build never deletes, a renamed or
+// removed page leaves its old file behind; listing those is the only way the
+// user finds out it is still being served.
+//
+// Dot-entries are skipped. A .git directory (building into a gh-pages worktree)
+// or a hand-placed .nojekyll belongs to the user rather than to the build, and
+// would otherwise be reported on every run until it was ignored out of habit.
+func staleFiles(outPath string, written map[string]bool) ([]string, error) {
+	var stale []string
+	err := filepath.WalkDir(outPath, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if path != outPath && strings.HasPrefix(d.Name(), ".") {
+			if d.IsDir() {
+				return fs.SkipDir
+			}
+			return nil
+		}
+		if d.IsDir() {
+			return nil
+		}
+		rel, err := filepath.Rel(outPath, path)
+		if err != nil {
+			return err
+		}
+		if slash := filepath.ToSlash(rel); !written[slash] {
+			stale = append(stale, slash)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scanning %s: %w", outPath, err)
+	}
+	return stale, nil
+}
+
+// staleWarnings turns stale output paths into build warnings, naming each file
+// so it can be acted on, and collapsing to a count once there are too many to
+// read.
+func staleWarnings(outPath string, stale []string) []string {
+	if len(stale) == 0 {
+		return nil
+	}
+	if len(stale) > staleWarningLimit {
+		return []string{fmt.Sprintf("%d file(s) in %s were not written by this build", len(stale), outPath)}
+	}
+	warnings := make([]string, 0, len(stale))
+	for _, f := range stale {
+		warnings = append(warnings, fmt.Sprintf("%s was not written by this build", filepath.Join(outPath, filepath.FromSlash(f))))
+	}
+	return warnings
+}
+
 // copyStatic copies the theme's static assets, then the site's static/ tree,
 // into destDir. Site files win on a name collision (copied last). Either source
-// may be absent.
-func copyStatic(destDir string, themeStatic fs.FS, siteStaticDir string) error {
+// may be absent. Every copied path is recorded in written.
+func copyStatic(destDir string, themeStatic fs.FS, siteStaticDir string, written map[string]bool) error {
 	if themeStatic != nil {
-		if err := copyFS(destDir, themeStatic); err != nil {
+		if err := copyFS(destDir, themeStatic, written); err != nil {
 			return fmt.Errorf("copying theme assets: %w", err)
 		}
 	}
 	if info, err := os.Stat(siteStaticDir); err == nil && info.IsDir() {
-		if err := copyFS(destDir, os.DirFS(siteStaticDir)); err != nil {
+		if err := copyFS(destDir, os.DirFS(siteStaticDir), written); err != nil {
 			return fmt.Errorf("copying static: %w", err)
 		}
 	}
 	return nil
 }
 
-// copyFS copies every file in srcFS into destDir, preserving relative paths.
-func copyFS(destDir string, srcFS fs.FS) error {
+// copyFS copies every file in srcFS into destDir, preserving relative paths and
+// recording each one in written.
+func copyFS(destDir string, srcFS fs.FS, written map[string]bool) error {
 	return fs.WalkDir(srcFS, ".", func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -273,7 +346,11 @@ func copyFS(destDir string, srcFS fs.FS) error {
 		if err := os.MkdirAll(filepath.Dir(dest), outputDirPerm); err != nil {
 			return err
 		}
-		return copyFile(srcFS, p, dest)
+		if err := copyFile(srcFS, p, dest); err != nil {
+			return err
+		}
+		written[p] = true
+		return nil
 	})
 }
 

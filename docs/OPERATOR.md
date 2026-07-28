@@ -62,7 +62,17 @@ Run from inside the site directory to omit `--source`. Useful flags:
 - `--output DIR` (`-o`): write somewhere other than `public/`.
 - `--drafts`: include pages marked `draft`.
 
-The build replaces the output directory's contents on each run.
+The build never deletes. It creates the output directory if needed, then writes
+its own files over whatever is already there, leaving everything else alone. A
+page you rename or remove therefore leaves its old HTML behind, and the build
+names it:
+
+```text
+warning: public/styleguide.html was not written by this build
+```
+
+Remove such files yourself when it matters; `cress build` will not do it for
+you.
 
 ## Preview
 

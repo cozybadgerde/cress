@@ -1,8 +1,10 @@
 package build_test
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -98,6 +100,108 @@ func TestBuild_draftsAndStatic_integration(t *testing.T) {
 	}
 }
 
+func TestBuild_neverDeletesOutput_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := t.TempDir()
+	if err := scaffold.Create(root, false); err != nil {
+		t.Fatalf("scaffold: %v", err)
+	}
+	if _, err := build.Build(build.Options{Root: root}); err != nil {
+		t.Fatalf("first build: %v", err)
+	}
+
+	// Two ways a file ends up in the output tree without this build writing it:
+	// the user put it there, and a page that used to produce it is now gone.
+	out := filepath.Join(root, build.OutputDir)
+	writeSiteFile(t, filepath.Join(out, "keepme.txt"), "not cress's\n")
+	if err := os.Remove(filepath.Join(root, "content", "about.md")); err != nil {
+		t.Fatalf("removing about.md: %v", err)
+	}
+
+	res, err := build.Build(build.Options{Root: root})
+	if err != nil {
+		t.Fatalf("second build: %v", err)
+	}
+	if res.Pages != 4 {
+		t.Errorf("rendered %d pages, want 4 after removing about.md", res.Pages)
+	}
+
+	for _, name := range []string{"keepme.txt", "about.html"} {
+		if _, err := os.Stat(filepath.Join(out, name)); err != nil {
+			t.Errorf("%s must survive a rebuild; a build never deletes: %v", name, err)
+		}
+	}
+	if got := readFile(t, filepath.Join(out, "keepme.txt")); got != "not cress's\n" {
+		t.Errorf("keepme.txt = %q, want it byte-for-byte untouched", got)
+	}
+	assertWarns(t, res.Warnings, "keepme.txt", "about.html")
+}
+
+func TestBuild_ignoresDotEntriesInOutput_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := t.TempDir()
+	if err := scaffold.Create(root, false); err != nil {
+		t.Fatalf("scaffold: %v", err)
+	}
+	if _, err := build.Build(build.Options{Root: root}); err != nil {
+		t.Fatalf("first build: %v", err)
+	}
+
+	// What a host or a gh-pages worktree leaves in the output tree. These belong
+	// to the user, so warning about them on every single build would train the
+	// warnings to be ignored.
+	out := filepath.Join(root, build.OutputDir)
+	writeSiteFile(t, filepath.Join(out, ".nojekyll"), "")
+	writeSiteFile(t, filepath.Join(out, ".git", "config"), "[core]\n")
+
+	res, err := build.Build(build.Options{Root: root})
+	if err != nil {
+		t.Fatalf("second build: %v", err)
+	}
+	if len(res.Warnings) != 0 {
+		t.Errorf("dot-entries must not warn, got: %v", res.Warnings)
+	}
+}
+
+func TestBuild_collapsesManyStaleWarnings_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := t.TempDir()
+	if err := scaffold.Create(root, false); err != nil {
+		t.Fatalf("scaffold: %v", err)
+	}
+	if _, err := build.Build(build.Options{Root: root}); err != nil {
+		t.Fatalf("first build: %v", err)
+	}
+
+	// One past the point where individual warnings collapse into a count, so a
+	// bulk rename cannot bury the rest of the build's output.
+	const stale = 11
+	out := filepath.Join(root, build.OutputDir)
+	for i := 0; i < stale; i++ {
+		writeSiteFile(t, filepath.Join(out, fmt.Sprintf("old-%d.html", i)), "old\n")
+	}
+
+	res, err := build.Build(build.Options{Root: root})
+	if err != nil {
+		t.Fatalf("second build: %v", err)
+	}
+	if len(res.Warnings) != 1 {
+		t.Fatalf("want a single summary warning, got %d: %v", len(res.Warnings), res.Warnings)
+	}
+	if !strings.Contains(res.Warnings[0], "11 file(s)") {
+		t.Errorf("summary warning = %q, want it to count all 11 files", res.Warnings[0])
+	}
+}
+
 func TestBuild_refusesSiteRootOutput(t *testing.T) {
 	root := t.TempDir()
 	if err := scaffold.Create(root, false); err != nil {
@@ -128,6 +232,23 @@ func assertMarkers(t *testing.T, name, doc string, markers []marker) {
 	}
 	if missing {
 		t.Logf("%s was:\n%s", name, doc)
+	}
+}
+
+// assertWarns checks that each substring is named by at least one warning,
+// reporting every miss separately and dumping the full list once, since a
+// missing warning reads best next to the ones that did fire.
+func assertWarns(t *testing.T, warnings []string, substrs ...string) {
+	t.Helper()
+	missing := false
+	for _, want := range substrs {
+		if !slices.ContainsFunc(warnings, func(w string) bool { return strings.Contains(w, want) }) {
+			t.Errorf("no warning mentions %q", want)
+			missing = true
+		}
+	}
+	if missing {
+		t.Logf("warnings were: %v", warnings)
 	}
 }
 

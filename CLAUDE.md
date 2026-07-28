@@ -133,6 +133,12 @@ theme  ─┘
 - **Layering:** command bodies in `cmd/cress` parse args and format output; all
   real logic lives in `internal/`. `build` is the single writer of output; keep
   `content`, `render`, and `theme` free of cross-cutting I/O.
+- **The build never deletes.** `build` creates and overwrites its own files in
+  the output directory and touches nothing else; files it did not write are
+  reported as warnings. No guard can decide which paths are safe to remove
+  across every machine, CI runner, and platform, so cress does not try.
+  Removing output is `cress clean`'s job (#28), where asking for it is the
+  consent.
 - **The theme is the only styling surface.** Core emits plain semantic HTML;
   code fences carry `class="language-..."` but no styling. Do not bake CSS or
   syntax highlighting into the core - it would conflict with custom themes.

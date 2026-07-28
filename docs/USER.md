@@ -186,3 +186,8 @@ cress build
 ```
 
 Add `--drafts` to either command to include pages marked `draft`.
+
+`cress build` only ever writes its own files; it never deletes. So if you rename
+or remove a page, its old HTML stays in `public/` and keeps being served. The
+build names each such file in a warning, so you can delete the ones you no
+longer want.
