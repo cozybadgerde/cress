@@ -83,7 +83,7 @@ func main() {
 
 ## Tables
 
-Columns can be left, centre, or right aligned:
+Columns can be left, center, or right aligned:
 
 | Feature       | Markdown     | Aligned |
 | :------------ | :----------: | ------: |
