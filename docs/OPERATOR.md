@@ -110,6 +110,13 @@ rsync -a --delete my-site/public/ user@host:/var/www/my-site/
 Cress writes root-relative links, so the site expects to be served from the root
 of its domain.
 
+Every build also writes a `404.html` at the root of `public/`, carrying the
+site's own navigation and styling. Most static hosts serve it for an address
+that does not exist, but some need it named in their own configuration, so check
+your host's documentation. It is not counted in the page total the build
+reports, because you did not write it. Add `content/404.md` to replace it with
+your own wording.
+
 ## Troubleshooting
 
 - **`config not found`**: run the command from the site directory, or pass
