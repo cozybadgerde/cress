@@ -145,6 +145,46 @@ unknown key is never an error, so notes written in Obsidian or another editor
 that adds front-matter fields of its own build without being edited first. The
 trade-off is that a misspelled `title` is ignored rather than reported.
 
+## Writing good content
+
+Cress does not police what you write. None of the following is enforced, and
+none of it is a rule the builder checks. They are the conventions that keep a
+site readable as it grows, collected here because each one is easy to get wrong
+once and then work around forever.
+
+The starter site puts them into practice in `content/guides/writing.md`, which
+you can read on your own site and then delete.
+
+**File and folder names.** The name becomes the URL, so it outlives the file.
+Use lowercase and hyphens, avoid spaces, and pick the name before you start
+writing. Renaming later breaks every inbound link, and Cress does not warn you.
+
+**Headings.** Use one `# ` per page. Cress falls back to it for the page title,
+which makes the first heading structural rather than decorative. Below it, go
+down through `##` and `###` in order without skipping a level: headings are the
+page's outline, not a way to change type size.
+
+**Links.** Write internal links root-relative, starting with `/`, so they
+resolve identically from every page regardless of folder depth. Make the link
+text describe the destination; "here" is useless to anyone scanning the page or
+listening to it.
+
+**Images.** They live in `static/` and are linked from the site root, as
+described under "Site layout" above. Cress has no asset pipeline, so
+whatever you commit is what visitors download, at full size: resize before
+committing. Choose the format for the artwork, WebP or JPEG for photographs,
+SVG for line art and diagrams, PNG when you need transparency or a lossless
+original. Always write alt text, and write what somebody would need instead of
+the image rather than a repeat of the caption.
+
+**Front matter.** `title` and `draft` are the only keys Cress reads. Everything
+else is passed to the theme, so treat front matter as a place to serve the
+theme's needs, not a schema to satisfy.
+
+**Drafts.** `draft: true` keeps a page out of the build. It does not retract a
+page that has already been published, because a build never deletes: the old
+HTML stays in the output until you remove it yourself.
+
 ## Navigation
 
 Navigation is explicit. There are two menus, each a flat table under `[nav]`,

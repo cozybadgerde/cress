@@ -28,8 +28,8 @@ func TestBuild_integration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("build: %v", err)
 	}
-	if res.Pages != 5 {
-		t.Errorf("rendered %d pages, want 5 (index, about, styleguide, imprint, privacy)", res.Pages)
+	if res.Pages != 7 {
+		t.Errorf("rendered %d pages, want 7 (index, about, imprint, privacy, and the three under guides/)", res.Pages)
 	}
 	if len(res.Warnings) != 0 {
 		t.Errorf("unexpected warnings: %v", res.Warnings)
@@ -126,8 +126,8 @@ func TestBuild_draftsAndStatic_integration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("build: %v", err)
 	}
-	if res.Pages != 5 {
-		t.Errorf("rendered %d pages, want 5 (draft excluded)", res.Pages)
+	if res.Pages != 7 {
+		t.Errorf("rendered %d pages, want 7 (draft excluded)", res.Pages)
 	}
 	out := filepath.Join(root, build.OutputDir)
 	if _, err := os.Stat(filepath.Join(out, "secret.html")); !os.IsNotExist(err) {
@@ -142,8 +142,8 @@ func TestBuild_draftsAndStatic_integration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("build --drafts: %v", err)
 	}
-	if res.Pages != 6 {
-		t.Errorf("rendered %d pages with drafts, want 6", res.Pages)
+	if res.Pages != 8 {
+		t.Errorf("rendered %d pages with drafts, want 8", res.Pages)
 	}
 	if _, err := os.Stat(filepath.Join(out, "secret.html")); err != nil {
 		t.Errorf("draft page should render with --drafts: %v", err)
@@ -175,8 +175,8 @@ func TestBuild_neverDeletesOutput_integration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("second build: %v", err)
 	}
-	if res.Pages != 4 {
-		t.Errorf("rendered %d pages, want 4 after removing about.md", res.Pages)
+	if res.Pages != 6 {
+		t.Errorf("rendered %d pages, want 6 after removing about.md", res.Pages)
 	}
 
 	for _, name := range []string{"keepme.txt", "about.html"} {
@@ -342,8 +342,8 @@ func TestBuild_notFound_integration(t *testing.T) {
 		}
 		// A synthesized 404 is not a page the author wrote, so it must not move
 		// the count; and it must never be reported as a file cress did not write.
-		if res.Pages != 5 {
-			t.Errorf("rendered %d pages, want 5: a synthesized 404 is not counted", res.Pages)
+		if res.Pages != 7 {
+			t.Errorf("rendered %d pages, want 7: a synthesized 404 is not counted", res.Pages)
 		}
 		if len(res.Warnings) != 0 {
 			t.Errorf("unexpected warnings: %v", res.Warnings)
@@ -372,8 +372,8 @@ func TestBuild_notFound_integration(t *testing.T) {
 			t.Fatalf("build: %v", err)
 		}
 		// Authored this time, so it counts like any other page.
-		if res.Pages != 6 {
-			t.Errorf("rendered %d pages, want 6 with an authored 404", res.Pages)
+		if res.Pages != 8 {
+			t.Errorf("rendered %d pages, want 8 with an authored 404", res.Pages)
 		}
 
 		doc := readFile(t, filepath.Join(root, build.OutputDir, build.NotFoundFile))

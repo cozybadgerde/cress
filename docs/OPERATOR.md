@@ -74,7 +74,7 @@ page you rename or remove therefore leaves its old HTML behind, and the build
 names it:
 
 ```text
-warning: public/styleguide.html was not written by this build
+warning: public/guides/styleguide.html was not written by this build
 ```
 
 Remove such files yourself when it matters; `cress build` will not do it for

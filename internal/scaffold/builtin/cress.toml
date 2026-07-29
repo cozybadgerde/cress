@@ -30,7 +30,8 @@ favicon = "/favicon.png"
 [nav.main]
 Home = "index.md"
 About = "about.md"
-"Style guide" = "styleguide.md"
+# A nested section: the value is the content path of its index.md, not the URL.
+Guides = "guides/index.md"
 
 # The secondary menu, rendered in the footer. Both groups are optional.
 [nav.footer]

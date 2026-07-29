@@ -95,18 +95,18 @@ Columns can be left, center, or right aligned:
 
 Drop a file in `static/` and link it with a root-relative path. Everything in
 `static/` is copied straight into the root of the built site, so
-`static/example_minimal.webp` is served from `/example_minimal.webp`. Start the
-path with `/`: a relative one like `./example_minimal.webp` breaks as soon as
-the page lives in a subdirectory. It is the same directory the `logo` and
-`favicon` keys in `cress.toml` point into.
+`static/example_minimal.webp` is served from `/example_minimal.webp`. It is the
+same directory the `logo` and `favicon` keys in `cress.toml` point into.
+
+Start the path with `/`. This page lives at `/guides/styleguide.html`, and the
+image below still resolves, because the link does not depend on where the page
+sits. A relative `./example_minimal.webp` would have looked inside `/guides/`
+and found nothing.
 
 ![A pot of cress on a sunny windowsill](/example_minimal.webp)
 
 Write alt text that describes the picture for anyone who cannot see it.
-
-Images scale to fit their column, however large the file itself is:
-
-![Woodland friends tending trays of cress](/example_busy.webp)
+[Writing well](/guides/writing.html) has more on that, and on picking a format.
 
 ## Dividers
 

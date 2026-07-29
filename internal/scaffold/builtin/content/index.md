@@ -13,7 +13,11 @@ Edit `content/index.md` to change this page, add more Markdown files under
 
 - Every `.md` file under `content/` becomes a page: `content/about.md` renders
   to `about.html`.
-- `content/index.md` is the home page.
+- Folders nest as you would expect: `content/guides/writing.md` becomes
+  `/guides/writing.html`.
+- An `index.md` serves the URL of the folder it sits in. That makes
+  `content/index.md` this page, and `content/guides/index.md` the page at
+  `/guides/`.
 - Files in `static/` are copied to the root of the site, so `static/logo.svg`
   is linked as `/logo.svg`.
 - Styling lives entirely in the theme, so your Markdown stays clean.
