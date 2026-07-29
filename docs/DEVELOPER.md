@@ -71,6 +71,49 @@ gets by default.
 synthesizes a 404 and renders it through `page.html`. That is why the 404 is
 free for every theme instead of being a second required template.
 
+## Image assets
+
+These rules govern what cress itself ships: the embedded theme, the starter
+site, and the images under `docs/`. They are not rules for a user's own site.
+`static/` is copied verbatim, and cress neither converts nor refuses whatever
+format an author puts there.
+
+One format per role:
+
+| Role                 | Format | Why                                                             |
+| -------------------- | ------ | --------------------------------------------------------------- |
+| Logo, line art       | SVG    | Scales from one file, and stays a few hundred bytes.             |
+| Logo, shaded artwork | WebP   | Tracing a gradient illustration yields a large, poor SVG.        |
+| Favicon              | PNG    | WebP favicon support is uneven, and there is nothing to save.    |
+| Content images       | WebP   | Illustration and photography, where the compression pays.        |
+
+The logo row splits on the artwork, not on the role. The starter site's
+placeholder is flat line art, so it is an SVG of a few hundred bytes. Cress's
+own mark is a shaded illustration, so it is WebP.
+
+There is no asset pipeline and there is not going to be one. Committed files are
+already in their final format and size, so converting is something you do before
+`git add`, never something `cress build` does.
+
+- **Size it for where it is shown, then check it there.** The header logo
+  renders at `1.7rem`, and the content column is `44rem`, so a content image
+  needs 1408px at most to stay sharp on a 2x display. Verify at that size rather
+  than at full resolution: a resample that looks perfect at 1:1 can still
+  destroy small text.
+- **Lossless for artwork carrying text**, lossy (q80 to q90) for illustration
+  and photography. Sharp type is where lossy artifacts appear first.
+- **Everything under `internal/` is embedded** with `go:embed` and ships in
+  every binary forever, so it earns a stricter bar than anything in `docs/`.
+- **Masters stay out of the repository.** What is committed is derived and sized
+  for its use; the original belongs in whatever tool drew it.
+- **Name a file for its role**, not for what it depicts.
+
+The starter site's placeholders are deliberately generic rather than cress's own
+mark, because that slot stands in for the user's brand: a site that never
+touches it should not end up advertising cress. The placeholder logo uses a
+single mid-tone green that reads against a light and a dark background alike, so
+it needs no dark variant.
+
 ## Useful commands
 
 Run the full gate before opening a pull request:

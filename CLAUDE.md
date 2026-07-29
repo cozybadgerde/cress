@@ -168,6 +168,13 @@ theme  ─┘
 - **Config values are plain text.** `footer` and `copyright` are escaped by the
   template, not rendered as markup. A config key that could inject HTML into
   every page would undercut the theme being the only styling surface.
+- **Image assets have one format per role** (the full rules live in
+  `docs/DEVELOPER.md`): SVG for a line-art logo, WebP for a shaded one and for
+  content images, PNG for favicons. The logo row splits on the artwork, not the
+  role - the scaffold placeholder is vector, cress's own mascot is not. There is
+  no asset pipeline: committed files are already final, converted before the
+  commit and never by `build`. This governs what cress ships, not what a user
+  may put in their own `static/`, which is copied verbatim.
 - **Embedded assets:** the default theme (`internal/theme/builtin/cress`) and the
   starter site (`internal/scaffold/builtin`) are embedded with `go:embed`. Both
   are copied verbatim, so edits to those files change what ships.
