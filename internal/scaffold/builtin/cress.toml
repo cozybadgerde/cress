@@ -17,6 +17,12 @@ favicon = "/favicon.png"
 # accent = "#4f7a4a"
 # accent_dark = "#9ccb8f"
 
+# Footer message, replacing the "Made with Cress" credit. Plain text only.
+# footer = "A small corner of the internet."
+# Copyright notice. "{year}" becomes the year the site is built, so it never
+# goes stale; write the year out yourself for a fixed one or a range.
+# copyright = "(c) {year} My cozy site"
+
 # Navigation is explicit: one table of "label = content file" per menu, each
 # rendered in the order written. A label with spaces is quoted, as TOML requires.
 # The primary menu, rendered in the header.

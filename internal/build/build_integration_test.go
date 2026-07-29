@@ -5,8 +5,10 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/cozybadgerde/cress/internal/build"
 	"github.com/cozybadgerde/cress/internal/scaffold"
@@ -248,6 +250,181 @@ func TestBuild_collapsesManyStaleWarnings_integration(t *testing.T) {
 	if !strings.Contains(res.Warnings[0], "11 file(s)") {
 		t.Errorf("summary warning = %q, want it to count all 11 files", res.Warnings[0])
 	}
+}
+
+func TestBuild_footerAndCopyright_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	// The credit's link, not its tagline: the scaffolded index.md says "Fresh
+	// little sites, fast." in its own body, so matching that would pass whether
+	// or not the footer rendered.
+	const credit = `<a href="https://github.com/cozybadgerde/cress">Cress</a>`
+	thisYear := strconv.Itoa(time.Now().Year())
+
+	for _, tc := range []struct {
+		name       string
+		site       string
+		want, omit []string
+	}{
+		{
+			name: "unset keeps the credit and omits the copyright",
+			omit: []string{"footer-copyright"},
+			want: []string{credit},
+		},
+		{
+			name: "a footer message replaces the credit",
+			site: "footer = \"A small corner of the internet.\"\n",
+			want: []string{"A small corner of the internet."},
+			omit: []string{credit},
+		},
+		{
+			name: "the year token expands",
+			site: "copyright = \"(c) {year} Cozy Badger\"\n",
+			want: []string{`class="footer-copyright"`, "(c) " + thisYear + " Cozy Badger"},
+		},
+		{
+			name: "both render together",
+			site: "footer = \"Handmade.\"\ncopyright = \"(c) {year} Cozy Badger\"\n",
+			want: []string{"Handmade.", "(c) " + thisYear + " Cozy Badger"},
+			omit: []string{credit},
+		},
+		// The footer is documented as plain text. Escaping is what makes that
+		// true, so a site config can never inject markup into every page.
+		{
+			name: "markup in the footer is escaped, not rendered",
+			site: "footer = \"<b>bold</b> & <script>alert(1)</script>\"\n",
+			want: []string{"&lt;b&gt;bold&lt;/b&gt; &amp; &lt;script&gt;"},
+			omit: []string{"<b>bold</b>", "<script>alert(1)</script>"},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			root := t.TempDir()
+			if _, err := scaffold.Create(root, false); err != nil {
+				t.Fatalf("scaffold: %v", err)
+			}
+			writeSiteFile(t, filepath.Join(root, "cress.toml"), "[site]\ntitle = \"S\"\n"+tc.site)
+
+			if _, err := build.Build(build.Options{Root: root}); err != nil {
+				t.Fatalf("build: %v", err)
+			}
+			doc := readFile(t, filepath.Join(root, build.OutputDir, "index.html"))
+
+			for _, want := range tc.want {
+				if !strings.Contains(doc, want) {
+					t.Errorf("rendered page is missing %q", want)
+				}
+			}
+			for _, omit := range tc.omit {
+				if strings.Contains(doc, omit) {
+					t.Errorf("rendered page should not contain %q", omit)
+				}
+			}
+		})
+	}
+}
+
+func TestBuild_notFound_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	t.Run("synthesized when neither content nor theme supplies one", func(t *testing.T) {
+		root := t.TempDir()
+		if _, err := scaffold.Create(root, false); err != nil {
+			t.Fatalf("scaffold: %v", err)
+		}
+
+		res, err := build.Build(build.Options{Root: root})
+		if err != nil {
+			t.Fatalf("build: %v", err)
+		}
+		// A synthesized 404 is not a page the author wrote, so it must not move
+		// the count; and it must never be reported as a file cress did not write.
+		if res.Pages != 5 {
+			t.Errorf("rendered %d pages, want 5: a synthesized 404 is not counted", res.Pages)
+		}
+		if len(res.Warnings) != 0 {
+			t.Errorf("unexpected warnings: %v", res.Warnings)
+		}
+
+		doc := readFile(t, filepath.Join(root, build.OutputDir, build.NotFoundFile))
+		assertMarkers(t, build.NotFoundFile, doc, []marker{
+			{"<title>Page not found · My cozy site</title>", "the synthesized title"},
+			{"Page not found</h1>", "the synthesized heading"},
+			{`href="/about.html"`, "the theme's nav, so the 404 is not an orphan"},
+			{`class="site-footer"`, "the theme's footer"},
+			{`href="/"`, "a way back to the home page"},
+		})
+	})
+
+	t.Run("content/404.md wins over the synthesized page", func(t *testing.T) {
+		root := t.TempDir()
+		if _, err := scaffold.Create(root, false); err != nil {
+			t.Fatalf("scaffold: %v", err)
+		}
+		writeSiteFile(t, filepath.Join(root, "content", "404.md"),
+			"---\ntitle: Lost\n---\n\n# Lost\n\nMINE_NOT_CRESSES\n")
+
+		res, err := build.Build(build.Options{Root: root})
+		if err != nil {
+			t.Fatalf("build: %v", err)
+		}
+		// Authored this time, so it counts like any other page.
+		if res.Pages != 6 {
+			t.Errorf("rendered %d pages, want 6 with an authored 404", res.Pages)
+		}
+
+		doc := readFile(t, filepath.Join(root, build.OutputDir, build.NotFoundFile))
+		if !strings.Contains(doc, "MINE_NOT_CRESSES") {
+			t.Error("content/404.md must win; got the synthesized page instead")
+		}
+		if strings.Contains(doc, "There is nothing at this address") {
+			t.Error("the synthesized body leaked into an authored 404")
+		}
+	})
+
+	t.Run("a theme's 404 template wins over the synthesized page", func(t *testing.T) {
+		root := t.TempDir()
+		if _, err := scaffold.Create(root, false); err != nil {
+			t.Fatalf("scaffold: %v", err)
+		}
+		templates := filepath.Join(root, "themes", "mine", "templates")
+		writeSiteFile(t, filepath.Join(templates, "page.html"), `PAGE:{{ .Page.Title }}`)
+		writeSiteFile(t, filepath.Join(templates, build.NotFoundFile),
+			`THEME404:{{ .Page.Title }}:{{ .Site.Title }}`)
+		writeSiteFile(t, filepath.Join(root, "cress.toml"), "[site]\ntitle = \"S\"\ntheme = \"mine\"\n")
+
+		if _, err := build.Build(build.Options{Root: root}); err != nil {
+			t.Fatalf("build: %v", err)
+		}
+
+		// The theme's 404 template receives the same data a page does.
+		if got := readFile(t, filepath.Join(root, build.OutputDir, build.NotFoundFile)); got != "THEME404:Page not found:S" {
+			t.Errorf("404.html = %q, want the theme's own 404 template to render it", got)
+		}
+	})
+
+	t.Run("a theme without a 404 template still gets one", func(t *testing.T) {
+		root := t.TempDir()
+		if _, err := scaffold.Create(root, false); err != nil {
+			t.Fatalf("scaffold: %v", err)
+		}
+		templates := filepath.Join(root, "themes", "bare", "templates")
+		writeSiteFile(t, filepath.Join(templates, "page.html"), `BARE:{{ .Page.Title }}`)
+		writeSiteFile(t, filepath.Join(root, "cress.toml"), "[site]\ntitle = \"S\"\ntheme = \"bare\"\n")
+
+		if _, err := build.Build(build.Options{Root: root}); err != nil {
+			t.Fatalf("build: %v", err)
+		}
+
+		// The point of tier 3: a theme written before cress had a 404 gets a
+		// styled one through page.html rather than none at all.
+		if got := readFile(t, filepath.Join(root, build.OutputDir, build.NotFoundFile)); got != "BARE:Page not found" {
+			t.Errorf("404.html = %q, want it rendered through the theme's page.html", got)
+		}
+	})
 }
 
 func TestBuild_refusesSiteRootOutput(t *testing.T) {

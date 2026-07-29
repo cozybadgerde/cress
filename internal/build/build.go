@@ -11,7 +11,9 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/cozybadgerde/cress/internal/config"
 	"github.com/cozybadgerde/cress/internal/content"
@@ -27,12 +29,34 @@ const (
 	OutputDir  = "public"
 )
 
+// NotFoundFile is the site's 404 page, written at the output root. Static hosts
+// look for it there regardless of how the content tree nests, so it is the one
+// output path that does not mirror its source.
+const NotFoundFile = "404.html"
+
+// The synthesized 404, used when neither the content tree nor the theme
+// supplies one. It goes through the theme's entry template, so a theme that
+// predates cress having a 404 still gets one carrying its nav and styling.
+const (
+	notFoundTemplate = "404.html"
+	notFoundURL      = "/404.html"
+	notFoundTitle    = "Page not found"
+	notFoundBody     = "# Page not found\n\n" +
+		"There is nothing at this address. The page may have been renamed or " +
+		"removed, or the link that brought you here may be out of date.\n\n" +
+		"[Back to the home page](/)\n"
+)
+
 const outputDirPerm = 0o755
 
 // staleWarningLimit caps how many stale files are named one by one. Past it a
 // single summary line stands in, so a bulk rename cannot bury the rest of the
 // build's output.
 const staleWarningLimit = 10
+
+// yearToken is the placeholder in [site].copyright that stands in for the year
+// the site is built, so a notice does not go stale every January.
+const yearToken = "{year}"
 
 // Options configures a build.
 type Options struct {
@@ -118,6 +142,11 @@ func Build(opts Options) (*Result, error) {
 	nav, warnings := resolveNav(cfg.Nav, pages)
 	renderer := render.New()
 
+	// The clock enters the build here and nowhere else: config.Load stays a pure
+	// function of the file it reads, and every page in one build shares a year.
+	site := cfg.Site
+	site.Copyright = expandYear(site.Copyright, time.Now().Year())
+
 	if err := ensureDir(outPath); err != nil {
 		return nil, err
 	}
@@ -128,11 +157,21 @@ func Build(opts Options) (*Result, error) {
 		if page.Draft && !opts.Drafts {
 			continue
 		}
-		if err := writePage(outPath, thm, renderer, cfg.Site, nav, page); err != nil {
+		if err := writePage(outPath, thm, renderer, site, nav, page); err != nil {
 			return nil, err
 		}
 		written[page.OutputPath] = true
 		rendered++
+	}
+
+	// content/404.md, having produced NotFoundFile like any other page, wins.
+	// Only when it did not is a 404 synthesized, and it is not counted in Pages:
+	// it is not a page the author wrote.
+	if !written[NotFoundFile] {
+		if err := writeNotFound(outPath, thm, renderer, site, nav); err != nil {
+			return nil, err
+		}
+		written[NotFoundFile] = true
 	}
 
 	if err := copyStatic(outPath, thm.StaticFS(), filepath.Join(root, StaticDir), written); err != nil {
@@ -146,6 +185,13 @@ func Build(opts Options) (*Result, error) {
 	warnings = append(warnings, staleWarnings(outPath, stale)...)
 
 	return &Result{Pages: rendered, Output: outPath, Warnings: warnings}, nil
+}
+
+// expandYear replaces yearToken in a copyright notice with year. It takes the
+// year rather than reading the clock so that the substitution stays pure and
+// the caller decides what "now" means.
+func expandYear(copyright string, year int) string {
+	return strings.ReplaceAll(copyright, yearToken, strconv.Itoa(year))
 }
 
 // guardOutput refuses to use an output path that would clobber the site itself.
@@ -223,6 +269,39 @@ func writePage(outPath string, thm *theme.Theme, renderer *render.Renderer, site
 	if err := os.MkdirAll(filepath.Dir(dest), outputDirPerm); err != nil {
 		return fmt.Errorf("creating %s: %w", filepath.Dir(dest), err)
 	}
+	if err := os.WriteFile(dest, buf.Bytes(), 0o644); err != nil { // #nosec G306 -- public site files
+		return fmt.Errorf("writing %s: %w", dest, err)
+	}
+	return nil
+}
+
+// writeNotFound writes the site's 404 page at the output root. A theme's own
+// 404.html template renders it when there is one; otherwise the entry template
+// does, which is what makes a working 404 free for every theme rather than a
+// second required template alongside page.html.
+func writeNotFound(outPath string, thm *theme.Theme, renderer *render.Renderer, site config.Site, nav navView) error {
+	body, err := renderer.Markdown([]byte(notFoundBody))
+	if err != nil {
+		return fmt.Errorf("%s: %w", NotFoundFile, err)
+	}
+
+	ctx := renderContext{
+		Site: site,
+		Nav:  activeNav(nav, notFoundURL),
+		Page: pageView{Title: notFoundTitle, URL: notFoundURL, HTML: body},
+	}
+
+	var buf bytes.Buffer
+	if thm.HasTemplate(notFoundTemplate) {
+		err = thm.RenderTemplate(&buf, notFoundTemplate, ctx)
+	} else {
+		err = thm.Render(&buf, ctx)
+	}
+	if err != nil {
+		return fmt.Errorf("%s: %w", NotFoundFile, err)
+	}
+
+	dest := filepath.Join(outPath, NotFoundFile)
 	if err := os.WriteFile(dest, buf.Bytes(), 0o644); err != nil { // #nosec G306 -- public site files
 		return fmt.Errorf("writing %s: %w", dest, err)
 	}

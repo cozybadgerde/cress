@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -26,6 +27,8 @@ const (
 	debounce        = 120 * time.Millisecond
 	shutdownTimeout = 5 * time.Second
 	readTimeout     = 10 * time.Second
+
+	contentTypeHTML = "text/html; charset=utf-8"
 )
 
 // Options configures the preview server.
@@ -73,7 +76,7 @@ func Run(ctx context.Context, opts Options) error {
 
 	srv := &http.Server{
 		Addr:              opts.Addr,
-		Handler:           http.FileServer(http.Dir(res.Output)),
+		Handler:           siteHandler(res.Output),
 		ReadHeaderTimeout: readTimeout,
 	}
 	serveErr := make(chan error, 1)
@@ -85,6 +88,53 @@ func Run(ctx context.Context, opts Options) error {
 	}()
 
 	return watchLoop(ctx, watcher, srv, buildOpts, res.Output, logf, serveErr)
+}
+
+// siteHandler serves the built output, answering a miss with the site's own 404
+// page so the preview matches what a static host does.
+func siteHandler(outPath string) http.Handler {
+	files := http.FileServer(http.Dir(outPath))
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		files.ServeHTTP(&notFoundWriter{ResponseWriter: w, outPath: outPath}, r)
+	})
+}
+
+// notFoundWriter swaps the file server's plain "404 page not found" body for the
+// built 404 page. http.FileServer signals a miss only by calling WriteHeader, so
+// intercepting that is the one way to replace the body without reimplementing
+// its index lookup and redirect handling. The page is read per miss rather than
+// cached, so a rebuild is picked up without restarting the server.
+type notFoundWriter struct {
+	http.ResponseWriter
+	outPath  string
+	replaced bool
+}
+
+func (w *notFoundWriter) WriteHeader(code int) {
+	if code != http.StatusNotFound {
+		w.ResponseWriter.WriteHeader(code)
+		return
+	}
+	// #nosec G304 -- outPath is the build's own output directory.
+	page, err := os.ReadFile(filepath.Join(w.outPath, build.NotFoundFile))
+	if err != nil {
+		w.ResponseWriter.WriteHeader(code)
+		return
+	}
+	w.replaced = true
+	w.Header().Set("Content-Type", contentTypeHTML)
+	w.Header().Set("Content-Length", strconv.Itoa(len(page)))
+	w.ResponseWriter.WriteHeader(code)
+	_, _ = w.ResponseWriter.Write(page)
+}
+
+// Write drops the file server's own error body once the 404 page has replaced
+// it, so the two are not concatenated.
+func (w *notFoundWriter) Write(b []byte) (int, error) {
+	if w.replaced {
+		return len(b), nil
+	}
+	return w.ResponseWriter.Write(b)
 }
 
 // watchLoop rebuilds on debounced filesystem events and shuts the server down

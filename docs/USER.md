@@ -84,6 +84,31 @@ and a dark background, so a brand color that reads beautifully in one scheme
 can be close to invisible in the other. Set `accent` alone only if your color
 survives both; otherwise set `accent_dark` as well.
 
+### Footer text and copyright
+
+Two more `[site]` fields fill the footer:
+
+- `footer`: your own message, replacing the "Made with Cress" credit. Leave it
+  out and the credit stays.
+- `copyright`: a copyright notice. Leave it out and none is rendered.
+
+```toml
+[site]
+footer = "A small corner of the internet."
+copyright = "(c) {year} Cozy Badger"
+```
+
+In `copyright`, the token `{year}` becomes the year the site was built, so the
+notice does not quietly go stale every January. Write the year yourself when you
+want a fixed one or a range: `"(c) 2019-{year} Cozy Badger"` renders the start
+year literally and expands only the end. Everything else in either field is
+taken as written.
+
+Both fields are **plain text**. Markup in them is escaped rather than rendered,
+so `footer = "<b>bold</b>"` shows the angle brackets. That is deliberate: the
+theme is the only place styling lives, and a config value that could inject
+HTML into every page on the site would be a hole in that rule.
+
 ## Content and front matter
 
 Every `.md` file under `content/` becomes a page. The path maps directly to the
@@ -161,6 +186,7 @@ themes/
   mine/
     templates/
       page.html      required: renders one page
+      404.html       optional: renders the 404 page
     static/          optional: CSS and other assets, copied to the site root
 ```
 
@@ -172,12 +198,46 @@ theme = "mine"
 Templates use Go's `html/template`. The `page.html` template receives:
 
 - `.Site`: the `[site]` config (`.Site.Title`, `.Site.Description`,
-  `.Site.BaseURL`, `.Site.Logo`, `.Site.Favicon`, `.Site.Accent`).
+  `.Site.BaseURL`, `.Site.Logo`, `.Site.Favicon`, `.Site.Accent`,
+  `.Site.AccentDark`, `.Site.Footer`, `.Site.Copyright`).
 - `.Nav`: the resolved navigation, as `.Nav.Main` and `.Nav.Footer`. Each is a
   list of entries with `.Title`, `.URL`, and `.Active` (true on the current
   page). A group with no entries is empty, so `{{ with .Nav.Footer }}` skips it.
 - `.Page`: the current page, with `.Page.Title`, `.Page.URL`, `.Page.HTML` (the
   rendered Markdown body), and `.Page.Meta` (the raw front matter).
+
+## The 404 page
+
+Every build writes a `404.html` at the root of `public/`. GitHub Pages, GitLab
+Pages, Netlify, and most other static hosts serve that file for an address that
+does not exist, so you get a "page not found" carrying your own navigation and
+styling without doing anything.
+
+Three sources can supply it, and the most specific one wins:
+
+1. `content/404.md`, if you wrote one. It renders like any other page, so the
+   words and the front matter are yours.
+2. `templates/404.html` in the theme, if it defines one. It receives the same
+   data `page.html` does, so a theme can give the 404 its own layout.
+3. Otherwise cress writes one for you: a short "Page not found" with a link
+   home, rendered through the theme's `page.html`.
+
+Write `content/404.md` when you want your own wording. Nothing else needs
+changing, and the page you write replaces the generated one:
+
+```markdown
+---
+title: Lost
+---
+
+# Nothing here
+
+That page moved or never existed. Try the [home page](/).
+```
+
+`cress serve` answers a missing address with the same file, so the preview shows
+what a visitor to the published site sees. Some hosts need the 404 wired up in
+their own configuration; check your host's documentation.
 
 ## Building and previewing
 

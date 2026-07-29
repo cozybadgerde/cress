@@ -66,6 +66,11 @@ the binary with `go:embed`. A `templates/page.html` renders one page, and
 `static/style.css` styles it. Editing these files changes the theme every site
 gets by default.
 
+`page.html` is the only template a theme must define. A theme may add
+`templates/404.html` to render the 404 page itself; without one, `build`
+synthesizes a 404 and renders it through `page.html`. That is why the 404 is
+free for every theme instead of being a second required template.
+
 ## Useful commands
 
 Run the full gate before opening a pull request:

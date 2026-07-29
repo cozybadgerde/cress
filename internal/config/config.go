@@ -84,6 +84,14 @@ type Site struct {
 	// against a light and a dark background at once, so an accent legible in one
 	// scheme needs this to be legible in the other.
 	AccentDark string `toml:"accent_dark"`
+	// Footer is the site's own footer message, replacing the theme's default
+	// credit. It is plain text: templates escape it, so markup in it renders as
+	// the characters it is made of rather than as HTML.
+	Footer string `toml:"footer"`
+	// Copyright is an optional copyright notice for the footer. Empty omits it.
+	// The builder expands a "{year}" token to the year the site was built, so an
+	// author need not hardcode a year that then goes stale.
+	Copyright string `toml:"copyright"`
 }
 
 // NavItem is one entry in the site navigation. Title is the link label; Path

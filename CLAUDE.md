@@ -92,8 +92,9 @@ theme  ─┘
 ```
 
 - **`config`** loads `cress.toml`: the `[site]` metadata (title, description,
-  base_url, theme, plus the white-label `logo`/`favicon`/`accent`/`accent_dark`)
-  and the `[nav.main]`/`[nav.footer]` tables (label = content path). The group
+  base_url, theme, plus the white-label `logo`/`favicon`/`accent`/`accent_dark`
+  and the footer's `footer`/`copyright`) and the `[nav.main]`/`[nav.footer]`
+  tables (label = content path). The group
   names are fixed, so unknown keys are rejected as typos. An empty theme
   resolves to the built-in default. The accents get no default at all: an unset
   one stays unset so the theme's own applies, and a set one is validated as a
@@ -107,12 +108,16 @@ theme  ─┘
   Markdown body to an HTML fragment. Nothing else.
 - **`theme`** resolves a theme (a directory under `themes/`, else the embedded
   default) and loads its `html/template` set and static assets. `page.html` is
-  the required entry template.
+  the required entry template; every other template is optional, so the package
+  offers `HasTemplate`/`RenderTemplate` and leaves the choice to the caller.
 - **`build`** is the orchestrator and the only package that writes output. It
   resolves nav links against the collected pages, renders each non-draft page
-  through the theme, and copies theme and site static assets into `public/`.
+  through the theme, and copies theme and site static assets into `public/`. It
+  also expands the `{year}` token in `copyright` (the only place the clock
+  enters a build) and guarantees a `404.html`.
 - **`serve`** builds once, serves the output over HTTP, and rebuilds on
-  debounced filesystem events. It never watches the output directory.
+  debounced filesystem events. It never watches the output directory. A request
+  it cannot satisfy is answered with the built `404.html`.
 - **`scaffold`** writes the embedded starter site for `cress init`.
 
 ## Package layout
@@ -152,6 +157,17 @@ theme  ─┘
   read `.Nav.Main` and `.Nav.Footer`. There are no automatic list or section
   pages in 1.x - a scope decision for the initial release, not a permanent one
   (see #23).
+- **Every build emits a `404.html`** at the output root, the one output path
+  that does not mirror a source path, because that is where static hosts look.
+  Three tiers, most specific winning: `content/404.md`, then the theme's
+  `templates/404.html`, then one cress synthesizes and renders through
+  `page.html`. Tier 3 is the point - it keeps `404.html` optional for themes
+  rather than a second required template, so a theme written before cress had a
+  404 still gets a styled one. A synthesized 404 is not counted in
+  `Result.Pages`; the author did not write it.
+- **Config values are plain text.** `footer` and `copyright` are escaped by the
+  template, not rendered as markup. A config key that could inject HTML into
+  every page would undercut the theme being the only styling surface.
 - **Embedded assets:** the default theme (`internal/theme/builtin/cress`) and the
   starter site (`internal/scaffold/builtin`) are embedded with `go:embed`. Both
   are copied verbatim, so edits to those files change what ships.

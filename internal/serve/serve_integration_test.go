@@ -52,6 +52,10 @@ func TestServe_integration(t *testing.T) {
 		t.Fatal("rebuild after edit was never served")
 	}
 
+	// A miss is answered with the site's own 404 page, the way a static host
+	// does, instead of the file server's plain-text default.
+	assertNotFoundPage(t, base+"/nope.html")
+
 	// Cancelling shuts the server down cleanly.
 	cancel()
 	select {
@@ -77,6 +81,37 @@ func freeAddr(t *testing.T) string {
 		t.Fatalf("closing reserved listener: %v", err)
 	}
 	return addr
+}
+
+// assertNotFoundPage checks that url answers with the built 404 page rather
+// than net/http's plain-text default.
+func assertNotFoundPage(t *testing.T, url string) {
+	t.Helper()
+	client := &http.Client{Timeout: time.Second}
+	resp, err := client.Get(url) //nolint:noctx // short-lived test request with a client timeout
+	if err != nil {
+		t.Fatalf("GET %s: %v", url, err)
+	}
+	body, err := io.ReadAll(resp.Body)
+	_ = resp.Body.Close()
+	if err != nil {
+		t.Fatalf("reading body of %s: %v", url, err)
+	}
+
+	if resp.StatusCode != http.StatusNotFound {
+		t.Errorf("GET %s = %d, want %d", url, resp.StatusCode, http.StatusNotFound)
+	}
+	if ct := resp.Header.Get("Content-Type"); !strings.HasPrefix(ct, "text/html") {
+		t.Errorf("Content-Type = %q, want text/html", ct)
+	}
+	if !strings.Contains(string(body), "Page not found") {
+		t.Errorf("body = %q, want the built 404 page", body)
+	}
+	// The file server writes its own body after signalling the miss; if that is
+	// not discarded the two appear concatenated.
+	if strings.Contains(string(body), "404 page not found") {
+		t.Error("the file server's plain-text 404 leaked into the response")
+	}
 }
 
 // waitForBody polls url until the response body contains want, and returns the

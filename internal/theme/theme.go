@@ -80,11 +80,23 @@ func load(name string, fsys fs.FS) (*Theme, error) {
 
 // Render executes the theme's entry template with data, writing HTML to w.
 func (t *Theme) Render(w io.Writer, data any) error {
-	if err := t.tmpl.ExecuteTemplate(w, entryTemplate, data); err != nil {
-		return fmt.Errorf("theme %q: rendering: %w", t.name, err)
+	return t.RenderTemplate(w, entryTemplate, data)
+}
+
+// RenderTemplate executes the theme's template named name with data, writing
+// HTML to w. Use it for the templates a theme may define but need not, pairing
+// it with HasTemplate to choose a fallback.
+func (t *Theme) RenderTemplate(w io.Writer, name string, data any) error {
+	if err := t.tmpl.ExecuteTemplate(w, name, data); err != nil {
+		return fmt.Errorf("theme %q: rendering %s: %w", t.name, name, err)
 	}
 	return nil
 }
+
+// HasTemplate reports whether the theme defines a template named name. Only
+// entryTemplate is required, so a caller wanting any other template asks first
+// and falls back when the answer is no.
+func (t *Theme) HasTemplate(name string) bool { return t.tmpl.Lookup(name) != nil }
 
 // StaticFS returns the theme's static asset tree, or nil when it ships none.
 // The builder copies these files verbatim into the output root.

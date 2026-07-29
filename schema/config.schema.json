@@ -44,6 +44,14 @@
           "description": "Accent color for readers who prefer a dark color scheme. A CSS hex value; unset means accent applies to both. No single color clears WCAG AA contrast against a light and a dark background at once, so an accent legible in one scheme needs this for the other.",
           "type": "string",
           "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$"
+        },
+        "footer": {
+          "description": "Footer message replacing the theme's default cress credit. Plain text: templates escape it, so markup renders as characters rather than as HTML. Empty keeps the credit.",
+          "type": "string"
+        },
+        "copyright": {
+          "description": "Copyright notice for the footer, e.g. \"(c) {year} Cozy Badger\". A \"{year}\" token expands to the year the site was built. Empty omits the notice.",
+          "type": "string"
         }
       }
     },

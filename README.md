@@ -59,9 +59,13 @@ setup; drop a directory under `themes/` when you want your own.
   write it.
 - **One place for styling.** The theme owns every template and stylesheet. The
   built-in theme is cozy and light or dark aware out of the box.
-- **White-label ready.** Set a logo, favicon, and accent color in `cress.toml`.
-  `cress init` drops placeholder logo and favicon files in `static/` for you to
-  replace, so a fresh site already looks finished.
+- **White-label ready.** Set a logo, favicon, accent color, footer message, and
+  copyright line in `cress.toml`. `cress init` drops placeholder logo and
+  favicon files in `static/` for you to replace, so a fresh site already looks
+  finished.
+- **A 404 page you never have to write.** Every build emits `404.html` carrying
+  your nav and styling. Override it with `content/404.md` when you want your
+  own words.
 - **Preview as you write.** `cress serve` builds the site, serves it, and
   rebuilds when a source file changes.
 - **A single binary.** Rootless install, no runtime dependencies.
