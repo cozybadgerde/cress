@@ -93,9 +93,14 @@ Columns can be left, centre, or right aligned:
 
 ## Images
 
-Images scale to fit their column:
+Drop a file in `static/` and link it with a root-relative path: a file at
+`static/example_minimal.webp` is served from `/example_minimal.webp`.
 
-![The Cress logo](/logo.png)
+![A pot of cress on a sunny windowsill](/example_minimal.webp)
+
+Images scale to fit their column, however large the file itself is:
+
+![Woodland friends tending trays of cress](/example_busy.webp)
 
 ## Dividers
 

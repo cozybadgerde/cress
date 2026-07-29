@@ -36,9 +36,9 @@ func TestBuild_integration(t *testing.T) {
 	}
 
 	out := filepath.Join(root, build.OutputDir)
-	// style.css comes from the theme; favicon.png and logo.png from the site's
+	// style.css comes from the theme; favicon.png and logo.svg from the site's
 	// static/ tree that `cress init` scaffolds.
-	for _, name := range []string{"index.html", "about.html", "style.css", "favicon.png", "logo.png"} {
+	for _, name := range []string{"index.html", "about.html", "style.css", "favicon.png", "logo.svg"} {
 		if _, err := os.Stat(filepath.Join(out, name)); err != nil {
 			t.Errorf("missing output %s: %v", name, err)
 		}

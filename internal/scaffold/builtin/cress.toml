@@ -7,9 +7,10 @@ base_url = "https://example.com"
 # The built-in theme. Drop a theme under themes/<name> and name it here to swap.
 theme = "cress"
 
-# White-label branding. Replace static/logo.png and static/favicon.png with
-# your own, or point these at other files you drop in static/.
-logo = "/logo.png"
+# White-label branding. The shipped logo and favicon are placeholders: replace
+# static/logo.svg and static/favicon.png with your own, or point these at other
+# files you drop in static/.
+logo = "/logo.svg"
 favicon = "/favicon.png"
 # Accent color (hex), used as a highlight on links and more. Left unset, the
 # theme picks its own, including a variant for dark mode. Set accent_dark too if

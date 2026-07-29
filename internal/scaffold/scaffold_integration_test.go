@@ -27,7 +27,7 @@ func TestCreate_integration(t *testing.T) {
 		filepath.Join("content", "styleguide.md"),
 		filepath.Join("content", "imprint.md"),
 		filepath.Join("content", "privacy.md"),
-		filepath.Join("static", "logo.png"),
+		filepath.Join("static", "logo.svg"),
 		filepath.Join("static", "favicon.png"),
 	} {
 		if _, err := os.Stat(filepath.Join(dir, rel)); err != nil {

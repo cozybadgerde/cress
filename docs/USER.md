@@ -56,8 +56,9 @@ Unknown keys are rejected, so a typo fails the build instead of being ignored.
 Four optional fields make the site your own:
 
 - `logo`: a path or URL to a logo image, shown in the navigation. `cress init`
-  drops a placeholder at `static/logo.png`; replace it with your own, or point
-  this field at another file in `static/`.
+  drops a placeholder at `static/logo.svg`; replace it with your own, or point
+  this field at another file in `static/`. The placeholder is an SVG that
+  follows the reader's color scheme, so it stays legible either way.
 - `favicon`: a path or URL to a favicon. `cress init` drops a placeholder at
   `static/favicon.png`; replace it the same way.
 - `accent`: the accent color, a highlight the theme uses on links and other
@@ -67,7 +68,7 @@ Four optional fields make the site your own:
 
 ```toml
 [site]
-logo = "/logo.png"
+logo = "/logo.svg"
 favicon = "/favicon.png"
 accent = "#4f7a4a"
 accent_dark = "#9ccb8f"
