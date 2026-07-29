@@ -110,6 +110,12 @@ type notFoundWriter struct {
 	replaced bool
 }
 
+// Unwrap hands the real writer to http.ResponseController, which is how a
+// handler reaches flushing, hijacking and deadlines. Wrapping a ResponseWriter
+// hides whatever optional interfaces it implements, and the loss shows up as a
+// type assertion quietly returning false rather than as a build failure.
+func (w *notFoundWriter) Unwrap() http.ResponseWriter { return w.ResponseWriter }
+
 func (w *notFoundWriter) WriteHeader(code int) {
 	if code != http.StatusNotFound {
 		w.ResponseWriter.WriteHeader(code)
