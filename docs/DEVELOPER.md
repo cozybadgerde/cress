@@ -134,3 +134,12 @@ task test             # unit tests
 task lint             # go, markdown, and shell linters
 task audit            # complexity and schema audits, not part of check
 ```
+
+`task lint:md` covers the root Markdown files, `docs/`, and the starter site
+under `internal/scaffold/builtin/content/`, which is linted because it ships
+verbatim to every user. Rules live in `.gomarklint.json`. One is off
+deliberately: `no-bare-urls`, because the scaffolded style guide demonstrates
+that a bare URL becomes a link on its own, and that line is the point rather
+than an oversight. gomarklint does support an inline
+`<!-- gomarklint-disable -->` comment, but the scaffold is copied into user
+sites, so a linter directive there would leak this repo's tooling into theirs.

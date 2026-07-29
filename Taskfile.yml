@@ -141,7 +141,8 @@ tasks:
   lint:md:
     desc: Lint Markdown with gomarklint
     cmds:
-      - gomarklint *.md docs/
+      # The scaffold is shipped content, so it is linted like the docs are.
+      - gomarklint *.md docs/ internal/scaffold/builtin/content/
 
   lint:sh:
     desc: Lint shell scripts with shellcheck

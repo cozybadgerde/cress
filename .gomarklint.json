@@ -11,7 +11,7 @@
     "no-setext-headings": true,
     "single-h1": true,
     "blanks-around-headings": true,
-    "no-bare-urls": true,
+    "no-bare-urls": false,
     "no-empty-links": true,
     "no-emphasis-as-heading": true,
     "blanks-around-lists": false,
