@@ -200,4 +200,7 @@ Aggregate tasks (`check`, `lint`, `audit`) run every step even when one fails,
 then report the failures together, so one red step never hides the rest.
 
 CI lives in `.github/workflows/` (`ci`, `release`, `security`). Default branch
-is `trunk`; releases fire on `v*` tags via goreleaser.
+is `trunk`; releases fire on `v*` tags via goreleaser. Dependabot watches the
+workflow actions weekly and groups them into one PR
+(`.github/dependabot.yml`); it covers actions only, since Go modules (#11) and
+the pinned dev toolchain (#12) are separate decisions.

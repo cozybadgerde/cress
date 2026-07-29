@@ -1,0 +1,26 @@
+# Keeps the actions used by .github/workflows/ from drifting. Nothing watched
+# them before, and they sat three majors behind without a signal.
+#
+# Actions only, on purpose. Go module requirements end up inside the shipped
+# binary and the pinned dev toolchain decides what CI runs, so both are separate
+# decisions with a stricter bar.
+version: 2
+
+updates:
+  - package-ecosystem: "github-actions"
+    # "/" is the whole repository for this ecosystem: it covers every workflow
+    # under .github/workflows/, not just the root.
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # One pull request a week rather than one per action.
+    groups:
+      actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "ci"
+    # ci.yml runs `task check` on every pull request, so a bump that breaks the
+    # gate says so before merge. release.yml is the exception: it only ever runs
+    # on a tag push, so a bump there stays unexercised until a release fires.
+    # Run `task snapshot` before tagging after any bump that touches it.
