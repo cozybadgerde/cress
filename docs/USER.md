@@ -53,12 +53,14 @@ Unknown keys are rejected, so a typo fails the build instead of being ignored.
 
 ### White-label branding
 
-Four optional fields make the site your own:
+Five optional fields make the site your own:
 
 - `logo`: a path or URL to a logo image, shown in the navigation. `cress init`
   drops a placeholder at `static/logo.svg`; replace it with your own, or point
-  this field at another file in `static/`. The placeholder is an SVG that
-  follows the reader's color scheme, so it stays legible either way.
+  this field at another file in `static/`. The placeholder is a mid-green SVG,
+  a tone chosen to hold up against both the light and the dark background.
+- `logo_dark`: a second image, used instead of `logo` for readers whose system
+  prefers a dark color scheme. Leave it out and `logo` is used for both.
 - `favicon`: a path or URL to a favicon. `cress init` drops a placeholder at
   `static/favicon.png`; replace it the same way.
 - `accent`: the accent color, a highlight the theme uses on links and other
@@ -69,13 +71,28 @@ Four optional fields make the site your own:
 ```toml
 [site]
 logo = "/logo.svg"
+logo_dark = "/logo-dark.svg"
 favicon = "/favicon.png"
 accent = "#4f7a4a"
 accent_dark = "#9ccb8f"
 ```
 
 Leaving `logo` or `favicon` empty simply omits it. An accent that is not a hex
-color fails the build with a clear message.
+color fails the build with a clear message, and so does a `logo_dark` with no
+`logo` beside it: the dark variant replaces the light one and has nothing to
+replace on its own.
+
+**Most logos do not need `logo_dark`.** Artwork in a mid-tone reads against
+both backgrounds, which is how the scaffolded placeholder gets away with a
+single fixed color, and an SVG drawn with `currentColor` adapts on its own.
+Reach for the second file when the artwork can do neither: a raster logo, or a
+wordmark fixed in near-black or near-white, which disappears into one of the
+two backgrounds. Setting both makes the theme render a `<picture>`, so the
+right one is chosen before anything is fetched, with no flash of the wrong
+image and no JavaScript.
+
+A theme decides whether to honor this. The built-in theme does; a custom theme
+that renders a bare `<img>` ignores `logo_dark` without complaint.
 
 **Leaving the accents out is a real choice, not a shortcut.** cress has no
 default accent of its own; unset, the theme picks one, and the built-in theme

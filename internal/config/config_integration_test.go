@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/cozybadgerde/cress/internal/config"
@@ -162,6 +163,50 @@ func TestLoad_accents_integration(t *testing.T) {
 			}
 			if cfg.Site.Accent != tc.accent || cfg.Site.AccentDark != tc.accent2 {
 				t.Errorf("accent/accent_dark = %q/%q, want %q/%q", cfg.Site.Accent, cfg.Site.AccentDark, tc.accent, tc.accent2)
+			}
+		})
+	}
+}
+
+// Unlike accent_dark, which is coherent on its own because the theme supplies
+// the light-scheme value it pairs with, logo_dark has nothing to fall back on:
+// a logo is site identity, so no theme default can stand in for the light one.
+func TestLoad_logos_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	for _, tc := range []struct {
+		name       string
+		body       string
+		wantErr    bool
+		logo, dark string
+	}{
+		{name: "neither set", body: ""},
+		{name: "logo only", body: "logo = \"/logo.svg\"\n", logo: "/logo.svg"},
+		{
+			name: "both set",
+			body: "logo = \"/logo.svg\"\nlogo_dark = \"/logo-dark.svg\"\n",
+			logo: "/logo.svg", dark: "/logo-dark.svg",
+		},
+		{name: "logo_dark without logo", body: "logo_dark = \"/logo-dark.svg\"\n", wantErr: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg, err := config.Load(writeConfig(t, "[site]\n"+tc.body))
+			if tc.wantErr {
+				if err == nil {
+					t.Fatalf("Load(%q) = nil error, want one", tc.body)
+				}
+				if !strings.Contains(err.Error(), "logo_dark") {
+					t.Errorf("error %q does not name the offending key", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("Load(%q): %v", tc.body, err)
+			}
+			if cfg.Site.Logo != tc.logo || cfg.Site.LogoDark != tc.dark {
+				t.Errorf("logo/logo_dark = %q/%q, want %q/%q", cfg.Site.Logo, cfg.Site.LogoDark, tc.logo, tc.dark)
 			}
 		})
 	}

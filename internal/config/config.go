@@ -71,6 +71,12 @@ type Site struct {
 	// means no logo is rendered, unless the theme supplies its own fallback.
 	// Typically a file in static/, e.g. "/logo.svg".
 	Logo string `toml:"logo"`
+	// LogoDark replaces Logo when the reader prefers a dark color scheme. Empty
+	// means Logo applies to both. A logo is site identity rather than theme
+	// identity, so no theme default can stand in for it: artwork legible on one
+	// background needs this to be legible on the other. It is meaningless
+	// without Logo, which Load rejects rather than silently dropping.
+	LogoDark string `toml:"logo_dark"`
 	// Favicon is a path or URL to a favicon. Empty means no icon link is
 	// rendered, unless the theme supplies its own fallback. Typically a file in
 	// static/, e.g. "/favicon.png".
@@ -153,7 +159,22 @@ func Load(path string) (*Config, error) {
 	if err := validateAccents(path, cfg.Site); err != nil {
 		return nil, err
 	}
+	if err := validateLogos(path, cfg.Site); err != nil {
+		return nil, err
+	}
 	return cfg, nil
+}
+
+// validateLogos rejects a dark logo with no light one to pair it with. The two
+// are a pair by construction: the dark variant is offered as an alternative to
+// Logo for one color scheme, so on its own it names a scheme to swap in for and
+// nothing to swap out. Reporting it beats rendering no logo at all and leaving
+// the author to guess which of the two keys was the problem.
+func validateLogos(path string, site Site) error {
+	if site.LogoDark != "" && site.Logo == "" {
+		return fmt.Errorf("config %s: logo_dark is set without logo; a dark logo replaces the light one and cannot stand alone", path)
+	}
+	return nil
 }
 
 // validateAccents rejects a set accent that is not a hex color. The values are

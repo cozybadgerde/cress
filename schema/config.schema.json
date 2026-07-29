@@ -31,6 +31,10 @@
           "description": "Path or URL to a logo image rendered in the navigation. Empty means no logo is rendered, unless the theme supplies its own fallback. Typically a file in static/, e.g. \"/logo.svg\".",
           "type": "string"
         },
+        "logo_dark": {
+          "description": "Path or URL to a logo image for readers who prefer a dark color scheme, replacing logo for them. Unset means logo applies to both. Requires logo: a dark variant cannot stand alone.",
+          "type": "string"
+        },
         "favicon": {
           "description": "Path or URL to a favicon. Empty means no icon link is rendered, unless the theme supplies its own fallback. Typically a file in static/, e.g. \"/favicon.png\".",
           "type": "string"

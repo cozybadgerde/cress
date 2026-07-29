@@ -115,6 +115,63 @@ func TestBuild_accentOverrides_integration(t *testing.T) {
 	}
 }
 
+// A logo without a dark variant must keep rendering as the bare <img> it always
+// was: <picture> is the exception, not the new default, so a site that sets only
+// logo pays nothing for a feature it does not use.
+func TestBuild_logoVariants_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	const picture = "<picture>"
+	for _, tc := range []struct {
+		name       string
+		site       string
+		want, omit []string
+	}{
+		{name: "no logo", site: "", omit: []string{"site-logo", picture}},
+		{
+			name: "logo only",
+			site: "logo = \"/logo.svg\"\n",
+			want: []string{`<img class="site-logo" src="/logo.svg"`},
+			omit: []string{picture},
+		},
+		{
+			name: "both",
+			site: "logo = \"/logo.svg\"\nlogo_dark = \"/logo-dark.svg\"\n",
+			want: []string{
+				picture,
+				`<source media="(prefers-color-scheme: dark)" srcset="/logo-dark.svg"`,
+				`<img class="site-logo" src="/logo.svg"`,
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			root := t.TempDir()
+			if _, err := scaffold.Create(root, false); err != nil {
+				t.Fatalf("scaffold: %v", err)
+			}
+			writeSiteFile(t, filepath.Join(root, "cress.toml"), "[site]\ntitle = \"S\"\n"+tc.site)
+
+			if _, err := build.Build(build.Options{Root: root}); err != nil {
+				t.Fatalf("build: %v", err)
+			}
+			doc := readFile(t, filepath.Join(root, build.OutputDir, "index.html"))
+
+			for _, want := range tc.want {
+				if !strings.Contains(doc, want) {
+					t.Errorf("rendered page is missing %q", want)
+				}
+			}
+			for _, omit := range tc.omit {
+				if strings.Contains(doc, omit) {
+					t.Errorf("rendered page should not contain %q", omit)
+				}
+			}
+		})
+	}
+}
+
 func TestBuild_draftsAndStatic_integration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")

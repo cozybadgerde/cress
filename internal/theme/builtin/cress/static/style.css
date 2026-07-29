@@ -71,6 +71,12 @@ body {
   text-decoration: none;
 }
 
+/* A dark-scheme logo wraps the img in <picture>. Taking the wrapper out of the
+   layout keeps the img itself the flex item, so both forms sit identically. */
+.site-title picture {
+  display: contents;
+}
+
 .site-logo {
   height: 1.7rem;
   width: auto;

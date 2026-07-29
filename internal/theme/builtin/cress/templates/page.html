@@ -17,7 +17,10 @@
   <body>
     <header class="site-header">
       <a class="site-title" href="/">
-        {{ with .Site.Logo }}<img class="site-logo" src="{{ . }}" alt="" />{{ end }}
+        {{ if .Site.LogoDark }}<picture>
+          <source media="(prefers-color-scheme: dark)" srcset="{{ .Site.LogoDark }}" />
+          <img class="site-logo" src="{{ .Site.Logo }}" alt="" />
+        </picture>{{ else }}{{ with .Site.Logo }}<img class="site-logo" src="{{ . }}" alt="" />{{ end }}{{ end }}
         <span>{{ .Site.Title }}</span>
       </a>
       {{ with .Nav.Main }}

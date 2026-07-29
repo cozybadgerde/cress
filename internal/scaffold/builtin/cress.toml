@@ -12,6 +12,11 @@ theme = "cress"
 # files you drop in static/.
 logo = "/logo.svg"
 favicon = "/favicon.png"
+# A second logo for readers who prefer a dark scheme, used instead of the one
+# above. Only needed for artwork that suits one background: a raster logo, or a
+# wordmark in near-black or near-white. The placeholder is a mid-green that
+# holds up on both, so it needs no variant.
+# logo_dark = "/logo-dark.svg"
 # Accent color (hex), used as a highlight on links and more. Left unset, the
 # theme picks its own, including a variant for dark mode. Set accent_dark too if
 # your color is only legible against one of the two backgrounds.
