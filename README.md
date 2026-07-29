@@ -1,5 +1,7 @@
 # Cress
 
+![A mouse sheltering under a cress leaf, beside the word Cress](docs/assets/logo/logo.webp)
+
 [![CI](https://github.com/cozybadgerde/cress/actions/workflows/ci.yml/badge.svg?branch=trunk)](https://github.com/cozybadgerde/cress/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/cozybadgerde/cress?include_prereleases&label=release)](https://github.com/cozybadgerde/cress/releases)
 [![Open issues](https://img.shields.io/github/issues/cozybadgerde/cress?label=issues)](https://github.com/cozybadgerde/cress/issues)
