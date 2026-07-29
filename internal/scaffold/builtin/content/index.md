@@ -14,6 +14,8 @@ Edit `content/index.md` to change this page, add more Markdown files under
 - Every `.md` file under `content/` becomes a page: `content/about.md` renders
   to `about.html`.
 - `content/index.md` is the home page.
+- Files in `static/` are copied to the root of the site, so `static/logo.svg`
+  is linked as `/logo.svg`.
 - Styling lives entirely in the theme, so your Markdown stays clean.
 
 Run `cress serve` to preview locally, and `cress build` when you are ready to
