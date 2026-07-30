@@ -12,6 +12,11 @@ on:
     branches: [trunk, main]
   pull_request:
 
+# The job checks out the repository and runs tools over it, nothing more. Say so
+# rather than inheriting the repository default, which may be wider.
+permissions:
+  contents: read
+
 env:
   TASK_VERSION: v3.52.0
 
