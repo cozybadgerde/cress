@@ -1,9 +1,18 @@
-# Keeps the actions used by .github/workflows/ from drifting. Nothing watched
-# them before, and they sat three majors behind without a signal.
+# Keeps the repository's dependencies from drifting. Nothing watched them
+# before, and the actions sat three majors behind without a signal.
 #
-# Actions only, on purpose. Go module requirements end up inside the shipped
-# binary and the pinned dev toolchain decides what CI runs, so both are separate
-# decisions with a stricter bar.
+# Two ecosystems, two bars. A bad action bump breaks a build; a bad module bump
+# changes what users run, so those go through the full `task check` gate on the
+# pull request and the weekly govulncheck in security.yml.
+#
+# Dependabot alerts and security updates are repository settings, not keys in
+# this file. Both are enabled, and they cover what is in GitHub's advisory
+# database. This file covers the rest, which is not a small remainder:
+# govulncheck reported GO-2026-5024 in golang.org/x/sys while GitHub had no
+# matching advisory and raised nothing.
+#
+# The pinned dev toolchain in the Taskfile is still a separate decision and is
+# not watched here.
 version: 2
 
 updates:
@@ -24,3 +33,30 @@ updates:
     # gate says so before merge. release.yml is the exception: it only ever runs
     # on a tag push, so a bump there stays unexercised until a release fires.
     # Run `task snapshot` before tagging after any bump that touches it.
+
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # go.mod names indirect requirements in a require block of their own, but
+    # Dependabot still counts them as transitive and skips them by default.
+    # That is exactly where golang.org/x/sys drifted, so ask for both kinds.
+    allow:
+      - dependency-type: "all"
+    groups:
+      # Patch and minor in one pull request. Majors match no group, so each
+      # arrives on its own and gets read on its own.
+      go-modules:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      # Security updates run on their own cadence and ignore the schedule
+      # above, so they need their own group or they arrive one per advisory.
+      go-modules-security:
+        applies-to: "security-updates"
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "build"
