@@ -224,7 +224,11 @@ Aggregate tasks (`check`, `lint`, `audit`) run every step even when one fails,
 then report the failures together, so one red step never hides the rest.
 
 CI lives in `.github/workflows/` (`ci`, `release`, `security`). Default branch
-is `trunk`; releases fire on `v*` tags via goreleaser. Dependabot watches the
-workflow actions weekly and groups them into one PR
-(`.github/dependabot.yml`); it covers actions only, since Go modules (#11) and
-the pinned dev toolchain (#12) are separate decisions.
+is `trunk`; releases fire on `v*` tags via goreleaser. Dependabot
+(`.github/dependabot.yml`) watches the workflow actions and the `go.mod`
+requirements. Each ecosystem groups its patch and minor bumps into one weekly
+PR, and majors arrive on their own. Go modules include the indirect ones,
+because Dependabot skips those by default and that is where drift hides.
+Dependabot alerts and security updates are repo settings, not keys in that
+file. They cover GitHub's advisory database, and the config covers what has no
+advisory. The pinned dev toolchain (#12) stays a separate decision.
