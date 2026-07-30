@@ -71,9 +71,11 @@ type Site struct {
 	// BaseURL is the site's canonical root (e.g. "https://example.com", or
 	// "https://user.github.io/project" for a project page). It is exposed to
 	// templates for absolute links, and its path component decides where in-site
-	// links are rooted. Load rejects a value that is not an absolute URL, since a
-	// host mistaken for a path ("example.com/site") would quietly misroot every
-	// link in the site.
+	// links are rooted. Empty is a normal setting rather than a missing one: the
+	// links cress emits are root-relative, so a site with no BaseURL serves
+	// correctly from any domain that points at it. Only a subdirectory needs this
+	// key. Load rejects a value that is not an absolute URL, since a host mistaken
+	// for a path ("example.com/site") would quietly misroot every link.
 	BaseURL string `toml:"base_url"`
 	// BasePath is the path component of BaseURL, cleaned to either "" (the site
 	// sits at a domain root) or a rooted path with no trailing slash ("/project").
@@ -172,7 +174,7 @@ func Load(path string) (*Config, error) {
 		},
 	}
 	cfg.normalize()
-	if err := cfg.resolveBasePath(path); err != nil {
+	if err := cfg.resolveBaseURL(path); err != nil {
 		return nil, err
 	}
 	if err := validateAccents(path, cfg.Site); err != nil {
@@ -184,25 +186,33 @@ func Load(path string) (*Config, error) {
 	return cfg, nil
 }
 
-// resolveBasePath validates BaseURL and records its path component in BasePath.
+// resolveBaseURL owns the whole base_url story: it decides whether the key was
+// set at all, validates it, canonicalizes BaseURL, and derives BasePath from the
+// path component. Keeping the trailing-slash trim here rather than in normalize
+// is what lets an error quote the author's own text; trimming first meant
+// reporting a value nobody wrote.
 //
-// An unset BaseURL leaves both empty: a site with no canonical root is served
-// from one, which is the same shape as a domain root. A value that is set must
+// A blank value, or one that is nothing but slashes, counts as unset: naming no
+// site root and naming the root of a domain are the same statement, and the
+// theme key already treats blank as unset. A value that does name something must
 // be an absolute URL, because the alternative is worse than an error. Parsing
 // "example.com/site" leniently yields a path of "example.com/site", so every
 // link in the site would be emitted under a directory that does not exist, and
 // the only symptom would be a site that 404s everywhere once published.
-func (c *Config) resolveBasePath(path string) error {
-	if c.Site.BaseURL == "" {
+func (c *Config) resolveBaseURL(path string) error {
+	raw := strings.TrimSpace(c.Site.BaseURL)
+	if strings.Trim(raw, "/") == "" {
+		c.Site.BaseURL = ""
 		return nil
 	}
-	u, err := url.Parse(c.Site.BaseURL)
+	u, err := url.Parse(raw)
 	if err != nil {
-		return fmt.Errorf("config %s: invalid base_url %q: %w", path, c.Site.BaseURL, err)
+		return fmt.Errorf("config %s: invalid base_url %q: %w", path, raw, err)
 	}
 	if u.Scheme == "" || u.Host == "" {
-		return fmt.Errorf("config %s: base_url %q is not an absolute URL (want a scheme and host, like %q)", path, c.Site.BaseURL, exampleBaseURL)
+		return fmt.Errorf("config %s: base_url %q is not an absolute URL (want a scheme and host, like %q)", path, raw, exampleBaseURL)
 	}
+	c.Site.BaseURL = strings.TrimRight(raw, "/")
 	c.Site.BasePath = cleanBasePath(u.Path)
 	return nil
 }
@@ -270,12 +280,13 @@ func orderedNav(md toml.MetaData, group string, entries map[string]string) []Nav
 	return nav
 }
 
-// normalize fills in defaults for fields left unset.
+// normalize fills in defaults for fields left unset. base_url is not among them:
+// resolveBaseURL parses it, and normalizing it here first would corrupt the text
+// an error message needs to quote.
 func (c *Config) normalize() {
 	if strings.TrimSpace(c.Site.Theme) == "" {
 		c.Site.Theme = DefaultTheme
 	}
-	c.Site.BaseURL = strings.TrimRight(c.Site.BaseURL, "/")
 }
 
 // isHexColor reports whether s is a CSS hex color: #RGB, #RRGGBB, or #RRGGBBAA.

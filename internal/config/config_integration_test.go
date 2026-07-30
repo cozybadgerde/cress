@@ -224,12 +224,25 @@ func TestLoad_baseURL_integration(t *testing.T) {
 		name     string
 		body     string
 		wantErr  bool
+		errNames string // the text the error must quote back
 		baseURL  string
 		basePath string
 	}{
 		{name: "unset", body: ""},
+		// Blank in any spelling means the same as absent: no site root named, which
+		// is what a site served from a domain root wants. The theme key already
+		// treats blank as unset, and a site reachable at several domains has no one
+		// canonical host to name here anyway.
+		{name: "empty", body: "base_url = \"\"\n"},
+		{name: "whitespace only", body: "base_url = \"   \"\n"},
+		{name: "a bare slash", body: "base_url = \"/\"\n"},
+		{name: "nothing but slashes", body: "base_url = \"//\"\n"},
 		{name: "domain root", body: "base_url = \"https://example.com\"\n", baseURL: "https://example.com"},
 		{name: "domain root with slash", body: "base_url = \"https://example.com/\"\n", baseURL: "https://example.com"},
+		{
+			name: "surrounding whitespace is trimmed", body: "base_url = \"  https://example.com/cress  \"\n",
+			baseURL: "https://example.com/cress", basePath: "/cress",
+		},
 		{
 			name: "project page", body: "base_url = \"https://user.github.io/cress\"\n",
 			baseURL: "https://user.github.io/cress", basePath: "/cress",
@@ -244,10 +257,12 @@ func TestLoad_baseURL_integration(t *testing.T) {
 		},
 		// A host with no scheme parses as a bare path, which would root every link
 		// under a directory named after the domain.
-		{name: "no scheme", body: "base_url = \"example.com/cress\"\n", wantErr: true},
-		{name: "path only", body: "base_url = \"/cress\"\n", wantErr: true},
-		{name: "scheme only", body: "base_url = \"https://\"\n", wantErr: true},
-		{name: "unparseable", body: "base_url = \"://nope\"\n", wantErr: true},
+		{name: "no scheme", body: "base_url = \"example.com/cress\"\n", wantErr: true, errNames: `"example.com/cress"`},
+		{name: "path only", body: "base_url = \"/cress\"\n", wantErr: true, errNames: `"/cress"`},
+		// The quoted value must be what the author typed. Canonicalizing before
+		// validating once made this one report a value nobody wrote ("https:").
+		{name: "scheme only", body: "base_url = \"https://\"\n", wantErr: true, errNames: `"https://"`},
+		{name: "unparseable", body: "base_url = \"://nope\"\n", wantErr: true, errNames: `"://nope"`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			cfg, err := config.Load(writeConfig(t, "[site]\n"+tc.body))
@@ -257,6 +272,9 @@ func TestLoad_baseURL_integration(t *testing.T) {
 				}
 				if !strings.Contains(err.Error(), "base_url") {
 					t.Errorf("error should name base_url: %v", err)
+				}
+				if !strings.Contains(err.Error(), tc.errNames) {
+					t.Errorf("error should quote the author's own value %s: %v", tc.errNames, err)
 				}
 				return
 			}

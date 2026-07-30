@@ -56,7 +56,10 @@ Unknown keys are rejected, so a typo fails the build instead of being ignored.
 
 Most small sites sit at the root of a domain, and a `base_url` with no path
 (`https://example.com`) or no `base_url` at all both say so. Links come out
-rooted at the domain: `/about.html`, `/style.css`.
+rooted at the domain: `/about.html`, `/style.css`. Leaving the key empty is the
+same as leaving it out, and neither is a problem: because those links are
+root-relative, one build serves correctly from every domain that points at it.
+Only a subdirectory makes `base_url` necessary.
 
 A site published to a subdirectory is different. GitHub Pages and GitLab Pages
 both do this by default for a project: the site lands at
