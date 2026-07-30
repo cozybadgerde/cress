@@ -30,11 +30,7 @@ func TestResolveBuiltin_integration(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	data := struct {
-		Site config.Site
-		Nav  struct{ Main, Footer []any }
-		Page struct{ Title, URL, HTML string }
-	}{Site: config.Site{Title: "T"}}
+	data := theme.PageData{Site: config.Site{Title: "T"}}
 	if err := thm.Render(&buf, data); err != nil {
 		t.Fatalf("Render: %v", err)
 	}
@@ -63,7 +59,7 @@ func TestResolveDiskOverride_integration(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	data := struct{ Site config.Site }{Site: config.Site{Title: "Hi"}}
+	data := theme.PageData{Site: config.Site{Title: "Hi"}}
 	if err := thm.Render(&buf, data); err != nil {
 		t.Fatalf("Render: %v", err)
 	}

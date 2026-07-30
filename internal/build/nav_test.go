@@ -6,6 +6,7 @@ import (
 
 	"github.com/cozybadgerde/cress/internal/config"
 	"github.com/cozybadgerde/cress/internal/content"
+	"github.com/cozybadgerde/cress/internal/theme"
 )
 
 func TestResolveNav(t *testing.T) {
@@ -32,16 +33,16 @@ func TestResolveNav(t *testing.T) {
 	if len(got.Main) != 2 {
 		t.Fatalf("got %d main links, want 2", len(got.Main))
 	}
-	if got.Main[0] != (navLink{Title: "Home", URL: "/"}) {
+	if got.Main[0] != (theme.NavLink{Title: "Home", URL: "/"}) {
 		t.Errorf("main[0] = %+v", got.Main[0])
 	}
-	if got.Main[1] != (navLink{Title: "About page", URL: "/about.html"}) {
+	if got.Main[1] != (theme.NavLink{Title: "About page", URL: "/about.html"}) {
 		t.Errorf("main[1] = %+v, want title from page", got.Main[1])
 	}
 	if len(got.Footer) != 1 {
 		t.Fatalf("got %d footer links, want 1", len(got.Footer))
 	}
-	if got.Footer[0] != (navLink{Title: "Imprint", URL: "/imprint.html"}) {
+	if got.Footer[0] != (theme.NavLink{Title: "Imprint", URL: "/imprint.html"}) {
 		t.Errorf("footer[0] = %+v", got.Footer[0])
 	}
 
@@ -58,9 +59,9 @@ func TestResolveNav(t *testing.T) {
 }
 
 func TestActiveNav(t *testing.T) {
-	nav := navView{
-		Main:   []navLink{{Title: "Home", URL: "/"}, {Title: "About", URL: "/about.html"}},
-		Footer: []navLink{{Title: "Imprint", URL: "/imprint.html"}},
+	nav := theme.NavView{
+		Main:   []theme.NavLink{{Title: "Home", URL: "/"}, {Title: "About", URL: "/about.html"}},
+		Footer: []theme.NavLink{{Title: "Imprint", URL: "/imprint.html"}},
 	}
 
 	got := activeNav(nav, "/about.html")
@@ -82,7 +83,7 @@ func TestActiveNav(t *testing.T) {
 
 func TestActiveNavFlagsFooter(t *testing.T) {
 	// A footer link to the current page is current too.
-	nav := navView{Footer: []navLink{{Title: "Imprint", URL: "/imprint.html"}}}
+	nav := theme.NavView{Footer: []theme.NavLink{{Title: "Imprint", URL: "/imprint.html"}}}
 
 	got := activeNav(nav, "/imprint.html")
 

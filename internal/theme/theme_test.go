@@ -10,7 +10,7 @@ import (
 
 func TestLoadAndRender(t *testing.T) {
 	fsys := fstest.MapFS{
-		"templates/page.html": {Data: []byte(`<main>{{ .Msg }}</main>`)},
+		"templates/page.html": {Data: []byte(`<main>{{ .Page.Title }}</main>`)},
 		"static/style.css":    {Data: []byte("body{}")},
 	}
 
@@ -23,7 +23,7 @@ func TestLoadAndRender(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	if err := thm.Render(&buf, struct{ Msg string }{"hello"}); err != nil {
+	if err := thm.Render(&buf, PageData{Page: PageView{Title: "hello"}}); err != nil {
 		t.Fatalf("Render: %v", err)
 	}
 	if got := buf.String(); got != "<main>hello</main>" {

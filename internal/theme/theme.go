@@ -79,14 +79,18 @@ func load(name string, fsys fs.FS) (*Theme, error) {
 }
 
 // Render executes the theme's entry template with data, writing HTML to w.
-func (t *Theme) Render(w io.Writer, data any) error {
+func (t *Theme) Render(w io.Writer, data PageData) error {
 	return t.RenderTemplate(w, entryTemplate, data)
 }
 
 // RenderTemplate executes the theme's template named name with data, writing
 // HTML to w. Use it for the templates a theme may define but need not, pairing
 // it with HasTemplate to choose a fallback.
-func (t *Theme) RenderTemplate(w io.Writer, name string, data any) error {
+//
+// Both render entry points take PageData rather than any: every template in the
+// contract receives the same shape, and naming it here is what keeps a caller
+// from inventing a second one.
+func (t *Theme) RenderTemplate(w io.Writer, name string, data PageData) error {
 	if err := t.tmpl.ExecuteTemplate(w, name, data); err != nil {
 		return fmt.Errorf("theme %q: rendering %s: %w", t.name, name, err)
 	}

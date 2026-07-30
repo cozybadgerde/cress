@@ -109,7 +109,9 @@ theme  ─┘
 - **`theme`** resolves a theme (a directory under `themes/`, else the embedded
   default) and loads its `html/template` set and static assets. `page.html` is
   the required entry template; every other template is optional, so the package
-  offers `HasTemplate`/`RenderTemplate` and leaves the choice to the caller.
+  offers `HasTemplate`/`RenderTemplate` and leaves the choice to the caller. It
+  also defines the template data contract (`PageData` and friends, in
+  `data.go`), which `build` fills in and every theme is written against.
 - **`build`** is the orchestrator and the only package that writes output. It
   resolves nav links against the collected pages, renders each non-draft page
   through the theme, and copies theme and site static assets into `public/`. It
@@ -128,7 +130,7 @@ theme  ─┘
 | `internal/config`   | Load and validate `cress.toml`.                         |
 | `internal/content`  | Discover Markdown, parse front matter, build `Page`s.   |
 | `internal/render`   | Markdown to HTML (goldmark). Pure.                      |
-| `internal/theme`    | Resolve and load themes; embedded default theme.        |
+| `internal/theme`    | Themes, the embedded default, the template contract.    |
 | `internal/build`    | Orchestrate content + theme + config into `public/`.    |
 | `internal/serve`    | Preview server: build, watch, rebuild, serve.           |
 | `internal/scaffold` | `cress init` starter site (embedded).                   |

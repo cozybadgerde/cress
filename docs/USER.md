@@ -256,13 +256,17 @@ theme = "mine"
 Templates use Go's `html/template`. The `page.html` template receives:
 
 - `.Site`: the `[site]` config (`.Site.Title`, `.Site.Description`,
-  `.Site.BaseURL`, `.Site.Logo`, `.Site.Favicon`, `.Site.Accent`,
-  `.Site.AccentDark`, `.Site.Footer`, `.Site.Copyright`).
+  `.Site.BaseURL`, `.Site.Logo`, `.Site.LogoDark`, `.Site.Favicon`,
+  `.Site.Accent`, `.Site.AccentDark`, `.Site.Footer`, `.Site.Copyright`).
 - `.Nav`: the resolved navigation, as `.Nav.Main` and `.Nav.Footer`. Each is a
   list of entries with `.Title`, `.URL`, and `.Active` (true on the current
   page). A group with no entries is empty, so `{{ with .Nav.Footer }}` skips it.
 - `.Page`: the current page, with `.Page.Title`, `.Page.URL`, `.Page.HTML` (the
   rendered Markdown body), and `.Page.Meta` (the raw front matter).
+
+These names are cress's contract with a theme, and they are as stable as the
+command-line flags: renaming or removing one is a breaking change. Write a
+theme against them and it keeps rendering.
 
 ## The 404 page
 

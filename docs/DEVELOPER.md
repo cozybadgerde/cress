@@ -71,6 +71,25 @@ gets by default.
 synthesizes a 404 and renders it through `page.html`. That is why the 404 is
 free for every theme instead of being a second required template.
 
+## The template data contract
+
+Every template receives a `theme.PageData`, defined in `internal/theme/data.go`
+together with `NavView`, `NavLink`, and `PageView`. `build` fills the value in,
+and `theme` owns the definition, because it already owns the templates.
+
+Those field names are a public API. Every theme is written against `.Site`,
+`.Nav`, and `.Page`, including themes cress never sees, so renaming or removing
+one is a breaking change and takes the same care as changing a CLI flag. Each
+field carries a doc comment naming its type, when it is empty, and whether it
+is already escaped. `.Page.HTML` is a `template.HTML` for that reason: it holds
+rendered Markdown, and escaping it a second time would print the page source to
+the reader.
+
+Two things hold the contract in place. `Render` and `RenderTemplate` take
+`PageData` rather than `any`, so a caller cannot quietly invent a second shape.
+`TestPageDataContract` renders a template that reads every field, which turns a
+rename into a failing test instead of a broken build on a user's machine.
+
 ## Image assets
 
 These rules govern what cress itself ships: the embedded theme, the starter

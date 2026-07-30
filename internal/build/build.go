@@ -6,7 +6,6 @@ package build
 import (
 	"bytes"
 	"fmt"
-	"html/template"
 	"io"
 	"io/fs"
 	"os"
@@ -74,35 +73,6 @@ type Result struct {
 	Pages    int
 	Output   string
 	Warnings []string
-}
-
-// renderContext is the data passed to a theme's template for one page.
-type renderContext struct {
-	Site config.Site
-	Nav  navView
-	Page pageView
-}
-
-// navView is the resolved navigation as a template sees it: one slice per menu,
-// so a theme can place the primary and secondary links independently.
-type navView struct {
-	Main   []navLink
-	Footer []navLink
-}
-
-// navLink is one resolved navigation entry; Active marks the current page.
-type navLink struct {
-	Title  string
-	URL    string
-	Active bool
-}
-
-// pageView is a page as seen by a template: its metadata plus rendered HTML.
-type pageView struct {
-	Title string
-	URL   string
-	Meta  map[string]any
-	HTML  template.HTML
 }
 
 // Build renders the site described by opts and returns a summary. It only ever
@@ -214,22 +184,22 @@ func guardOutput(root, outPath string) error {
 }
 
 // resolveNav resolves every navigation group against the collected pages.
-func resolveNav(nav config.Nav, pages []*content.Page) (navView, []string) {
+func resolveNav(nav config.Nav, pages []*content.Page) (theme.NavView, []string) {
 	bySource := make(map[string]*content.Page, len(pages))
 	for _, p := range pages {
 		bySource[p.SourcePath] = p
 	}
 	main, mainWarnings := resolveNavGroup("nav.main", nav.Main, bySource)
 	footer, footerWarnings := resolveNavGroup("nav.footer", nav.Footer, bySource)
-	return navView{Main: main, Footer: footer}, append(mainWarnings, footerWarnings...)
+	return theme.NavView{Main: main, Footer: footer}, append(mainWarnings, footerWarnings...)
 }
 
 // resolveNavGroup maps one group's entries to their page URLs. Entries pointing
 // at an unknown file are dropped and reported as warnings naming the group, so
 // the rest of the menu still renders.
-func resolveNavGroup(group string, items []config.NavItem, bySource map[string]*content.Page) ([]navLink, []string) {
+func resolveNavGroup(group string, items []config.NavItem, bySource map[string]*content.Page) ([]theme.NavLink, []string) {
 	var (
-		links    []navLink
+		links    []theme.NavLink
 		warnings []string
 	)
 	for _, item := range items {
@@ -242,26 +212,26 @@ func resolveNavGroup(group string, items []config.NavItem, bySource map[string]*
 		if title == "" {
 			title = page.Title
 		}
-		links = append(links, navLink{Title: title, URL: page.URL})
+		links = append(links, theme.NavLink{Title: title, URL: page.URL})
 	}
 	return links, warnings
 }
 
 // writePage renders one page through the theme and writes it to the output tree.
-func writePage(outPath string, thm *theme.Theme, renderer *render.Renderer, site config.Site, nav navView, page *content.Page) error {
+func writePage(outPath string, thm *theme.Theme, renderer *render.Renderer, site config.Site, nav theme.NavView, page *content.Page) error {
 	body, err := renderer.Markdown(page.Body)
 	if err != nil {
 		return fmt.Errorf("%s: %w", page.SourcePath, err)
 	}
 
-	ctx := renderContext{
+	data := theme.PageData{
 		Site: site,
 		Nav:  activeNav(nav, page.URL),
-		Page: pageView{Title: page.Title, URL: page.URL, Meta: page.Meta, HTML: body},
+		Page: theme.PageView{Title: page.Title, URL: page.URL, Meta: page.Meta, HTML: body},
 	}
 
 	var buf bytes.Buffer
-	if err := thm.Render(&buf, ctx); err != nil {
+	if err := thm.Render(&buf, data); err != nil {
 		return fmt.Errorf("%s: %w", page.SourcePath, err)
 	}
 
@@ -279,23 +249,23 @@ func writePage(outPath string, thm *theme.Theme, renderer *render.Renderer, site
 // 404.html template renders it when there is one; otherwise the entry template
 // does, which is what makes a working 404 free for every theme rather than a
 // second required template alongside page.html.
-func writeNotFound(outPath string, thm *theme.Theme, renderer *render.Renderer, site config.Site, nav navView) error {
+func writeNotFound(outPath string, thm *theme.Theme, renderer *render.Renderer, site config.Site, nav theme.NavView) error {
 	body, err := renderer.Markdown([]byte(notFoundBody))
 	if err != nil {
 		return fmt.Errorf("%s: %w", NotFoundFile, err)
 	}
 
-	ctx := renderContext{
+	data := theme.PageData{
 		Site: site,
 		Nav:  activeNav(nav, notFoundURL),
-		Page: pageView{Title: notFoundTitle, URL: notFoundURL, HTML: body},
+		Page: theme.PageView{Title: notFoundTitle, URL: notFoundURL, HTML: body},
 	}
 
 	var buf bytes.Buffer
 	if thm.HasTemplate(notFoundTemplate) {
-		err = thm.RenderTemplate(&buf, notFoundTemplate, ctx)
+		err = thm.RenderTemplate(&buf, notFoundTemplate, data)
 	} else {
-		err = thm.Render(&buf, ctx)
+		err = thm.Render(&buf, data)
 	}
 	if err != nil {
 		return fmt.Errorf("%s: %w", NotFoundFile, err)
@@ -310,16 +280,16 @@ func writeNotFound(outPath string, thm *theme.Theme, renderer *render.Renderer, 
 
 // activeNav returns a copy of nav with the entries matching currentURL flagged,
 // in every group: a footer link to the current page is current too.
-func activeNav(nav navView, currentURL string) navView {
-	return navView{
+func activeNav(nav theme.NavView, currentURL string) theme.NavView {
+	return theme.NavView{
 		Main:   activeLinks(nav.Main, currentURL),
 		Footer: activeLinks(nav.Footer, currentURL),
 	}
 }
 
 // activeLinks returns a copy of links with the entry matching currentURL flagged.
-func activeLinks(links []navLink, currentURL string) []navLink {
-	out := make([]navLink, len(links))
+func activeLinks(links []theme.NavLink, currentURL string) []theme.NavLink {
+	out := make([]theme.NavLink, len(links))
 	copy(out, links)
 	for i := range out {
 		out[i].Active = out[i].URL == currentURL
