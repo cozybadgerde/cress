@@ -37,6 +37,13 @@ type Page struct {
 	// Title is the page title: front-matter "title", else the first H1, else the
 	// file's base name.
 	Title string
+	// Description is the front-matter "description", empty when the page sets
+	// none. The site-wide fallback is the builder's to apply: this package knows
+	// the file and nothing else.
+	Description string
+	// Language is the front-matter "language" tag, empty when the page sets none.
+	// It overrides the site's language for this page, which the builder resolves.
+	Language string
 	// Draft marks a page excluded from a normal build.
 	Draft bool
 	// Meta is the parsed front matter, passed through verbatim to templates.
@@ -89,13 +96,15 @@ func parseFile(absPath, relSlash string) (*Page, error) {
 
 	out := strings.TrimSuffix(relSlash, mdExt) + htmlExt
 	page := &Page{
-		SourcePath: relSlash,
-		OutputPath: out,
-		URL:        urlFor(out),
-		Title:      titleFor(meta, body, relSlash),
-		Draft:      draftFor(meta),
-		Meta:       meta,
-		Body:       body,
+		SourcePath:  relSlash,
+		OutputPath:  out,
+		URL:         urlFor(out),
+		Title:       titleFor(meta, body, relSlash),
+		Description: stringField(meta, "description"),
+		Language:    stringField(meta, "language"),
+		Draft:       draftFor(meta),
+		Meta:        meta,
+		Body:        body,
 	}
 	return page, nil
 }
@@ -122,6 +131,14 @@ func titleFor(meta map[string]any, body []byte, relSlash string) string {
 	}
 	base := filepath.Base(relSlash)
 	return strings.TrimSuffix(base, filepath.Ext(base))
+}
+
+// stringField reads a string front-matter key, trimmed. It yields "" for a key
+// that is absent, blank, or written as some other type, so a caller can treat
+// "the page said nothing" as one case however the author got there.
+func stringField(meta map[string]any, key string) string {
+	value, _ := meta[key].(string)
+	return strings.TrimSpace(value)
 }
 
 // draftFor reads the boolean "draft" front-matter flag, defaulting to false.

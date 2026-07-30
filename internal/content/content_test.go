@@ -131,6 +131,32 @@ func TestTitleFor(t *testing.T) {
 	}
 }
 
+func TestStringField(t *testing.T) {
+	tests := []struct {
+		name string
+		meta map[string]any
+		key  string
+		want string
+	}{
+		{"a set value", map[string]any{"description": "A cozy page"}, "description", "A cozy page"},
+		{"an absent key", map[string]any{}, "description", ""},
+		{"a blank value", map[string]any{"description": "  "}, "description", ""},
+		{"surrounding whitespace", map[string]any{"language": " de "}, "language", "de"},
+		// YAML types the value, so a language written unquoted can arrive as
+		// something other than a string. That is the same as saying nothing:
+		// resolution falls back to the site, rather than the build failing.
+		{"a non-string value", map[string]any{"language": 42}, "language", ""},
+		{"a nil value", map[string]any{"description": nil}, "description", ""},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := stringField(tc.meta, tc.key); got != tc.want {
+				t.Errorf("stringField(%v, %q) = %q, want %q", tc.meta, tc.key, got, tc.want)
+			}
+		})
+	}
+}
+
 func TestFirstHeading(t *testing.T) {
 	tests := []struct {
 		name string

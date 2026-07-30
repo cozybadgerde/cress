@@ -20,6 +20,11 @@ const FileName = "cress.toml"
 // to the embedded default theme shipped in the binary.
 const DefaultTheme = "cress"
 
+// DefaultLanguage is the language tag used when the config leaves it unset. It
+// matches what cress emitted before the key existed, so an existing site keeps
+// declaring the language it already declared.
+const DefaultLanguage = "en"
+
 // exampleAccent is the color named in the error message for an invalid accent.
 // It is an example, not a default: an unset accent stays unset so the theme's
 // own accent applies.
@@ -85,6 +90,13 @@ type Site struct {
 	BasePath string `toml:"-"`
 	// Theme names the theme to render with. Empty resolves to DefaultTheme.
 	Theme string `toml:"theme"`
+	// Language is the site's language tag (e.g. "en", "de", "en-GB"), rendered as
+	// the document's lang attribute and overridable per page. Empty resolves to
+	// DefaultLanguage: every document declares a language, since a wrong or
+	// missing one misleads screen readers and translation tools alike. The value
+	// is passed through as written; cress does not validate it against the tag
+	// registry, so a typo reaches the output.
+	Language string `toml:"language"`
 	// Logo is a path or URL to a logo image, rendered in the navigation. Empty
 	// means no logo is rendered, unless the theme supplies its own fallback.
 	// Typically a file in static/, e.g. "/logo.svg".
@@ -286,6 +298,10 @@ func orderedNav(md toml.MetaData, group string, entries map[string]string) []Nav
 func (c *Config) normalize() {
 	if strings.TrimSpace(c.Site.Theme) == "" {
 		c.Site.Theme = DefaultTheme
+	}
+	c.Site.Language = strings.TrimSpace(c.Site.Language)
+	if c.Site.Language == "" {
+		c.Site.Language = DefaultLanguage
 	}
 }
 

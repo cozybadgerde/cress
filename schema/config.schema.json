@@ -25,6 +25,10 @@
           "format": "uri",
           "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*://[^/]+"
         },
+        "language": {
+          "description": "Language tag for the document's lang attribute, e.g. \"en\", \"de\", \"en-GB\". Empty resolves to \"en\". A page can override it in its front matter.",
+          "type": "string"
+        },
         "theme": {
           "description": "Theme to render with. Empty resolves to the built-in default theme \"cress\". Any other name must match a directory under themes/.",
           "type": "string"

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ .Page.Language }}">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{{ with .Page.Title }}{{ . }} · {{ end }}{{ .Site.Title }}</title>
-    {{ with .Site.Description }}<meta name="description" content="{{ . }}" />{{ end }}
+    <title>{{ if not .Page.IsHome }}{{ .Page.Title }} · {{ end }}{{ .Site.Title }}</title>
+    {{ .Page.Head }}
     {{ with .Site.Favicon }}<link rel="icon" href="{{ . }}" />{{ end }}
     <link rel="stylesheet" href="{{ .Site.BasePath }}/style.css" />
     {{ if or .Site.Accent .Site.AccentDark }}

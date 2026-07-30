@@ -14,15 +14,19 @@ import (
 // as the contract holds: rename or remove one and the test says which.
 const contractTemplate = `` +
 	`site:{{ .Site.Title }}|{{ .Site.Description }}|{{ .Site.BaseURL }}|` +
-	`{{ .Site.BasePath }}|{{ .Site.Theme }}|{{ .Site.Logo }}|{{ .Site.LogoDark }}|` +
-	`{{ .Site.Favicon }}|{{ .Site.Accent }}|{{ .Site.AccentDark }}|{{ .Site.Footer }}|` +
-	`{{ .Site.Copyright }}
+	`{{ .Site.BasePath }}|{{ .Site.Language }}|{{ .Site.Theme }}|{{ .Site.Logo }}|` +
+	`{{ .Site.LogoDark }}|{{ .Site.Favicon }}|{{ .Site.Accent }}|{{ .Site.AccentDark }}|` +
+	`{{ .Site.Footer }}|{{ .Site.Copyright }}
 ` +
 	`{{ range .Nav.Main }}main:{{ .Title }}|{{ .URL }}|{{ .Active }}
 {{ end }}` +
 	`{{ range .Nav.Footer }}footer:{{ .Title }}|{{ .URL }}|{{ .Active }}
 {{ end }}` +
-	`page:{{ .Page.Title }}|{{ .Page.URL }}|{{ index .Page.Meta "custom" }}
+	`page:{{ .Page.Title }}|{{ .Page.Description }}|{{ .Page.Language }}|` +
+	`{{ .Page.URL }}|{{ .Page.AbsoluteURL }}|{{ .Page.IsHome }}|` +
+	`{{ index .Page.Meta "custom" }}
+` +
+	`{{ .Page.Head }}
 ` +
 	`{{ .Page.HTML }}`
 
@@ -35,6 +39,7 @@ func fullPageData() PageData {
 			Description: "Site description",
 			BaseURL:     "https://example.com/project",
 			BasePath:    "/project",
+			Language:    "en-GB",
 			Theme:       "cress",
 			Logo:        "/logo.svg",
 			LogoDark:    "/logo-dark.svg",
@@ -49,10 +54,15 @@ func fullPageData() PageData {
 			Footer: []NavLink{{Title: "Imprint", URL: "/imprint.html"}},
 		},
 		Page: PageView{
-			Title: "Page title",
-			URL:   "/about.html",
-			Meta:  map[string]any{"custom": "meta value"},
-			HTML:  "<p>Body <em>markup</em></p>",
+			Title:       "Page title",
+			Description: "Page description",
+			Language:    "de",
+			URL:         "/project/about.html",
+			AbsoluteURL: "https://example.com/project/about.html",
+			IsHome:      false,
+			Meta:        map[string]any{"custom": "meta value"},
+			HTML:        "<p>Body <em>markup</em></p>",
+			Head:        `<meta name="description" content="Page description" />`,
 		},
 	}
 }
@@ -74,12 +84,15 @@ func TestPageDataContract(t *testing.T) {
 	// Every value a template can read must arrive, so a field silently lost in a
 	// refactor fails here rather than at a user's next build.
 	want := []string{
-		"Site title", "Site description", "https://example.com/project", "/project", "cress",
-		"/logo.svg", "/logo-dark.svg", "/favicon.png",
+		"Site title", "Site description", "https://example.com/project", "/project",
+		"en-GB", "cress", "/logo.svg", "/logo-dark.svg", "/favicon.png",
 		"#4f7a4a", "#8fbf88", "Footer text", "(c) 2026 Cozy Badger",
 		"main:Home|/|true",
 		"footer:Imprint|/imprint.html|false",
-		"page:Page title|/about.html|meta value",
+		"page:Page title|Page description|de|/project/about.html|" +
+			"https://example.com/project/about.html|false|meta value",
+		// Head is markup, so it must arrive as tags rather than as escaped text.
+		`<meta name="description" content="Page description" />`,
 	}
 	for _, w := range want {
 		if !strings.Contains(got, w) {

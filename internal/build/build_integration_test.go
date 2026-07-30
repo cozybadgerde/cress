@@ -51,7 +51,9 @@ func TestBuild_integration(t *testing.T) {
 	}
 
 	assertMarkers(t, "index.html", readFile(t, filepath.Join(out, "index.html")), []marker{
-		{"<title>Welcome · My cozy site</title>", "the composed title"},
+		// The home page is the site, so its title is the site's name alone rather
+		// than naming it twice.
+		{"<title>My cozy site</title>", "the home page title"},
 		{`<link rel="icon" href="/favicon.png"`, "the default favicon link"},
 		{`class="site-logo"`, "the nav logo"},
 		{`href="/about.html"`, "the nav link to about"},
@@ -490,6 +492,138 @@ func TestBuild_domainRootIsUnprefixed_integration(t *testing.T) {
 	if strings.Contains(doc, "//") && strings.Contains(doc, `href="//`) {
 		t.Errorf("an empty base path should not double any slash:\n%s", doc)
 	}
+}
+
+// The metadata a page carries comes from three places: the page's own front
+// matter, the site config behind it, and what the builder derives.
+func TestBuild_metadata_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := t.TempDir()
+	if _, err := scaffold.Create(root, false); err != nil {
+		t.Fatalf("scaffold: %v", err)
+	}
+	writeSiteFile(t, filepath.Join(root, "cress.toml"), `
+[site]
+title = "My cozy site"
+description = "A site-wide tagline."
+base_url = "https://example.com"
+language = "de"
+`)
+	// A page that overrides both keys, and one that inherits them.
+	writeSiteFile(t, filepath.Join(root, "content", "about.md"),
+		"---\ntitle: About\ndescription: What this page is about.\nlanguage: fr\n---\n\n# About\n")
+
+	if _, err := build.Build(build.Options{Root: root}); err != nil {
+		t.Fatalf("build: %v", err)
+	}
+	out := filepath.Join(root, build.OutputDir)
+
+	assertMarkers(t, "about.html", readFile(t, filepath.Join(out, "about.html")), []marker{
+		{`<html lang="fr">`, "the page's own language"},
+		{`<meta name="description" content="What this page is about." />`, "the page's own description"},
+		{`<link rel="canonical" href="https://example.com/about.html" />`, "the canonical link"},
+		{"<title>About · My cozy site</title>", "the composed title"},
+	})
+
+	assertMarkers(t, "imprint.html", readFile(t, filepath.Join(out, "imprint.html")), []marker{
+		{`<html lang="de">`, "the site language, inherited"},
+		{`<meta name="description" content="A site-wide tagline." />`, "the site description, inherited"},
+		{`<link rel="canonical" href="https://example.com/imprint.html" />`, "the canonical link"},
+	})
+
+	// The home page is the site, so its title does not name the site twice.
+	assertMarkers(t, "index.html", readFile(t, filepath.Join(out, "index.html")), []marker{
+		{"<title>My cozy site</title>", "the home title without a suffix"},
+		{`<link rel="canonical" href="https://example.com/" />`, "the canonical link for the root"},
+	})
+
+	// A 404 stands in for every address that does not exist, so it names none of
+	// them as canonical, and asks to stay out of search results.
+	notFound := readFile(t, filepath.Join(out, build.NotFoundFile))
+	assertMarkers(t, build.NotFoundFile, notFound, []marker{
+		{`<meta name="robots" content="noindex" />`, "the noindex directive"},
+		{`<html lang="de">`, "the site language"},
+	})
+	if strings.Contains(notFound, "canonical") {
+		t.Errorf("the 404 page should carry no canonical link:\n%s", notFound)
+	}
+}
+
+// Without a base_url there is no absolute form for a page, so the tag that needs
+// one is left out rather than emitted empty.
+func TestBuild_noCanonicalWithoutBaseURL_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := t.TempDir()
+	if _, err := scaffold.Create(root, false); err != nil {
+		t.Fatalf("scaffold: %v", err)
+	}
+	writeSiteFile(t, filepath.Join(root, "cress.toml"), "[site]\ntitle = \"S\"\ndescription = \"D\"\n")
+
+	if _, err := build.Build(build.Options{Root: root}); err != nil {
+		t.Fatalf("build: %v", err)
+	}
+
+	doc := readFile(t, filepath.Join(root, build.OutputDir, "index.html"))
+	if strings.Contains(doc, "canonical") {
+		t.Errorf("no base_url means no canonical link:\n%s", doc)
+	}
+	assertMarkers(t, "index.html", doc, []marker{
+		{`<meta name="description" content="D" />`, "the description, which needs no base_url"},
+		{`<html lang="en">`, "the default language"},
+	})
+}
+
+// A site whose links are rooted under a subdirectory has to describe itself with
+// URLs that carry the same prefix, exactly once.
+func TestBuild_canonicalUnderSubpath_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := t.TempDir()
+	if _, err := scaffold.Create(root, false); err != nil {
+		t.Fatalf("scaffold: %v", err)
+	}
+	writeSiteFile(t, filepath.Join(root, "cress.toml"),
+		"[site]\ntitle = \"S\"\nbase_url = \"https://user.github.io/cress\"\n")
+
+	if _, err := build.Build(build.Options{Root: root}); err != nil {
+		t.Fatalf("build: %v", err)
+	}
+	out := filepath.Join(root, build.OutputDir)
+
+	assertMarkers(t, "about.html", readFile(t, filepath.Join(out, "about.html")), []marker{
+		{`<link rel="canonical" href="https://user.github.io/cress/about.html" />`, "the canonical link under the base path"},
+	})
+	assertMarkers(t, "index.html", readFile(t, filepath.Join(out, "index.html")), []marker{
+		{`<link rel="canonical" href="https://user.github.io/cress/" />`, "the canonical link for the rooted home page"},
+	})
+}
+
+// A site need not have an index of its own, and when it does not, no other page
+// inherits the home page's treatment by accident.
+func TestBuild_noHomePage_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := t.TempDir()
+	writeSiteFile(t, filepath.Join(root, "cress.toml"), "[site]\ntitle = \"S\"\n")
+	writeSiteFile(t, filepath.Join(root, "content", "about.md"), "---\ntitle: About\n---\n\nprose\n")
+
+	if _, err := build.Build(build.Options{Root: root}); err != nil {
+		t.Fatalf("build: %v", err)
+	}
+
+	assertMarkers(t, "about.html", readFile(t, filepath.Join(root, build.OutputDir, "about.html")), []marker{
+		{"<title>About · S</title>", "a full title, since this page is not the home page"},
+	})
 }
 
 func TestBuild_notFound_integration(t *testing.T) {

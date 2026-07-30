@@ -291,6 +291,38 @@ func TestLoad_baseURL_integration(t *testing.T) {
 	}
 }
 
+// Every document declares a language, so the key defaults rather than staying
+// empty. Blank means unset, matching how theme and base_url already read it.
+func TestLoad_language_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	for _, tc := range []struct {
+		name, body, want string
+	}{
+		{name: "unset defaults", body: "", want: config.DefaultLanguage},
+		{name: "empty defaults", body: "language = \"\"\n", want: config.DefaultLanguage},
+		{name: "whitespace defaults", body: "language = \"  \"\n", want: config.DefaultLanguage},
+		{name: "a set tag is kept", body: "language = \"de\"\n", want: "de"},
+		{name: "a region tag is kept", body: "language = \"en-GB\"\n", want: "en-GB"},
+		{name: "surrounding whitespace is trimmed", body: "language = \" de \"\n", want: "de"},
+		// No registry check: a typo reaches the output rather than failing a build
+		// over a value cress cannot authoritatively judge.
+		{name: "an unknown tag is passed through", body: "language = \"klingon\"\n", want: "klingon"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg, err := config.Load(writeConfig(t, "[site]\n"+tc.body))
+			if err != nil {
+				t.Fatalf("Load(%q): %v", tc.body, err)
+			}
+			if cfg.Site.Language != tc.want {
+				t.Errorf("Language = %q, want %q", cfg.Site.Language, tc.want)
+			}
+		})
+	}
+}
+
 // base_path is derived from base_url, so setting it directly is a typo rather
 // than a second way to say the same thing.
 func TestLoad_basePathIsNotConfigurable_integration(t *testing.T) {

@@ -64,10 +64,54 @@ type NavLink struct {
 }
 
 // PageView is a page as a template sees it: its metadata plus rendered HTML.
+//
+// Several values here have a namesake on Site, and they are not the same thing:
+// Site holds what the author configured, PageView holds what this page resolved
+// to. A template renders the PageView one and reads the Site one only when it
+// deliberately wants the site-wide value.
 type PageView struct {
 	// Title is the page title: front-matter "title", else the first H1, else
 	// the file's base name. Plain text, escaped by the template.
 	Title string
+	// Description is the page's meta description: front-matter "description",
+	// else Site.Description. Empty when neither is set, so a template guards it.
+	// Already included in Head; read it directly only to arrange it differently.
+	Description string
+	// Language is the page's language tag: front-matter "language", else
+	// Site.Language. Never empty, and belongs in the document's lang attribute:
+	//
+	//	<html lang="{{ .Page.Language }}">
+	//
+	// Head cannot carry it, since it is an attribute rather than an element.
+	Language string
+	// AbsoluteURL is the page's full URL, Site.BaseURL joined with URL. Empty
+	// when the site sets no base_url, because there is no host to build it from;
+	// a template that renders it must guard it.
+	AbsoluteURL string
+	// IsHome marks the page served at the site root, the one rendered from
+	// content/index.md. False for every other page, and for all of them when a
+	// site has no index of its own. Themes use it for the things that read
+	// differently on a front page, such as dropping the site name from a title
+	// that already is the site name.
+	IsHome bool
+	// Head is the metadata block cress renders for this page: the meta
+	// description and the canonical link, each omitted when it has no value.
+	// Emit it inside <head> and let cress own what goes in it:
+	//
+	//	<head>
+	//	  <meta charset="utf-8" />
+	//	  {{ .Page.Head }}
+	//	  <link rel="stylesheet" href="{{ .Site.BasePath }}/style.css" />
+	//	</head>
+	//
+	// It holds only what describes the page. The document's own furniture, the
+	// title, charset, viewport, icon and stylesheets, stays the theme's, so a
+	// theme keeps control of its <head> and gains the metadata for one line.
+	// A theme that would rather arrange the metadata itself reads Description
+	// and AbsoluteURL and omits this; rendering both emits each tag twice.
+	//
+	// Already-escaped markup, like HTML: do not escape it again.
+	Head template.HTML
 	// URL is the page's root-relative URL ("/guide/setup.html", or "/guide/"
 	// for an index file), already rooted under Site.BasePath.
 	URL string
