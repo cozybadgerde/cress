@@ -14,8 +14,9 @@ import (
 // as the contract holds: rename or remove one and the test says which.
 const contractTemplate = `` +
 	`site:{{ .Site.Title }}|{{ .Site.Description }}|{{ .Site.BaseURL }}|` +
-	`{{ .Site.Theme }}|{{ .Site.Logo }}|{{ .Site.LogoDark }}|{{ .Site.Favicon }}|` +
-	`{{ .Site.Accent }}|{{ .Site.AccentDark }}|{{ .Site.Footer }}|{{ .Site.Copyright }}
+	`{{ .Site.BasePath }}|{{ .Site.Theme }}|{{ .Site.Logo }}|{{ .Site.LogoDark }}|` +
+	`{{ .Site.Favicon }}|{{ .Site.Accent }}|{{ .Site.AccentDark }}|{{ .Site.Footer }}|` +
+	`{{ .Site.Copyright }}
 ` +
 	`{{ range .Nav.Main }}main:{{ .Title }}|{{ .URL }}|{{ .Active }}
 {{ end }}` +
@@ -32,7 +33,8 @@ func fullPageData() PageData {
 		Site: config.Site{
 			Title:       "Site title",
 			Description: "Site description",
-			BaseURL:     "https://example.com",
+			BaseURL:     "https://example.com/project",
+			BasePath:    "/project",
 			Theme:       "cress",
 			Logo:        "/logo.svg",
 			LogoDark:    "/logo-dark.svg",
@@ -72,7 +74,7 @@ func TestPageDataContract(t *testing.T) {
 	// Every value a template can read must arrive, so a field silently lost in a
 	// refactor fails here rather than at a user's next build.
 	want := []string{
-		"Site title", "Site description", "https://example.com", "cress",
+		"Site title", "Site description", "https://example.com/project", "/project", "cress",
 		"/logo.svg", "/logo-dark.svg", "/favicon.png",
 		"#4f7a4a", "#8fbf88", "Footer text", "(c) 2026 Cozy Badger",
 		"main:Home|/|true",

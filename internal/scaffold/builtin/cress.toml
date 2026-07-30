@@ -3,6 +3,11 @@
 [site]
 title = "My cozy site"
 description = "A fresh little site made with Cress."
+# The address the site is published at. Include the path if it is not the root
+# of the domain: a GitHub or GitLab project page lives at
+# "https://user.github.io/my-site", and every link Cress writes is rooted under
+# that path. Get it wrong and the published pages load with their styling,
+# navigation and images all pointing one level too high.
 base_url = "https://example.com"
 # The built-in theme. Drop a theme under themes/<name> and name it here to swap.
 theme = "cress"

@@ -90,6 +90,20 @@ Two things hold the contract in place. `Render` and `RenderTemplate` take
 `TestPageDataContract` renders a template that reads every field, which turns a
 rename into a failing test instead of a broken build on a user's machine.
 
+One field carries an obligation for the theme. `.Site.BasePath` is the path the
+site is published under, from the path component of `base_url`, and it is empty
+for a site at a domain root. Every URL in `PageData` is already rooted under it,
+so a theme needs it only for its own asset links:
+
+```html
+<link rel="stylesheet" href="{{ .Site.BasePath }}/style.css" />
+```
+
+A theme that hardcodes `/style.css` instead works at a domain root and renders
+unstyled under a subdirectory, and nothing reports it: the build cannot tell
+which URLs a theme meant to be its own. The built-in theme uses the form above
+for its stylesheet and its home link, which is the pattern to copy.
+
 ## Image assets
 
 These rules govern what cress itself ships: the embedded theme, the starter

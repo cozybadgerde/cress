@@ -70,8 +70,12 @@ type Options struct {
 
 // Result summarizes a completed build.
 type Result struct {
-	Pages    int
-	Output   string
+	Pages  int
+	Output string
+	// BasePath is the path the built site is rooted under, from the config's
+	// base_url, or empty for a site at a domain root. The preview server reads it
+	// to mount the output where the emitted links expect to find it.
+	BasePath string
 	Warnings []string
 }
 
@@ -109,16 +113,29 @@ func Build(opts Options) (*Result, error) {
 		return nil, err
 	}
 
-	nav, warnings := resolveNav(cfg.Nav, pages)
-	renderer := render.New()
+	base := cfg.Site.BasePath
+	nav, warnings := resolveNav(cfg.Nav, pages, base)
+	renderer := render.New(render.WithBasePath(base))
 
 	// The clock enters the build here and nowhere else: config.Load stays a pure
 	// function of the file it reads, and every page in one build shares a year.
 	site := cfg.Site
 	site.Copyright = expandYear(site.Copyright, time.Now().Year())
+	site.Logo = prefixURL(base, site.Logo)
+	site.LogoDark = prefixURL(base, site.LogoDark)
+	site.Favicon = prefixURL(base, site.Favicon)
 
 	if err := ensureDir(outPath); err != nil {
 		return nil, err
+	}
+
+	writer := &pageWriter{
+		outPath:  outPath,
+		thm:      thm,
+		renderer: renderer,
+		site:     site,
+		nav:      nav,
+		basePath: base,
 	}
 
 	written := make(map[string]bool, len(pages))
@@ -127,7 +144,7 @@ func Build(opts Options) (*Result, error) {
 		if page.Draft && !opts.Drafts {
 			continue
 		}
-		if err := writePage(outPath, thm, renderer, site, nav, page); err != nil {
+		if err := writer.writePage(page); err != nil {
 			return nil, err
 		}
 		written[page.OutputPath] = true
@@ -138,7 +155,7 @@ func Build(opts Options) (*Result, error) {
 	// Only when it did not is a 404 synthesized, and it is not counted in Pages:
 	// it is not a page the author wrote.
 	if !written[NotFoundFile] {
-		if err := writeNotFound(outPath, thm, renderer, site, nav); err != nil {
+		if err := writer.writeNotFound(); err != nil {
 			return nil, err
 		}
 		written[NotFoundFile] = true
@@ -154,7 +171,19 @@ func Build(opts Options) (*Result, error) {
 	}
 	warnings = append(warnings, staleWarnings(outPath, stale)...)
 
-	return &Result{Pages: rendered, Output: outPath, Warnings: warnings}, nil
+	return &Result{Pages: rendered, Output: outPath, BasePath: base, Warnings: warnings}, nil
+}
+
+// prefixURL roots u under basePath, leaving anything that is not a link into
+// this site's own root untouched: a relative path, an absolute URL, and a
+// protocol-relative URL all address something the base path does not govern.
+// This is the same rule the renderer applies to links inside content, kept here
+// for the URLs the builder emits itself.
+func prefixURL(basePath, u string) string {
+	if basePath == "" || !strings.HasPrefix(u, "/") || strings.HasPrefix(u, "//") {
+		return u
+	}
+	return basePath + u
 }
 
 // expandYear replaces yearToken in a copyright notice with year. It takes the
@@ -184,20 +213,20 @@ func guardOutput(root, outPath string) error {
 }
 
 // resolveNav resolves every navigation group against the collected pages.
-func resolveNav(nav config.Nav, pages []*content.Page) (theme.NavView, []string) {
+func resolveNav(nav config.Nav, pages []*content.Page, basePath string) (theme.NavView, []string) {
 	bySource := make(map[string]*content.Page, len(pages))
 	for _, p := range pages {
 		bySource[p.SourcePath] = p
 	}
-	main, mainWarnings := resolveNavGroup("nav.main", nav.Main, bySource)
-	footer, footerWarnings := resolveNavGroup("nav.footer", nav.Footer, bySource)
+	main, mainWarnings := resolveNavGroup("nav.main", nav.Main, bySource, basePath)
+	footer, footerWarnings := resolveNavGroup("nav.footer", nav.Footer, bySource, basePath)
 	return theme.NavView{Main: main, Footer: footer}, append(mainWarnings, footerWarnings...)
 }
 
 // resolveNavGroup maps one group's entries to their page URLs. Entries pointing
 // at an unknown file are dropped and reported as warnings naming the group, so
 // the rest of the menu still renders.
-func resolveNavGroup(group string, items []config.NavItem, bySource map[string]*content.Page) ([]theme.NavLink, []string) {
+func resolveNavGroup(group string, items []config.NavItem, bySource map[string]*content.Page, basePath string) ([]theme.NavLink, []string) {
 	var (
 		links    []theme.NavLink
 		warnings []string
@@ -212,30 +241,43 @@ func resolveNavGroup(group string, items []config.NavItem, bySource map[string]*
 		if title == "" {
 			title = page.Title
 		}
-		links = append(links, theme.NavLink{Title: title, URL: page.URL})
+		links = append(links, theme.NavLink{Title: title, URL: prefixURL(basePath, page.URL)})
 	}
 	return links, warnings
 }
 
+// pageWriter holds what every page render shares: the theme, the renderer, and
+// the site-wide values resolved once at the start of the build. Only the page
+// itself changes between calls.
+type pageWriter struct {
+	outPath  string
+	thm      *theme.Theme
+	renderer *render.Renderer
+	site     config.Site
+	nav      theme.NavView
+	basePath string
+}
+
 // writePage renders one page through the theme and writes it to the output tree.
-func writePage(outPath string, thm *theme.Theme, renderer *render.Renderer, site config.Site, nav theme.NavView, page *content.Page) error {
-	body, err := renderer.Markdown(page.Body)
+func (w *pageWriter) writePage(page *content.Page) error {
+	body, err := w.renderer.Markdown(page.Body)
 	if err != nil {
 		return fmt.Errorf("%s: %w", page.SourcePath, err)
 	}
 
+	pageURL := prefixURL(w.basePath, page.URL)
 	data := theme.PageData{
-		Site: site,
-		Nav:  activeNav(nav, page.URL),
-		Page: theme.PageView{Title: page.Title, URL: page.URL, Meta: page.Meta, HTML: body},
+		Site: w.site,
+		Nav:  activeNav(w.nav, pageURL),
+		Page: theme.PageView{Title: page.Title, URL: pageURL, Meta: page.Meta, HTML: body},
 	}
 
 	var buf bytes.Buffer
-	if err := thm.Render(&buf, data); err != nil {
+	if err := w.thm.Render(&buf, data); err != nil {
 		return fmt.Errorf("%s: %w", page.SourcePath, err)
 	}
 
-	dest := filepath.Join(outPath, filepath.FromSlash(page.OutputPath))
+	dest := filepath.Join(w.outPath, filepath.FromSlash(page.OutputPath))
 	if err := os.MkdirAll(filepath.Dir(dest), outputDirPerm); err != nil {
 		return fmt.Errorf("creating %s: %w", filepath.Dir(dest), err)
 	}
@@ -249,29 +291,30 @@ func writePage(outPath string, thm *theme.Theme, renderer *render.Renderer, site
 // 404.html template renders it when there is one; otherwise the entry template
 // does, which is what makes a working 404 free for every theme rather than a
 // second required template alongside page.html.
-func writeNotFound(outPath string, thm *theme.Theme, renderer *render.Renderer, site config.Site, nav theme.NavView) error {
-	body, err := renderer.Markdown([]byte(notFoundBody))
+func (w *pageWriter) writeNotFound() error {
+	body, err := w.renderer.Markdown([]byte(notFoundBody))
 	if err != nil {
 		return fmt.Errorf("%s: %w", NotFoundFile, err)
 	}
 
+	pageURL := prefixURL(w.basePath, notFoundURL)
 	data := theme.PageData{
-		Site: site,
-		Nav:  activeNav(nav, notFoundURL),
-		Page: theme.PageView{Title: notFoundTitle, URL: notFoundURL, HTML: body},
+		Site: w.site,
+		Nav:  activeNav(w.nav, pageURL),
+		Page: theme.PageView{Title: notFoundTitle, URL: pageURL, HTML: body},
 	}
 
 	var buf bytes.Buffer
-	if thm.HasTemplate(notFoundTemplate) {
-		err = thm.RenderTemplate(&buf, notFoundTemplate, data)
+	if w.thm.HasTemplate(notFoundTemplate) {
+		err = w.thm.RenderTemplate(&buf, notFoundTemplate, data)
 	} else {
-		err = thm.Render(&buf, data)
+		err = w.thm.Render(&buf, data)
 	}
 	if err != nil {
 		return fmt.Errorf("%s: %w", NotFoundFile, err)
 	}
 
-	dest := filepath.Join(outPath, NotFoundFile)
+	dest := filepath.Join(w.outPath, NotFoundFile)
 	if err := os.WriteFile(dest, buf.Bytes(), 0o644); err != nil { // #nosec G306 -- public site files
 		return fmt.Errorf("writing %s: %w", dest, err)
 	}

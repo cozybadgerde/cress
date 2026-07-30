@@ -20,8 +20,10 @@
           "type": "string"
         },
         "base_url": {
-          "description": "Canonical site root, e.g. \"https://example.com\". In-site links stay root-relative; this is exposed to templates for absolute links.",
-          "type": "string"
+          "description": "Canonical site root, e.g. \"https://example.com\", or \"https://user.github.io/project\" for a project page. Must be an absolute URL. Its path component roots every in-site link cress emits, so a site published to a subdirectory needs it.",
+          "type": "string",
+          "format": "uri",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*://[^/]+"
         },
         "theme": {
           "description": "Theme to render with. Empty resolves to the built-in default theme \"cress\". Any other name must match a directory under themes/.",

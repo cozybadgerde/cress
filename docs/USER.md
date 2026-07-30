@@ -45,11 +45,44 @@ The `[site]` fields:
 
 - `title`: the site name, shown in the header and the browser tab.
 - `description`: an optional tagline, available to the theme.
-- `base_url`: the canonical site root. In-site links stay root-relative, so this
-  is used for absolute links only.
+- `base_url`: the full address the site is published at, including any path.
+  Set it to where the site really lives; see [Publishing to a
+  subdirectory](#publishing-to-a-subdirectory) below.
 - `theme`: the theme name. Empty resolves to the built-in `cress` theme.
 
 Unknown keys are rejected, so a typo fails the build instead of being ignored.
+
+### Publishing to a subdirectory
+
+Most small sites sit at the root of a domain, and a `base_url` with no path
+(`https://example.com`) or no `base_url` at all both say so. Links come out
+rooted at the domain: `/about.html`, `/style.css`.
+
+A site published to a subdirectory is different. GitHub Pages and GitLab Pages
+both do this by default for a project: the site lands at
+`https://user.github.io/my-site/` rather than at the domain root. Put the whole
+address in `base_url`, path included:
+
+```toml
+[site]
+base_url = "https://user.github.io/my-site"
+```
+
+Cress then roots every link it writes under that path: `/my-site/about.html`,
+`/my-site/style.css`. The files in `public/` do not move; only the links inside
+the pages change. `cress serve` previews the site at the same path, so what you
+see locally is what gets published.
+
+If you leave `base_url` at the domain root and publish to a subdirectory
+anyway, the pages load but every link in them points one level too high: the
+site renders unstyled, with a dead navigation and no images. Nothing in the
+build can detect this, because where a site is published is not something the
+files know. `base_url` is how cress finds out, so it is worth getting right
+before the first publish.
+
+`base_url` must be a full URL with a scheme and host. `example.com/my-site` is
+rejected, because a host mistaken for a path would root the whole site under a
+directory that does not exist.
 
 ### White-label branding
 
@@ -184,7 +217,10 @@ page's outline, not a way to change type size.
 **Links.** Write internal links root-relative, starting with `/`, so they
 resolve identically from every page regardless of folder depth. Make the link
 text describe the destination; "here" is useless to anyone scanning the page or
-listening to it.
+listening to it. Cress reroots these links when the site is published to a
+subdirectory, so `/about.html` keeps working wherever the site lives. Links you
+write as raw HTML are the exception: Cress passes that markup through untouched,
+so a `<a href="/about.html">` in a content file stays exactly as written.
 
 **Images.** They live in `static/` and are linked from the site root, as
 described under "Site layout" above. Cress has no asset pipeline, so
@@ -257,7 +293,11 @@ Templates use Go's `html/template`. The `page.html` template receives:
 
 - `.Site`: the `[site]` config (`.Site.Title`, `.Site.Description`,
   `.Site.BaseURL`, `.Site.Logo`, `.Site.LogoDark`, `.Site.Favicon`,
-  `.Site.Accent`, `.Site.AccentDark`, `.Site.Footer`, `.Site.Copyright`).
+  `.Site.Accent`, `.Site.AccentDark`, `.Site.Footer`, `.Site.Copyright`), plus
+  `.Site.BasePath`: the path the site is published under, or empty at a domain
+  root. Prefix the theme's own asset links with it, as in
+  `href="{{ .Site.BasePath }}/style.css"`. Every other URL in the data is
+  already rooted for you.
 - `.Nav`: the resolved navigation, as `.Nav.Main` and `.Nav.Footer`. Each is a
   list of entries with `.Title`, `.URL`, and `.Active` (true on the current
   page). A group with no entries is empty, so `{{ with .Nav.Footer }}` skips it.

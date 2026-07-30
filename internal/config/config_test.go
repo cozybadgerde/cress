@@ -2,6 +2,32 @@ package config
 
 import "testing"
 
+func TestCleanBasePath(t *testing.T) {
+	tests := []struct {
+		in   string
+		want string
+	}{
+		{"", ""},
+		{"/", ""}, // a domain root, not a directory named ""
+		{"/cress", "/cress"},
+		{"cress", "/cress"},
+		{"/cress/", "/cress"},
+		{"cress/", "/cress"},
+		{"/deep/nested/path", "/deep/nested/path"},
+		{"/deep/nested/path/", "/deep/nested/path"},
+		// Nothing else is trimmed: a path segment is whatever the URL said it was.
+		{"/Mixed Case", "/Mixed Case"},
+		{"//doubled", "/doubled"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.in, func(t *testing.T) {
+			if got := cleanBasePath(tc.in); got != tc.want {
+				t.Errorf("cleanBasePath(%q) = %q, want %q", tc.in, got, tc.want)
+			}
+		})
+	}
+}
+
 func TestIsHexColor(t *testing.T) {
 	tests := []struct {
 		in   string

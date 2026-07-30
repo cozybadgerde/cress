@@ -96,7 +96,10 @@ theme  ─┘
   and the footer's `footer`/`copyright`) and the `[nav.main]`/`[nav.footer]`
   tables (label = content path). The group
   names are fixed, so unknown keys are rejected as typos. An empty theme
-  resolves to the built-in default. The accents get no default at all: an unset
+  resolves to the built-in default. `base_url` must be an absolute URL when set,
+  and its path component is recorded as the derived `BasePath` (`toml:"-"`, so
+  the key cannot be set by hand and the two cannot disagree). The accents get no
+  default at all: an unset
   one stays unset so the theme's own applies, and a set one is validated as a
   hex color (it is interpolated into CSS). Each group's order is recovered from
   the TOML parse metadata, since decoded tables are otherwise unordered.
@@ -119,7 +122,10 @@ theme  ─┘
   enters a build) and guarantees a `404.html`.
 - **`serve`** builds once, serves the output over HTTP, and rebuilds on
   debounced filesystem events. It never watches the output directory. A request
-  it cannot satisfy is answered with the built `404.html`.
+  it cannot satisfy is answered with the built `404.html`. When the site is
+  rooted under a base path it mounts there and redirects `/` to it, so the
+  preview exercises the same links production will: the base path is read from
+  the first build and held, so changing `base_url` needs a restart.
 - **`scaffold`** writes the embedded starter site for `cress init`.
 
 ## Package layout
@@ -150,9 +156,18 @@ theme  ─┘
 - **The theme is the only styling surface.** Core emits plain semantic HTML;
   code fences carry `class="language-..."` but no styling. Do not bake CSS or
   syntax highlighting into the core - it would conflict with custom themes.
-- **URLs are flat and root-relative.** `content/x.md` -> `public/x.html`, linked
-  as `/x.html`; an `index` file collapses to its directory (`/`, `/guide/`). The
-  builder writes root-relative links, so a site is served from its domain root.
+- **URLs are flat and root-relative, rooted under `base_url`'s path.**
+  `content/x.md` -> `public/x.html`, linked as `/x.html`; an `index` file
+  collapses to its directory (`/`, `/guide/`). Output paths never change, but
+  every emitted URL is prefixed with the path component of `base_url`
+  (`/project/x.html`), so a site can be served from a subdirectory as well as a
+  domain root. Three places carry the prefix: the builder (nav, page URLs, the
+  branding keys), `render` (root-relative links inside content), and the theme,
+  which must prefix its own asset links with `.Site.BasePath` because those are
+  the URLs cress does not emit. Fully relative URLs were rejected as the
+  alternative: they need no config, but they make every URL depend on the page's
+  own depth, which breaks against a host that does not redirect `/guide` to
+  `/guide/`.
 - **Navigation is explicit.** A `[nav.main]` or `[nav.footer]` entry (label =
   content path) points at a content file; a missing target is a warning naming
   its group, not a hard error, so the rest of the build still succeeds. Themes

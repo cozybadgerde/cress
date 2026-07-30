@@ -388,6 +388,110 @@ func TestBuild_footerAndCopyright_integration(t *testing.T) {
 	}
 }
 
+// A project page on GitHub or GitLab serves the site from a subdirectory, so
+// every URL cress emits has to be rooted under the path in base_url: the nav,
+// the theme's own assets, the branding, and the links inside content.
+func TestBuild_subpath_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := t.TempDir()
+	if _, err := scaffold.Create(root, false); err != nil {
+		t.Fatalf("scaffold: %v", err)
+	}
+	writeSiteFile(t, filepath.Join(root, "cress.toml"), `
+[site]
+title = "S"
+base_url = "https://user.github.io/cress"
+logo = "/logo.svg"
+favicon = "/favicon.png"
+
+[nav.main]
+Home = "index.md"
+About = "about.md"
+
+[nav.footer]
+Imprint = "imprint.md"
+`)
+
+	res, err := build.Build(build.Options{Root: root})
+	if err != nil {
+		t.Fatalf("build: %v", err)
+	}
+	if res.BasePath != "/cress" {
+		t.Errorf("Result.BasePath = %q, want %q", res.BasePath, "/cress")
+	}
+
+	out := filepath.Join(root, build.OutputDir)
+	// Output paths are unchanged: only the URLs written into the HTML move.
+	if _, err := os.Stat(filepath.Join(out, "about.html")); err != nil {
+		t.Errorf("output layout should not change under a base path: %v", err)
+	}
+
+	assertMarkers(t, "index.html", readFile(t, filepath.Join(out, "index.html")), []marker{
+		{`href="/cress/style.css"`, "the theme's stylesheet under the base path"},
+		{`href="/cress/about.html"`, "a nav link under the base path"},
+		{`href="/cress/imprint.html"`, "a footer nav link under the base path"},
+		{`href="/cress/"`, "the home link under the base path"},
+		{`src="/cress/logo.svg"`, "the logo under the base path"},
+		{`href="/cress/favicon.png"`, "the favicon under the base path"},
+	})
+
+	// A link an author wrote against the site root is rewritten too, which is the
+	// half of this that the builder cannot see.
+	assertMarkers(t, "guides/index.html", readFile(t, filepath.Join(out, "guides", "index.html")), []marker{
+		{`href="/cress/guides/styleguide.html"`, "a content link under the base path"},
+	})
+	assertMarkers(t, "guides/writing.html", readFile(t, filepath.Join(out, "guides", "writing.html")), []marker{
+		{`src="/cress/example_busy.webp"`, "a content image under the base path"},
+	})
+
+	// The synthesized 404 carries a link home, which is only useful if it points
+	// inside the site rather than at the domain root.
+	assertMarkers(t, build.NotFoundFile, readFile(t, filepath.Join(out, build.NotFoundFile)), []marker{
+		{`href="/cress/"`, "the back-home link under the base path"},
+	})
+
+	// The active-page marker still resolves: it compares the page's URL against
+	// the nav's, and both moved.
+	assertMarkers(t, "about.html", readFile(t, filepath.Join(out, "about.html")), []marker{
+		{`href="/cress/about.html" aria-current="page"`, "its own nav entry still marked active"},
+	})
+}
+
+// The root case has to keep emitting exactly what it did before, since that is
+// every site that does not set a path.
+func TestBuild_domainRootIsUnprefixed_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := t.TempDir()
+	if _, err := scaffold.Create(root, false); err != nil {
+		t.Fatalf("scaffold: %v", err)
+	}
+
+	res, err := build.Build(build.Options{Root: root})
+	if err != nil {
+		t.Fatalf("build: %v", err)
+	}
+	if res.BasePath != "" {
+		t.Errorf("Result.BasePath = %q, want empty for a site at a domain root", res.BasePath)
+	}
+
+	doc := readFile(t, filepath.Join(root, build.OutputDir, "index.html"))
+	assertMarkers(t, "index.html", doc, []marker{
+		{`href="/style.css"`, "the theme's stylesheet at the root"},
+		{`href="/about.html"`, "a nav link at the root"},
+		{`href="/"`, "the home link at the root"},
+		{`src="/logo.svg"`, "the logo at the root"},
+	})
+	if strings.Contains(doc, "//") && strings.Contains(doc, `href="//`) {
+		t.Errorf("an empty base path should not double any slash:\n%s", doc)
+	}
+}
+
 func TestBuild_notFound_integration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")

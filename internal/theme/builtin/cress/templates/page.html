@@ -6,7 +6,7 @@
     <title>{{ with .Page.Title }}{{ . }} · {{ end }}{{ .Site.Title }}</title>
     {{ with .Site.Description }}<meta name="description" content="{{ . }}" />{{ end }}
     {{ with .Site.Favicon }}<link rel="icon" href="{{ . }}" />{{ end }}
-    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="{{ .Site.BasePath }}/style.css" />
     {{ if or .Site.Accent .Site.AccentDark }}
     <style>
       {{ with .Site.Accent }}:root { --accent: {{ . }}; }{{ end }}
@@ -16,7 +16,7 @@
   </head>
   <body>
     <header class="site-header">
-      <a class="site-title" href="/">
+      <a class="site-title" href="{{ .Site.BasePath }}/">
         {{ if .Site.LogoDark }}<picture>
           <source media="(prefers-color-scheme: dark)" srcset="{{ .Site.LogoDark }}" />
           <img class="site-logo" src="{{ .Site.Logo }}" alt="" />

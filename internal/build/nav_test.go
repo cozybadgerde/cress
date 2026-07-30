@@ -28,7 +28,7 @@ func TestResolveNav(t *testing.T) {
 		},
 	}
 
-	got, warnings := resolveNav(nav, pages)
+	got, warnings := resolveNav(nav, pages, "")
 
 	if len(got.Main) != 2 {
 		t.Fatalf("got %d main links, want 2", len(got.Main))

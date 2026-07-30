@@ -212,6 +212,83 @@ func TestLoad_logos_integration(t *testing.T) {
 	}
 }
 
+// base_url decides where in-site links are rooted, so a value that parses as
+// something other than the author meant is worse than a rejected one: the site
+// builds, publishes, and 404s everywhere.
+func TestLoad_baseURL_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	for _, tc := range []struct {
+		name     string
+		body     string
+		wantErr  bool
+		baseURL  string
+		basePath string
+	}{
+		{name: "unset", body: ""},
+		{name: "domain root", body: "base_url = \"https://example.com\"\n", baseURL: "https://example.com"},
+		{name: "domain root with slash", body: "base_url = \"https://example.com/\"\n", baseURL: "https://example.com"},
+		{
+			name: "project page", body: "base_url = \"https://user.github.io/cress\"\n",
+			baseURL: "https://user.github.io/cress", basePath: "/cress",
+		},
+		{
+			name: "project page with slash", body: "base_url = \"https://user.github.io/cress/\"\n",
+			baseURL: "https://user.github.io/cress", basePath: "/cress",
+		},
+		{
+			name: "nested path", body: "base_url = \"https://example.com/a/b\"\n",
+			baseURL: "https://example.com/a/b", basePath: "/a/b",
+		},
+		// A host with no scheme parses as a bare path, which would root every link
+		// under a directory named after the domain.
+		{name: "no scheme", body: "base_url = \"example.com/cress\"\n", wantErr: true},
+		{name: "path only", body: "base_url = \"/cress\"\n", wantErr: true},
+		{name: "scheme only", body: "base_url = \"https://\"\n", wantErr: true},
+		{name: "unparseable", body: "base_url = \"://nope\"\n", wantErr: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg, err := config.Load(writeConfig(t, "[site]\n"+tc.body))
+			if tc.wantErr {
+				if err == nil {
+					t.Fatalf("Load(%q) = nil error, want one", tc.body)
+				}
+				if !strings.Contains(err.Error(), "base_url") {
+					t.Errorf("error should name base_url: %v", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("Load(%q): %v", tc.body, err)
+			}
+			if cfg.Site.BaseURL != tc.baseURL {
+				t.Errorf("BaseURL = %q, want %q", cfg.Site.BaseURL, tc.baseURL)
+			}
+			if cfg.Site.BasePath != tc.basePath {
+				t.Errorf("BasePath = %q, want %q", cfg.Site.BasePath, tc.basePath)
+			}
+		})
+	}
+}
+
+// base_path is derived from base_url, so setting it directly is a typo rather
+// than a second way to say the same thing.
+func TestLoad_basePathIsNotConfigurable_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	_, err := config.Load(writeConfig(t, "[site]\nbase_path = \"/cress\"\n"))
+	if err == nil {
+		t.Fatal("Load = nil error, want base_path rejected as an unknown key")
+	}
+	if !strings.Contains(err.Error(), "base_path") {
+		t.Errorf("error should name the offending key: %v", err)
+	}
+}
+
 func TestLoad_missing_integration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")

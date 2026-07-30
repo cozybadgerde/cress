@@ -15,10 +15,21 @@ import (
 // this package defines it, because it already owns the template contract.
 type PageData struct {
 	// Site is the [site] table of cress.toml, with the {year} token in
-	// Copyright already expanded. Config owns those field names, but a template
-	// reads them (.Site.Title, .Site.Logo, ...) so they are part of this
+	// Copyright already expanded and every in-site URL in it (Logo, LogoDark,
+	// Favicon) rooted under Site.BasePath. Config owns those field names, but a
+	// template reads them (.Site.Title, .Site.Logo, ...) so they are part of this
 	// contract too. Every one of them may be empty except where config
 	// documents otherwise, so a template guards each.
+	//
+	// A theme must prefix its own asset links with .Site.BasePath, because those
+	// are the one set of URLs cress does not emit:
+	//
+	//	<link rel="stylesheet" href="{{ .Site.BasePath }}/style.css" />
+	//
+	// It is empty for a site at a domain root, which is why the form above is
+	// also correct there. A theme that hardcodes "/style.css" instead renders
+	// correctly at a root and silently unstyled under a subdirectory, with
+	// nothing to warn the site's author which of the two is at fault.
 	Site config.Site
 	// Nav is the resolved navigation, one slice per configured menu.
 	Nav NavView
@@ -42,8 +53,9 @@ type NavLink struct {
 	// title when that key is empty. Plain text, escaped by the template.
 	Title string
 	// URL is the target's root-relative URL ("/about.html", or "/" for the home
-	// page). Never empty: an entry whose target does not exist is dropped with
-	// a build warning rather than rendered as a dead link.
+	// page), already rooted under Site.BasePath. Never empty: an entry whose
+	// target does not exist is dropped with a build warning rather than rendered
+	// as a dead link.
 	URL string
 	// Active reports whether this entry points at the page being rendered. It
 	// is set per page and in every group, so a footer link to the current page
@@ -57,7 +69,7 @@ type PageView struct {
 	// the file's base name. Plain text, escaped by the template.
 	Title string
 	// URL is the page's root-relative URL ("/guide/setup.html", or "/guide/"
-	// for an index file).
+	// for an index file), already rooted under Site.BasePath.
 	URL string
 	// Meta is the page's front matter, passed through verbatim so a theme can
 	// read keys cress itself does not define. Empty when the page has none.

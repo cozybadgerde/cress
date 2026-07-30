@@ -6,6 +6,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 
@@ -23,6 +24,11 @@ const DefaultTheme = "cress"
 // It is an example, not a default: an unset accent stays unset so the theme's
 // own accent applies.
 const exampleAccent = "#4f7a4a"
+
+// exampleBaseURL is the base_url named in the error message for one that is not
+// an absolute URL. Like exampleAccent it is an example, not a default: an unset
+// base_url stays unset.
+const exampleBaseURL = "https://example.com"
 
 // The TOML tables holding the navigation. Each group under [nav] is a table of
 // label = content path; the group names are fixed, so a mistyped one is caught
@@ -62,9 +68,19 @@ type Site struct {
 	// Description is an optional site tagline, exposed to templates (e.g. for a
 	// meta description tag).
 	Description string `toml:"description"`
-	// BaseURL is the site's canonical root (e.g. "https://example.com"). It is
-	// exposed to templates for absolute links; in-site links stay root-relative.
+	// BaseURL is the site's canonical root (e.g. "https://example.com", or
+	// "https://user.github.io/project" for a project page). It is exposed to
+	// templates for absolute links, and its path component decides where in-site
+	// links are rooted. Load rejects a value that is not an absolute URL, since a
+	// host mistaken for a path ("example.com/site") would quietly misroot every
+	// link in the site.
 	BaseURL string `toml:"base_url"`
+	// BasePath is the path component of BaseURL, cleaned to either "" (the site
+	// sits at a domain root) or a rooted path with no trailing slash ("/project").
+	// It is derived rather than configured, so cress.toml cannot set it and the
+	// two cannot disagree. Every in-site URL cress emits already carries it;
+	// templates need it only for a theme's own asset links.
+	BasePath string `toml:"-"`
 	// Theme names the theme to render with. Empty resolves to DefaultTheme.
 	Theme string `toml:"theme"`
 	// Logo is a path or URL to a logo image, rendered in the navigation. Empty
@@ -156,6 +172,9 @@ func Load(path string) (*Config, error) {
 		},
 	}
 	cfg.normalize()
+	if err := cfg.resolveBasePath(path); err != nil {
+		return nil, err
+	}
 	if err := validateAccents(path, cfg.Site); err != nil {
 		return nil, err
 	}
@@ -163,6 +182,41 @@ func Load(path string) (*Config, error) {
 		return nil, err
 	}
 	return cfg, nil
+}
+
+// resolveBasePath validates BaseURL and records its path component in BasePath.
+//
+// An unset BaseURL leaves both empty: a site with no canonical root is served
+// from one, which is the same shape as a domain root. A value that is set must
+// be an absolute URL, because the alternative is worse than an error. Parsing
+// "example.com/site" leniently yields a path of "example.com/site", so every
+// link in the site would be emitted under a directory that does not exist, and
+// the only symptom would be a site that 404s everywhere once published.
+func (c *Config) resolveBasePath(path string) error {
+	if c.Site.BaseURL == "" {
+		return nil
+	}
+	u, err := url.Parse(c.Site.BaseURL)
+	if err != nil {
+		return fmt.Errorf("config %s: invalid base_url %q: %w", path, c.Site.BaseURL, err)
+	}
+	if u.Scheme == "" || u.Host == "" {
+		return fmt.Errorf("config %s: base_url %q is not an absolute URL (want a scheme and host, like %q)", path, c.Site.BaseURL, exampleBaseURL)
+	}
+	c.Site.BasePath = cleanBasePath(u.Path)
+	return nil
+}
+
+// cleanBasePath reduces a URL path to the form the builder prefixes with: empty
+// for a site at a domain root, else rooted with no trailing slash. Both ends
+// matter, since every URL cress emits already starts with a slash and nothing
+// should end up doubling it.
+func cleanBasePath(p string) string {
+	p = strings.Trim(p, "/")
+	if p == "" {
+		return ""
+	}
+	return "/" + p
 }
 
 // validateLogos rejects a dark logo with no light one to pair it with. The two

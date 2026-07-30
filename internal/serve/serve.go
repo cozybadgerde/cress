@@ -76,12 +76,15 @@ func Run(ctx context.Context, opts Options) error {
 
 	srv := &http.Server{
 		Addr:              opts.Addr,
-		Handler:           siteHandler(res.Output),
+		Handler:           siteHandler(res.Output, res.BasePath),
 		ReadHeaderTimeout: readTimeout,
 	}
 	serveErr := make(chan error, 1)
 	go func() {
-		logf("serving http://%s (Ctrl-C to stop)", opts.Addr)
+		// The base path is read from the first build and held for the session: it is
+		// the one thing the server itself is configured with rather than reading off
+		// disk per request, so changing base_url needs a restart.
+		logf("serving http://%s%s/ (Ctrl-C to stop)", opts.Addr, res.BasePath)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			serveErr <- err
 		}
@@ -92,18 +95,43 @@ func Run(ctx context.Context, opts Options) error {
 
 // siteHandler serves the built output, answering a miss with the site's own 404
 // page so the preview matches what a static host does.
-func siteHandler(outPath string) http.Handler {
+//
+// When the site is rooted under basePath, the preview mounts there too, and the
+// server root redirects to it. A site built for a subdirectory has that prefix
+// baked into every link it emits, so serving it from "/" would preview a set of
+// links that all 404: the mismatch would only show up once the site was
+// published, which is the failure this exists to prevent.
+func siteHandler(outPath, basePath string) http.Handler {
 	files := http.FileServer(http.Dir(outPath))
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	site := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		files.ServeHTTP(&notFoundWriter{ResponseWriter: w, outPath: outPath}, r)
+	})
+	if basePath == "" {
+		return site
+	}
+
+	mounted := http.StripPrefix(basePath, site)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/" || r.URL.Path == basePath {
+			http.Redirect(w, r, basePath+"/", http.StatusFound)
+			return
+		}
+		if !strings.HasPrefix(r.URL.Path, basePath+"/") {
+			// Outside the mount point nothing is served, but the site's own 404 is
+			// still the right answer: a host would serve it for this address too.
+			if !writeNotFound(w, outPath) {
+				http.NotFound(w, r)
+			}
+			return
+		}
+		mounted.ServeHTTP(w, r)
 	})
 }
 
 // notFoundWriter swaps the file server's plain "404 page not found" body for the
 // built 404 page. http.FileServer signals a miss only by calling WriteHeader, so
 // intercepting that is the one way to replace the body without reimplementing
-// its index lookup and redirect handling. The page is read per miss rather than
-// cached, so a rebuild is picked up without restarting the server.
+// its index lookup and redirect handling.
 type notFoundWriter struct {
 	http.ResponseWriter
 	outPath  string
@@ -121,17 +149,28 @@ func (w *notFoundWriter) WriteHeader(code int) {
 		w.ResponseWriter.WriteHeader(code)
 		return
 	}
-	// #nosec G304 -- outPath is the build's own output directory.
-	page, err := os.ReadFile(filepath.Join(w.outPath, build.NotFoundFile))
-	if err != nil {
+	if !writeNotFound(w.ResponseWriter, w.outPath) {
 		w.ResponseWriter.WriteHeader(code)
 		return
 	}
 	w.replaced = true
+}
+
+// writeNotFound answers with the built 404 page, reporting whether it could. It
+// is read per miss rather than cached, so a rebuild is picked up without
+// restarting the server. A build always writes the file, so a failure here means
+// someone removed it mid-session and the caller answers however it must.
+func writeNotFound(w http.ResponseWriter, outPath string) bool {
+	// #nosec G304 -- outPath is the build's own output directory.
+	page, err := os.ReadFile(filepath.Join(outPath, build.NotFoundFile))
+	if err != nil {
+		return false
+	}
 	w.Header().Set("Content-Type", contentTypeHTML)
 	w.Header().Set("Content-Length", strconv.Itoa(len(page)))
-	w.ResponseWriter.WriteHeader(code)
-	_, _ = w.ResponseWriter.Write(page)
+	w.WriteHeader(http.StatusNotFound)
+	_, _ = w.Write(page)
+	return true
 }
 
 // Write drops the file server's own error body once the 404 page has replaced

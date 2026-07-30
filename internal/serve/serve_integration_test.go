@@ -68,6 +68,112 @@ func TestServe_integration(t *testing.T) {
 	}
 }
 
+// A site built for a subdirectory has that prefix in every link it emits, so
+// the preview has to answer at the same place. Serving it from "/" would preview
+// a site whose every link 404s, and the mismatch would surface only once it was
+// published.
+func TestServe_subpath_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := t.TempDir()
+	if _, err := scaffold.Create(root, false); err != nil {
+		t.Fatalf("scaffold: %v", err)
+	}
+	cfg := filepath.Join(root, "cress.toml")
+	body, err := os.ReadFile(cfg) // #nosec G304 -- test-controlled path
+	if err != nil {
+		t.Fatalf("reading scaffolded config: %v", err)
+	}
+	edited := strings.Replace(string(body),
+		`base_url = "https://example.com"`,
+		`base_url = "https://user.github.io/cress"`, 1)
+	if edited == string(body) {
+		t.Fatal("scaffolded config no longer carries the base_url this test rewrites")
+	}
+	if err := os.WriteFile(cfg, []byte(edited), 0o600); err != nil {
+		t.Fatalf("writing config: %v", err)
+	}
+
+	addr := freeAddr(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	runErr := make(chan error, 1)
+	go func() {
+		runErr <- serve.Run(ctx, serve.Options{Root: root, Addr: addr})
+	}()
+
+	base := "http://" + addr
+
+	// The site is served under its base path, with the emitted links intact.
+	page := waitForBody(t, base+"/cress/", "Welcome")
+	if page == "" {
+		t.Fatal("the site never became available under its base path")
+	}
+	if !strings.Contains(page, `href="/cress/style.css"`) {
+		t.Errorf("served page is missing the prefixed stylesheet link:\n%s", page)
+	}
+
+	// A theme asset resolves at the address the page asks for, which is the whole
+	// point of mounting the preview under the prefix.
+	assertOK(t, base+"/cress/style.css")
+
+	// The server root redirects to the mount point, so the address the user
+	// remembers still lands on the site.
+	assertRedirect(t, base+"/", "/cress/")
+
+	// A miss inside the mount and an address outside it both answer with the
+	// site's own 404, the way a static host does.
+	assertNotFoundPage(t, base+"/cress/nope.html")
+	assertNotFoundPage(t, base+"/style.css")
+
+	cancel()
+	select {
+	case err := <-runErr:
+		if err != nil {
+			t.Errorf("serve.Run returned %v, want nil on cancel", err)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("serve.Run did not shut down after cancel")
+	}
+}
+
+// assertOK checks that url is served successfully.
+func assertOK(t *testing.T, url string) {
+	t.Helper()
+	client := &http.Client{Timeout: time.Second}
+	resp, err := client.Get(url) //nolint:noctx // short-lived test request with a client timeout
+	if err != nil {
+		t.Fatalf("GET %s: %v", url, err)
+	}
+	_ = resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("GET %s = %d, want %d", url, resp.StatusCode, http.StatusOK)
+	}
+}
+
+// assertRedirect checks that url redirects to location, without following it.
+func assertRedirect(t *testing.T, url, location string) {
+	t.Helper()
+	client := &http.Client{
+		Timeout:       time.Second,
+		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
+	}
+	resp, err := client.Get(url) //nolint:noctx // short-lived test request with a client timeout
+	if err != nil {
+		t.Fatalf("GET %s: %v", url, err)
+	}
+	_ = resp.Body.Close()
+	if resp.StatusCode != http.StatusFound {
+		t.Errorf("GET %s = %d, want %d", url, resp.StatusCode, http.StatusFound)
+	}
+	if got := resp.Header.Get("Location"); got != location {
+		t.Errorf("Location = %q, want %q", got, location)
+	}
+}
+
 // freeAddr returns a localhost address that is free at the moment of the call.
 func freeAddr(t *testing.T) string {
 	t.Helper()
