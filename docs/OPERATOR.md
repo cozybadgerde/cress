@@ -40,6 +40,47 @@ The script resolves the latest release, downloads the archive for your platform,
 and verifies it against the checksums published with that release before
 installing anything. A mismatch aborts the install rather than warning about it.
 
+## Verify the signature
+
+The checksum proves the download arrived intact. It cannot prove who published
+it, because it travels with the files it attests: anything able to publish a
+release can publish matching checksums.
+
+Releases are therefore signed. `checksums.txt` carries a
+[cosign](https://docs.sigstore.dev) signature made by the release workflow with
+a short-lived Sigstore certificate, so there is no key to distribute and none to
+be stolen. When cosign is installed, the script verifies it automatically and
+says so:
+
+```console
+$ curl -sSfL .../install.sh | sh -s -- -b "$HOME/.local/bin"
+cress-install: verifying checksum...
+cress-install: verifying signature...
+```
+
+Without cosign the install continues on the checksum alone and notes that it
+did, because this script's job is bootstrapping a machine that has nothing on it
+yet. To refuse rather than continue, which is the right setting for a build
+image or a shared host, require it:
+
+```bash
+CRESS_REQUIRE_SIGNATURE=1 curl -sSfL .../install.sh | sh -s -- -b /usr/local/bin
+```
+
+To check a downloaded release by hand:
+
+```bash
+cosign verify-blob checksums.txt \
+  --signature checksums.txt.sig \
+  --certificate checksums.txt.pem \
+  --certificate-identity-regexp '^https://github.com/cozybadgerde/cress/\.github/workflows/release\.yml@refs/tags/' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
+That identity is the point of the check: it says the file was signed by cress's
+own release workflow running on a tag, not merely by someone with a valid
+certificate.
+
 ## Pin a version
 
 The examples above track the latest release. Pin an exact one with `-t`:
