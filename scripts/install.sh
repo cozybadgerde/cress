@@ -87,11 +87,18 @@ esac
 
 # Resolve the latest tag if none was pinned. per_page=1 returns the newest
 # release including prereleases, so this works before a stable tag exists.
+#
+# The API pretty-prints, so the separator is '": "' rather than '":"'. Matching
+# with -n and p is what makes a parse failure safe: a pattern that does not
+# match prints nothing, leaving TAG empty for the check below, where a
+# substitution that does not match would pass the whole line through and build
+# a URL out of it.
 if [ -z "$TAG" ]; then
 	log "resolving latest release..."
 	TAG=$(dls "${API}/releases?per_page=1" \
-		| tr ',' '\n' | grep '"tag_name"' | head -1 \
-		| sed 's/.*"tag_name":"\([^"]*\)".*/\1/')
+		| tr ',' '\n' \
+		| sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
+		| head -1)
 	[ -n "$TAG" ] || die "could not resolve the latest release; pass -t TAG"
 fi
 
