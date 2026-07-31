@@ -71,6 +71,13 @@ gets by default.
 synthesizes a 404 and renders it through `page.html`. That is why the 404 is
 free for every theme instead of being a second required template.
 
+The rendered Markdown a theme drops into the page is plain semantic HTML, with
+one shape worth knowing about: an image that is the whole of its paragraph
+arrives wrapped in a `<figure>`, with the image title as a `<figcaption>` when
+the author wrote one. The wrapper is there with or without a caption, so a
+theme styles one shape rather than two. A theme that styles `p img` and not
+`figure img` misses every standalone image on the site.
+
 ## The template data contract
 
 Every template receives a `theme.PageData`, defined in `internal/theme/data.go`

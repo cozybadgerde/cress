@@ -108,7 +108,11 @@ theme  ─┘
   output path and URL (`about.md` -> `about.html`; an `index` file collapses to
   its directory URL). It does no HTML conversion.
 - **`render`** owns the goldmark configuration (CommonMark + GFM) and converts a
-  Markdown body to an HTML fragment. Nothing else.
+  Markdown body to an HTML fragment. Nothing else. Two AST transformers shape
+  the output: one roots the author's site-rooted links under `BasePath`, the
+  other wraps an image that is the whole of its paragraph in a `<figure>`,
+  promoting the CommonMark image title to a `<figcaption>`. The caption is
+  escaped text, not Markdown, because goldmark exposes no inline-only parser.
 - **`theme`** resolves a theme (a directory under `themes/`, else the embedded
   default) and loads its `html/template` set and static assets. `page.html` is
   the required entry template; every other template is optional, so the package
