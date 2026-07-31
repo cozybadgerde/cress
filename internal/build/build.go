@@ -20,14 +20,6 @@ import (
 	"github.com/cozybadgerde/cress/internal/theme"
 )
 
-// Conventional site directory names, relative to the site root.
-const (
-	ContentDir = "content"
-	StaticDir  = "static"
-	ThemesDir  = "themes"
-	OutputDir  = "public"
-)
-
 // NotFoundFile is the site's 404 page, written at the output root. Static hosts
 // look for it there regardless of how the content tree nests, so it is the one
 // output path that does not mirror its source.
@@ -66,7 +58,7 @@ type Options struct {
 	// Root is the site root directory (holds cress.toml). Defaults to ".".
 	Root string
 	// Output is the directory to write into. A relative path is taken under
-	// Root; defaults to OutputDir.
+	// Root; defaults to config.OutputDir.
 	Output string
 	// Drafts includes pages marked draft when true.
 	Drafts bool
@@ -94,7 +86,7 @@ func Build(opts Options) (*Result, error) {
 	}
 	outName := opts.Output
 	if outName == "" {
-		outName = OutputDir
+		outName = config.OutputDir
 	}
 	outPath := outName
 	if !filepath.IsAbs(outName) {
@@ -108,11 +100,11 @@ func Build(opts Options) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	pages, err := content.Collect(filepath.Join(root, ContentDir))
+	pages, err := content.Collect(filepath.Join(root, config.ContentDir))
 	if err != nil {
 		return nil, fmt.Errorf("collecting content: %w", err)
 	}
-	thm, err := theme.Resolve(root, ThemesDir, cfg.Site.Theme)
+	thm, err := theme.Resolve(root, config.ThemesDir, cfg.Site.Theme)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +157,7 @@ func Build(opts Options) (*Result, error) {
 		written[NotFoundFile] = true
 	}
 
-	if err := copyStatic(outPath, thm.StaticFS(), filepath.Join(root, StaticDir), written); err != nil {
+	if err := copyStatic(outPath, thm.StaticFS(), filepath.Join(root, config.StaticDir), written); err != nil {
 		return nil, err
 	}
 
@@ -233,7 +225,7 @@ func guardOutput(root, outPath string) error {
 	if absOut == absRoot {
 		return fmt.Errorf("refusing to build into the site root %s", absRoot)
 	}
-	if absOut == filepath.Join(absRoot, ContentDir) {
+	if absOut == filepath.Join(absRoot, config.ContentDir) {
 		return fmt.Errorf("refusing to build into the content directory %s", absOut)
 	}
 	return nil
@@ -420,6 +412,11 @@ func ensureDir(destDir string) error {
 // Dot-entries are skipped. A .git directory (building into a gh-pages worktree)
 // or a hand-placed .nojekyll belongs to the user rather than to the build, and
 // would otherwise be reported on every run until it was ignored out of habit.
+//
+// clean.collect walks the same tree and deliberately does the opposite, because
+// `cress clean` means empty and a keep-list would grow with every host. The two
+// are the halves of one policy: change the dotfile rule here and that is the
+// other half to change with it.
 func staleFiles(outPath string, written map[string]bool) ([]string, error) {
 	var stale []string
 	err := filepath.WalkDir(outPath, func(path string, d fs.DirEntry, err error) error {

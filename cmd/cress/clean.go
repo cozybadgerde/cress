@@ -11,8 +11,8 @@ import (
 
 	"github.com/urfave/cli/v3"
 
-	"github.com/cozybadgerde/cress/internal/build"
 	"github.com/cozybadgerde/cress/internal/clean"
+	"github.com/cozybadgerde/cress/internal/config"
 )
 
 // newCleanCommand empties the output directory.
@@ -26,7 +26,7 @@ func newCleanCommand() *cli.Command {
 				Name:    flagOutput,
 				Aliases: []string{"o"},
 				Usage:   "output directory",
-				Value:   build.OutputDir,
+				Value:   config.OutputDir,
 			},
 			&cli.BoolFlag{
 				Name:    flagForce,

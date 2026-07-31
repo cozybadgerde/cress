@@ -6,6 +6,9 @@
 # rendered site output (the default `cress build` target)
 /public/
 
+# manual audit reports, kept local on purpose
+/audits/
+
 # editor / OS
 .DS_Store
 *.swp

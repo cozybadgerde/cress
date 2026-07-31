@@ -15,7 +15,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/cozybadgerde/cress/internal/build"
 	"github.com/cozybadgerde/cress/internal/config"
 )
 
@@ -24,7 +23,7 @@ type Options struct {
 	// Root is the site root directory (holds cress.toml). Defaults to ".".
 	Root string
 	// Output is the directory to empty. A relative path is taken under Root;
-	// defaults to build.OutputDir.
+	// defaults to config.OutputDir.
 	Output string
 }
 
@@ -58,7 +57,7 @@ func Prepare(opts Options) (*Plan, error) {
 	}
 	outName := opts.Output
 	if outName == "" {
-		outName = build.OutputDir
+		outName = config.OutputDir
 	}
 	outPath := outName
 	if !filepath.IsAbs(outName) {
@@ -112,7 +111,7 @@ func guard(absRoot, absOut string) error {
 	if within(absOut, absRoot) {
 		return fmt.Errorf("output path %s contains the site root", absOut)
 	}
-	for _, dir := range []string{build.ContentDir, build.StaticDir, build.ThemesDir} {
+	for _, dir := range []string{config.ContentDir, config.StaticDir, config.ThemesDir} {
 		srcDir := filepath.Join(absRoot, dir)
 		if absOut == srcDir || within(srcDir, absOut) {
 			return fmt.Errorf("output path %s is inside the %s directory", absOut, dir)
@@ -133,6 +132,12 @@ func within(dir, path string) bool {
 // collect lists every file under outPath and the top-level entries holding
 // them. A missing output directory yields nothing, not an error: there is
 // simply nothing to clean.
+//
+// Dot-entries are included, unlike in build.staleFiles, which walks the same
+// tree and skips them because a .nojekyll the user placed is not the build's to
+// report. Here the opposite holds: clean means empty, and a keep-list is a
+// promise that grows with every host and never shrinks. The two are the halves
+// of one policy, so a change to either wants a look at the other.
 func collect(outPath string) (files, entries []string, err error) {
 	dirEntries, err := os.ReadDir(outPath)
 	if err != nil {

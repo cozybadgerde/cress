@@ -1,6 +1,12 @@
 // Package config loads cress's TOML site configuration (cress.toml): the site
 // metadata (title, base URL, theme) and the explicit navigation, grouped into a
 // primary and a secondary menu.
+//
+// It also names the conventions a site is built from, which are facts about a
+// site's shape rather than values read from the file: the config file name, the
+// directories a site is made of, and the defaults an unset key falls back to.
+// They live here because this is the package every other one can depend on
+// without acquiring anything else.
 package config
 
 import (
@@ -15,6 +21,21 @@ import (
 
 // FileName is the conventional config file name at the root of a cress site.
 const FileName = "cress.toml"
+
+// Conventional site directory names, relative to the site root.
+//
+// They describe the shape of a cress site rather than the behaviour of any one
+// command, which is why they live beside FileName rather than with the builder.
+// Three packages need the same vocabulary: build reads content, themes and
+// static and writes output; clean refuses to empty the first three; serve
+// watches them. Owning them here keeps those packages from depending on each
+// other to learn what a directory is called.
+const (
+	ContentDir = "content"
+	StaticDir  = "static"
+	ThemesDir  = "themes"
+	OutputDir  = "public"
+)
 
 // DefaultTheme is the theme used when the config leaves it unset. It resolves
 // to the embedded default theme shipped in the binary.

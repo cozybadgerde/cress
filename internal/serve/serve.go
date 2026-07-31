@@ -18,6 +18,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 
 	"github.com/cozybadgerde/cress/internal/build"
+	"github.com/cozybadgerde/cress/internal/config"
 )
 
 const (
@@ -252,7 +253,7 @@ func watchSources(watcher *fsnotify.Watcher, root string) error {
 	if err := watcher.Add(root); err != nil {
 		return fmt.Errorf("watching %s: %w", root, err)
 	}
-	for _, sub := range []string{build.ContentDir, build.ThemesDir, build.StaticDir} {
+	for _, sub := range []string{config.ContentDir, config.ThemesDir, config.StaticDir} {
 		dir := filepath.Join(root, sub)
 		if info, err := os.Stat(dir); err != nil || !info.IsDir() {
 			continue

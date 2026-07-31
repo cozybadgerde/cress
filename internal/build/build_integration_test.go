@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/cozybadgerde/cress/internal/build"
+	"github.com/cozybadgerde/cress/internal/config"
 	"github.com/cozybadgerde/cress/internal/scaffold"
 )
 
@@ -41,7 +42,7 @@ func TestBuild_integration(t *testing.T) {
 		t.Errorf("unexpected warnings: %v", res.Warnings)
 	}
 
-	out := filepath.Join(root, build.OutputDir)
+	out := filepath.Join(root, config.OutputDir)
 	// style.css comes from the theme; favicon.png and logo.svg from the site's
 	// static/ tree that `cress init` scaffolds.
 	for _, name := range []string{"index.html", "about.html", "style.css", "favicon.png", "logo.svg"} {
@@ -101,7 +102,7 @@ func TestBuild_accentOverrides_integration(t *testing.T) {
 			if _, err := build.Build(build.Options{Root: root}); err != nil {
 				t.Fatalf("build: %v", err)
 			}
-			doc := readFile(t, filepath.Join(root, build.OutputDir, "index.html"))
+			doc := readFile(t, filepath.Join(root, config.OutputDir, "index.html"))
 
 			for _, want := range tc.want {
 				if !strings.Contains(doc, want) {
@@ -159,7 +160,7 @@ func TestBuild_logoVariants_integration(t *testing.T) {
 			if _, err := build.Build(build.Options{Root: root}); err != nil {
 				t.Fatalf("build: %v", err)
 			}
-			doc := readFile(t, filepath.Join(root, build.OutputDir, "index.html"))
+			doc := readFile(t, filepath.Join(root, config.OutputDir, "index.html"))
 
 			for _, want := range tc.want {
 				if !strings.Contains(doc, want) {
@@ -195,7 +196,7 @@ func TestBuild_draftsAndStatic_integration(t *testing.T) {
 	if res.Pages != scaffoldPages {
 		t.Errorf("rendered %d pages, want %d (draft excluded)", res.Pages, scaffoldPages)
 	}
-	out := filepath.Join(root, build.OutputDir)
+	out := filepath.Join(root, config.OutputDir)
 	if _, err := os.Stat(filepath.Join(out, "secret.html")); !os.IsNotExist(err) {
 		t.Errorf("draft page should not be rendered (stat err = %v)", err)
 	}
@@ -231,7 +232,7 @@ func TestBuild_neverDeletesOutput_integration(t *testing.T) {
 
 	// Two ways a file ends up in the output tree without this build writing it:
 	// the user put it there, and a page that used to produce it is now gone.
-	out := filepath.Join(root, build.OutputDir)
+	out := filepath.Join(root, config.OutputDir)
 	writeSiteFile(t, filepath.Join(out, "keepme.txt"), "not cress's\n")
 	if err := os.Remove(filepath.Join(root, "content", "about.md")); err != nil {
 		t.Fatalf("removing about.md: %v", err)
@@ -272,7 +273,7 @@ func TestBuild_ignoresDotEntriesInOutput_integration(t *testing.T) {
 	// What a host or a gh-pages worktree leaves in the output tree. These belong
 	// to the user, so warning about them on every single build would train the
 	// warnings to be ignored.
-	out := filepath.Join(root, build.OutputDir)
+	out := filepath.Join(root, config.OutputDir)
 	writeSiteFile(t, filepath.Join(out, ".nojekyll"), "")
 	writeSiteFile(t, filepath.Join(out, ".git", "config"), "[core]\n")
 
@@ -301,7 +302,7 @@ func TestBuild_collapsesManyStaleWarnings_integration(t *testing.T) {
 	// One past the point where individual warnings collapse into a count, so a
 	// bulk rename cannot bury the rest of the build's output.
 	const stale = 11
-	out := filepath.Join(root, build.OutputDir)
+	out := filepath.Join(root, config.OutputDir)
 	for i := 0; i < stale; i++ {
 		writeSiteFile(t, filepath.Join(out, fmt.Sprintf("old-%d.html", i)), "old\n")
 	}
@@ -375,7 +376,7 @@ func TestBuild_footerAndCopyright_integration(t *testing.T) {
 			if _, err := build.Build(build.Options{Root: root}); err != nil {
 				t.Fatalf("build: %v", err)
 			}
-			doc := readFile(t, filepath.Join(root, build.OutputDir, "index.html"))
+			doc := readFile(t, filepath.Join(root, config.OutputDir, "index.html"))
 
 			for _, want := range tc.want {
 				if !strings.Contains(doc, want) {
@@ -426,7 +427,7 @@ Imprint = "imprint.md"
 		t.Errorf("Result.BasePath = %q, want %q", res.BasePath, "/cress")
 	}
 
-	out := filepath.Join(root, build.OutputDir)
+	out := filepath.Join(root, config.OutputDir)
 	// Output paths are unchanged: only the URLs written into the HTML move.
 	if _, err := os.Stat(filepath.Join(out, "about.html")); err != nil {
 		t.Errorf("output layout should not change under a base path: %v", err)
@@ -483,7 +484,7 @@ func TestBuild_domainRootIsUnprefixed_integration(t *testing.T) {
 		t.Errorf("Result.BasePath = %q, want empty for a site at a domain root", res.BasePath)
 	}
 
-	doc := readFile(t, filepath.Join(root, build.OutputDir, "index.html"))
+	doc := readFile(t, filepath.Join(root, config.OutputDir, "index.html"))
 	assertMarkers(t, "index.html", doc, []marker{
 		{`href="/style.css"`, "the theme's stylesheet at the root"},
 		{`href="/about.html"`, "a nav link at the root"},
@@ -520,7 +521,7 @@ language = "de"
 	if _, err := build.Build(build.Options{Root: root}); err != nil {
 		t.Fatalf("build: %v", err)
 	}
-	out := filepath.Join(root, build.OutputDir)
+	out := filepath.Join(root, config.OutputDir)
 
 	assertMarkers(t, "about.html", readFile(t, filepath.Join(out, "about.html")), []marker{
 		{`<html lang="fr">`, "the page's own language"},
@@ -570,7 +571,7 @@ func TestBuild_noCanonicalWithoutBaseURL_integration(t *testing.T) {
 		t.Fatalf("build: %v", err)
 	}
 
-	doc := readFile(t, filepath.Join(root, build.OutputDir, "index.html"))
+	doc := readFile(t, filepath.Join(root, config.OutputDir, "index.html"))
 	if strings.Contains(doc, "canonical") {
 		t.Errorf("no base_url means no canonical link:\n%s", doc)
 	}
@@ -597,7 +598,7 @@ func TestBuild_canonicalUnderSubpath_integration(t *testing.T) {
 	if _, err := build.Build(build.Options{Root: root}); err != nil {
 		t.Fatalf("build: %v", err)
 	}
-	out := filepath.Join(root, build.OutputDir)
+	out := filepath.Join(root, config.OutputDir)
 
 	assertMarkers(t, "about.html", readFile(t, filepath.Join(out, "about.html")), []marker{
 		{`<link rel="canonical" href="https://user.github.io/cress/about.html" />`, "the canonical link under the base path"},
@@ -622,7 +623,7 @@ func TestBuild_noHomePage_integration(t *testing.T) {
 		t.Fatalf("build: %v", err)
 	}
 
-	assertMarkers(t, "about.html", readFile(t, filepath.Join(root, build.OutputDir, "about.html")), []marker{
+	assertMarkers(t, "about.html", readFile(t, filepath.Join(root, config.OutputDir, "about.html")), []marker{
 		{"<title>About · S</title>", "a full title, since this page is not the home page"},
 	})
 }
@@ -651,7 +652,7 @@ func TestBuild_notFound_integration(t *testing.T) {
 			t.Errorf("unexpected warnings: %v", res.Warnings)
 		}
 
-		doc := readFile(t, filepath.Join(root, build.OutputDir, build.NotFoundFile))
+		doc := readFile(t, filepath.Join(root, config.OutputDir, build.NotFoundFile))
 		assertMarkers(t, build.NotFoundFile, doc, []marker{
 			{"<title>Page not found · My cozy site</title>", "the synthesized title"},
 			{"Page not found</h1>", "the synthesized heading"},
@@ -678,7 +679,7 @@ func TestBuild_notFound_integration(t *testing.T) {
 			t.Errorf("rendered %d pages, want %d with an authored 404", res.Pages, scaffoldPages+1)
 		}
 
-		doc := readFile(t, filepath.Join(root, build.OutputDir, build.NotFoundFile))
+		doc := readFile(t, filepath.Join(root, config.OutputDir, build.NotFoundFile))
 		if !strings.Contains(doc, "MINE_NOT_CRESSES") {
 			t.Error("content/404.md must win; got the synthesized page instead")
 		}
@@ -703,7 +704,7 @@ func TestBuild_notFound_integration(t *testing.T) {
 		}
 
 		// The theme's 404 template receives the same data a page does.
-		if got := readFile(t, filepath.Join(root, build.OutputDir, build.NotFoundFile)); got != "THEME404:Page not found:S" {
+		if got := readFile(t, filepath.Join(root, config.OutputDir, build.NotFoundFile)); got != "THEME404:Page not found:S" {
 			t.Errorf("404.html = %q, want the theme's own 404 template to render it", got)
 		}
 	})
@@ -723,7 +724,7 @@ func TestBuild_notFound_integration(t *testing.T) {
 
 		// The point of tier 3: a theme written before cress had a 404 gets a
 		// styled one through page.html rather than none at all.
-		if got := readFile(t, filepath.Join(root, build.OutputDir, build.NotFoundFile)); got != "BARE:Page not found" {
+		if got := readFile(t, filepath.Join(root, config.OutputDir, build.NotFoundFile)); got != "BARE:Page not found" {
 			t.Errorf("404.html = %q, want it rendered through the theme's page.html", got)
 		}
 	})

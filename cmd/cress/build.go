@@ -6,6 +6,7 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/cozybadgerde/cress/internal/build"
+	"github.com/cozybadgerde/cress/internal/config"
 )
 
 // newBuildCommand renders the site into the output directory.
@@ -19,7 +20,7 @@ func newBuildCommand() *cli.Command {
 				Name:    flagOutput,
 				Aliases: []string{"o"},
 				Usage:   "output directory",
-				Value:   build.OutputDir,
+				Value:   config.OutputDir,
 			},
 			draftsFlag(),
 		},
