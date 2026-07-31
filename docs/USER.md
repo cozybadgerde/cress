@@ -123,7 +123,7 @@ both backgrounds, which is how the scaffolded placeholder gets away with a
 single fixed color, and an SVG drawn with `currentColor` adapts on its own.
 Reach for the second file when the artwork can do neither: a raster logo, or a
 wordmark fixed in near-black or near-white, which disappears into one of the
-two backgrounds. Setting both makes the theme render a `<picture>`, so the
+two backgrounds. Setting both adds a dark-scheme `<source>` to the logo, so the
 right one is chosen before anything is fetched, with no flash of the wrong
 image and no JavaScript.
 

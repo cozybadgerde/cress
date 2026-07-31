@@ -17,10 +17,14 @@
   <body>
     <header class="site-header">
       <a class="site-title" href="{{ .Site.BasePath }}/">
-        {{ if .Site.LogoDark }}<picture>
-          <source media="(prefers-color-scheme: dark)" srcset="{{ .Site.LogoDark }}" />
-          <img class="site-logo" src="{{ .Site.Logo }}" alt="" />
-        </picture>{{ else }}{{ with .Site.Logo }}<img class="site-logo" src="{{ . }}" alt="" />{{ end }}{{ end }}
+        {{- with .Site.Logo }}
+        <picture>
+          {{- with $.Site.LogoDark }}
+          <source media="(prefers-color-scheme: dark)" srcset="{{ . }}" />
+          {{- end }}
+          <img class="site-logo" src="{{ . }}" alt="" />
+        </picture>
+        {{- end }}
         <span>{{ .Site.Title }}</span>
       </a>
       {{ with .Nav.Main }}

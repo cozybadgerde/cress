@@ -71,8 +71,9 @@ body {
   text-decoration: none;
 }
 
-/* A dark-scheme logo wraps the img in <picture>. Taking the wrapper out of the
-   layout keeps the img itself the flex item, so both forms sit identically. */
+/* The logo always sits in a <picture>, which carries the dark-scheme <source>
+   when there is one. Taking the wrapper out of the layout keeps the img itself
+   the flex item. */
 .site-title picture {
   display: contents;
 }

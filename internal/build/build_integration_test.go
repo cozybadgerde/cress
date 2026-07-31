@@ -117,9 +117,10 @@ func TestBuild_accentOverrides_integration(t *testing.T) {
 	}
 }
 
-// A logo without a dark variant must keep rendering as the bare <img> it always
-// was: <picture> is the exception, not the new default, so a site that sets only
-// logo pays nothing for a feature it does not use.
+// The logo renders as an <img> inside a <picture> whether or not logo_dark is
+// set; only the dark-scheme <source> is conditional. One shape keeps the
+// template free of a second branch, and it costs the layout nothing because the
+// theme CSS gives .site-title picture display: contents.
 func TestBuild_logoVariants_integration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
@@ -135,8 +136,8 @@ func TestBuild_logoVariants_integration(t *testing.T) {
 		{
 			name: "logo only",
 			site: "logo = \"/logo.svg\"\n",
-			want: []string{`<img class="site-logo" src="/logo.svg"`},
-			omit: []string{picture},
+			want: []string{picture, `<img class="site-logo" src="/logo.svg"`},
+			omit: []string{"<source"},
 		},
 		{
 			name: "both",
