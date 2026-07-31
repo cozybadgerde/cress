@@ -37,39 +37,53 @@ func Create(dir string, force bool) ([]string, error) {
 			return nil, err
 		}
 	}
-	var skipped []string
-	err := fs.WalkDir(siteFS, builtinRoot, func(p string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		rel, err := filepath.Rel(builtinRoot, p)
-		if err != nil {
-			return err
-		}
-		dest := filepath.Join(dir, rel)
-		if d.IsDir() {
-			return os.MkdirAll(dest, dirPerm)
-		}
-		data, err := siteFS.ReadFile(p)
-		if err != nil {
-			return err
-		}
-		if err := os.MkdirAll(filepath.Dir(dest), dirPerm); err != nil {
-			return err
-		}
-		wrote, err := writeNew(dest, data)
-		if err != nil {
-			return err
-		}
-		if !wrote {
-			skipped = append(skipped, filepath.ToSlash(rel))
-		}
-		return nil
-	})
-	if err != nil {
+	w := &siteWriter{dir: dir}
+	if err := fs.WalkDir(siteFS, builtinRoot, w.copyEntry); err != nil {
 		return nil, err
 	}
-	return skipped, nil
+	return w.skipped, nil
+}
+
+// siteWriter copies the embedded starter site into a target directory,
+// collecting the files it left alone. The accumulator is what earns it a type:
+// as a closure over a local it shared a scope with the walk itself, so a reader
+// tracked the traversal, the per-entry work, and the result at once.
+type siteWriter struct {
+	dir     string
+	skipped []string
+}
+
+// copyEntry writes one entry of the embedded tree into the target directory. It
+// is an fs.WalkDirFunc, so it reports a name it skipped rather than returning
+// it: a starter file that is already there is left untouched and recorded.
+func (w *siteWriter) copyEntry(p string, d fs.DirEntry, err error) error {
+	if err != nil {
+		return err
+	}
+	rel, err := filepath.Rel(builtinRoot, p)
+	if err != nil {
+		return err
+	}
+	dest := filepath.Join(w.dir, rel)
+	if d.IsDir() {
+		return os.MkdirAll(dest, dirPerm)
+	}
+
+	data, err := siteFS.ReadFile(p)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(dest), dirPerm); err != nil {
+		return err
+	}
+	wrote, err := writeNew(dest, data)
+	if err != nil {
+		return err
+	}
+	if !wrote {
+		w.skipped = append(w.skipped, filepath.ToSlash(rel))
+	}
+	return nil
 }
 
 // writeNew writes data to path unless a file is already there, reporting
