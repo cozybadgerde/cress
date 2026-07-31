@@ -121,6 +121,34 @@ want=$(awk -v f="$asset" '$2 == f {print $1}' "${tmp}/checksums.txt")
 got=$(sum "${tmp}/${asset}")
 [ "$want" = "$got" ] || die "checksum mismatch: want ${want}, got ${got}"
 
+# The checksum proves the download arrived intact. It cannot prove who published
+# it, because it travels with the file it attests, so cosign verifies the
+# signature over checksums.txt when it is available.
+#
+# Available, not required: this script's job is bootstrapping a machine that has
+# nothing installed yet, and demanding cosign to install a static site generator
+# would trade a real barrier for a threat most users are not facing. A mismatch
+# is fatal; a missing cosign is a note. Pass CRESS_REQUIRE_SIGNATURE=1 to make
+# the absence fatal too.
+if command -v cosign >/dev/null 2>&1; then
+	log "verifying signature..."
+	if dlo "${sumurl}.sig" "${tmp}/checksums.txt.sig" &&
+		dlo "${sumurl}.pem" "${tmp}/checksums.txt.pem"; then
+		cosign verify-blob "${tmp}/checksums.txt" \
+			--signature "${tmp}/checksums.txt.sig" \
+			--certificate "${tmp}/checksums.txt.pem" \
+			--certificate-identity-regexp "^https://github.com/${OWNER}/${REPO}/\.github/workflows/release\.yml@refs/tags/" \
+			--certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+			>/dev/null 2>&1 || die "signature verification failed for checksums.txt"
+	else
+		log "note: this release is not signed; checksum verified only"
+	fi
+elif [ -n "${CRESS_REQUIRE_SIGNATURE:-}" ]; then
+	die "CRESS_REQUIRE_SIGNATURE is set but cosign is not installed"
+else
+	log "note: cosign not found; checksum verified, signature not checked"
+fi
+
 log "extracting..."
 tar -xzf "${tmp}/${asset}" -C "$tmp" "$REPO" || die "extract failed"
 [ -f "${tmp}/${REPO}" ] || die "binary '${REPO}' not found in archive"

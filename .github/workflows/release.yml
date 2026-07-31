@@ -5,6 +5,12 @@
 # GITHUB_TOKEN is the automatic, repo-scoped token GitHub mints per job. A tag
 # push carries the write access GoReleaser needs to create the release and
 # upload assets, so no extra secret is required.
+#
+# Third-party actions are pinned to a commit rather than a tag. A major-version
+# tag is a moving reference its owner can repoint at any time, and this is the
+# one job holding a write token, so the code it runs should not be able to
+# change without a commit here. The tag is kept in a comment so Dependabot can
+# still propose updates.
 
 name: release
 
@@ -15,6 +21,9 @@ on:
 
 permissions:
   contents: write
+  # Keyless signing exchanges this for a short-lived Sigstore certificate, so
+  # no key material is stored in the repository.
+  id-token: write
 
 jobs:
   release:
@@ -28,7 +37,9 @@ jobs:
         with:
           go-version: "1.26"
 
-      - uses: goreleaser/goreleaser-action@v7
+      - uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac # v3
+
+      - uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7
         with:
           version: v2.17.0        # pinned
           args: release --clean

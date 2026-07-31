@@ -43,6 +43,32 @@ release:
 checksum:
   name_template: checksums.txt
 
+# Sign the checksum file, not each archive: every artifact is already covered by
+# a SHA-256 in there, so one signature authenticates the whole release.
+#
+# The checksums alone cannot do that. They are published from the same release,
+# over the same channel, as the files they attest, so they catch a corrupted
+# download and not a substituted one. The signature is what ties a release to
+# the workflow that built it.
+#
+# Keyless: cosign exchanges the job's OIDC token for a short-lived certificate
+# and logs it to the Rekor transparency log, so there is no private key to store
+# or rotate. Verification needs no key either, only the identity to expect.
+signs:
+  - cmd: cosign
+    signature: "${artifact}.sig"
+    certificate: "${artifact}.pem"
+    args:
+      - sign-blob
+      - "--yes"
+      - "--output-signature"
+      - "${signature}"
+      - "--output-certificate"
+      - "${certificate}"
+      - "${artifact}"
+    artifacts: checksum
+    output: true
+
 snapshot:
   version_template: "{{ incpatch .Version }}-snapshot"
 
