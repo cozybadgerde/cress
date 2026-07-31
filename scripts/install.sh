@@ -85,20 +85,34 @@ aarch64 | arm64) arch=arm64 ;;
 *) die "unsupported arch: $arch (cress ships amd64 and arm64)" ;;
 esac
 
-# Resolve the latest tag if none was pinned. per_page=1 returns the newest
-# release including prereleases, so this works before a stable tag exists.
+# tag_from prints the tag_name in a releases API response, or nothing at all
+# when there is none: an error body, an empty list, or a request that failed.
 #
 # The API pretty-prints, so the separator is '": "' rather than '":"'. Matching
 # with -n and p is what makes a parse failure safe: a pattern that does not
-# match prints nothing, leaving TAG empty for the check below, where a
-# substitution that does not match would pass the whole line through and build
-# a URL out of it.
-if [ -z "$TAG" ]; then
-	log "resolving latest release..."
-	TAG=$(dls "${API}/releases?per_page=1" \
+# match prints nothing, where a substitution that does not match would pass the
+# whole line through and let a URL be built out of it.
+tag_from() {
+	dls "$1" 2>/dev/null \
 		| tr ',' '\n' \
 		| sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
-		| head -1)
+		| head -1
+}
+
+# Resolve the latest tag if none was pinned.
+#
+# /releases/latest is the endpoint that excludes prereleases, which is what an
+# unpinned install should get: somebody following the README wants the current
+# release, not the next release candidate. It 404s for a repository that has
+# only ever published prereleases, so the newest-of-any-kind query stays as a
+# fallback rather than leaving the installer unusable there. Anyone who does
+# want a prerelease asks for it by name with -t.
+if [ -z "$TAG" ]; then
+	log "resolving latest release..."
+	TAG=$(tag_from "${API}/releases/latest") || TAG=""
+	if [ -z "$TAG" ]; then
+		TAG=$(tag_from "${API}/releases?per_page=1") || TAG=""
+	fi
 	[ -n "$TAG" ] || die "could not resolve the latest release; pass -t TAG"
 fi
 
