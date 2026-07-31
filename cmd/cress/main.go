@@ -20,6 +20,10 @@ const (
 	flagAddr   = "addr"
 	flagForce  = "force"
 	flagDryRun = "dry-run"
+	// flagAllowExisting is init's, and deliberately not force: it relaxes the
+	// empty-directory precondition and grants no power to overwrite, which
+	// `cress init` never does either way.
+	flagAllowExisting = "allow-existing"
 )
 
 func main() {

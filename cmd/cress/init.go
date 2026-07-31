@@ -18,9 +18,8 @@ func newInitCommand() *cli.Command {
 		ArgsUsage: "[dir]",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
-				Name:    flagForce,
-				Aliases: []string{"f"},
-				Usage:   "scaffold into a non-empty directory (never overwrites)",
+				Name:  flagAllowExisting,
+				Usage: "scaffold into a directory that already has files",
 			},
 		},
 		Action: runInit,
@@ -33,10 +32,10 @@ func runInit(_ context.Context, cmd *cli.Command) error {
 		dir = "."
 	}
 
-	skipped, err := scaffold.Create(dir, cmd.Bool(flagForce))
+	skipped, err := scaffold.Create(dir, cmd.Bool(flagAllowExisting))
 	if err != nil {
 		if errors.Is(err, scaffold.ErrExists) {
-			return fmt.Errorf("%w (use --force to add the missing files)", err)
+			return fmt.Errorf("%w (use --%s to scaffold alongside them)", err, flagAllowExisting)
 		}
 		return err
 	}

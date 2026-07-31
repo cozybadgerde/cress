@@ -24,9 +24,12 @@ delete once you have found your feet.
 
 The target directory has to be empty, though dotfiles do not count, so
 `git init` first and then `cress init` works. To scaffold into a directory that
-already holds other files, add `--force` (`-f`). Like the build, `cress init`
-never overwrites: a starter file that is already there is left alone and
-counted in the summary, so re-running it only fills in what is missing.
+already holds other files, add `--allow-existing`.
+
+That flag only relaxes the empty-directory check. It grants no permission to
+overwrite, because `cress init` never overwrites either way: a starter file that
+is already there is left alone and counted in the summary, so re-running the
+command only fills in what is missing.
 
 ## Site layout
 

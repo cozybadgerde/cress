@@ -23,16 +23,19 @@ const (
 )
 
 // ErrExists is returned by Create when the target directory already contains
-// files and force was not set.
+// files and allowExisting was not set.
 var ErrExists = errors.New("target directory not empty")
 
 // Create writes the starter site into dir, creating it if needed, and returns
 // the starter files it left alone because something was already there (in slash
-// form, relative to dir). It never overwrites, so scaffolding cannot destroy
-// work, and it refuses a directory holding anything but dot-entries unless
-// force is set.
-func Create(dir string, force bool) ([]string, error) {
-	if !force {
+// form, relative to dir).
+//
+// It never overwrites, so scaffolding cannot destroy work, and that holds
+// whatever allowExisting says. All that flag decides is whether a directory
+// already holding files is refused: it relaxes a precondition rather than
+// granting permission to write over anything.
+func Create(dir string, allowExisting bool) ([]string, error) {
+	if !allowExisting {
 		if err := requireEmpty(dir); err != nil {
 			return nil, err
 		}
@@ -87,9 +90,9 @@ func (w *siteWriter) copyEntry(p string, d fs.DirEntry, err error) error {
 }
 
 // writeNew writes data to path unless a file is already there, reporting
-// whether it wrote. The exclusive open is what makes `cress init --force` mean
-// "proceed despite the non-empty directory" rather than "replace my content":
-// an existing file is never truncated, not even between the check and the
+// whether it wrote. The exclusive open is what makes `cress init
+// --allow-existing` mean "scaffold alongside what is here" rather than "replace
+// it": an existing file is never truncated, not even between the check and the
 // write.
 func writeNew(path string, data []byte) (bool, error) {
 	// #nosec G304 -- path is under the target directory the user named.
@@ -112,7 +115,7 @@ func writeNew(path string, data []byte) (bool, error) {
 
 // requireEmpty returns ErrExists when dir holds any entry that is not a
 // dot-entry. Dotfiles do not count: `git init` before `cress init` is the
-// natural way to start, and a lone .git must not push the user onto --force.
+// natural way to start, and a lone .git must not push the user onto a flag.
 func requireEmpty(dir string) error {
 	entries, err := os.ReadDir(dir)
 	if err != nil {

@@ -64,17 +64,17 @@ func TestCreateRefusesNonEmpty_integration(t *testing.T) {
 
 	skipped, err := scaffold.Create(dir, true)
 	if err != nil {
-		t.Fatalf("Create with force: %v", err)
+		t.Fatalf("Create with allowExisting: %v", err)
 	}
 	if len(skipped) != 0 {
 		t.Errorf("nothing of the starter site was there yet, but skipped = %v", skipped)
 	}
 	if _, err := os.Stat(filepath.Join(dir, "cress.toml")); err != nil {
-		t.Errorf("force should have written the site: %v", err)
+		t.Errorf("allowExisting should have written the site: %v", err)
 	}
 }
 
-func TestCreateForceKeepsExistingFiles_integration(t *testing.T) {
+func TestCreateAllowExistingKeepsExistingFiles_integration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
@@ -99,7 +99,7 @@ func TestCreateForceKeepsExistingFiles_integration(t *testing.T) {
 
 	skipped, err := scaffold.Create(dir, true)
 	if err != nil {
-		t.Fatalf("Create with force: %v", err)
+		t.Fatalf("Create with allowExisting: %v", err)
 	}
 
 	for rel, want := range mine {
@@ -108,7 +108,7 @@ func TestCreateForceKeepsExistingFiles_integration(t *testing.T) {
 			t.Fatalf("read %s: %v", rel, err)
 		}
 		if string(got) != want {
-			t.Errorf("--force overwrote %s:\n got %q\nwant %q", rel, got, want)
+			t.Errorf("--allow-existing overwrote %s:\n got %q\nwant %q", rel, got, want)
 		}
 	}
 	if len(skipped) != len(mine) {
@@ -116,7 +116,7 @@ func TestCreateForceKeepsExistingFiles_integration(t *testing.T) {
 	}
 	// The files that were not there still get written.
 	if _, err := os.Stat(filepath.Join(dir, "content", "privacy.md")); err != nil {
-		t.Errorf("force should still write the missing starter files: %v", err)
+		t.Errorf("allowExisting should still write the missing starter files: %v", err)
 	}
 }
 
@@ -126,7 +126,7 @@ func TestCreateIgnoresDotEntries_integration(t *testing.T) {
 	}
 
 	// `git init` before `cress init` is the natural way to start a site, and it
-	// leaves a .git behind. That must not require --force.
+	// leaves a .git behind. That must not require --allow-existing.
 	dir := t.TempDir()
 	if err := os.MkdirAll(filepath.Join(dir, ".git"), 0o755); err != nil {
 		t.Fatalf("seed .git: %v", err)
