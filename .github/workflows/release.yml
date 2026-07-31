@@ -45,3 +45,11 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Name the tag rather than letting GoReleaser derive it from `git
+          # describe`. When two tags point at one commit, describe has to break
+          # the tie, and it does so differently in different checkouts: tagging
+          # v1.0.0 on the v1.0.0-alpha.3 commit made a release job resolve to
+          # alpha.3 and try to overwrite that release's assets. This workflow is
+          # triggered by a tag, so the tag is already known and never needs
+          # guessing.
+          GORELEASER_CURRENT_TAG: ${{ github.ref_name }}
