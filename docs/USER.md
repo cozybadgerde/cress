@@ -127,8 +127,9 @@ two backgrounds. Setting both adds a dark-scheme `<source>` to the logo, so the
 right one is chosen before anything is fetched, with no flash of the wrong
 image and no JavaScript.
 
-A theme decides whether to honor this. The built-in theme does; a custom theme
-that renders a bare `<img>` ignores `logo_dark` without complaint.
+A theme decides whether to honor this. The built-in theme does. A custom theme
+that never reads `logo_dark` shows the light logo to everyone, and cress does
+not warn.
 
 **Leaving the accents out is a real choice, not a shortcut.** cress has no
 default accent of its own; unset, the theme picks one, and the built-in theme
