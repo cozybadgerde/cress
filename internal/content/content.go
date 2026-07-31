@@ -54,13 +54,22 @@ type Page struct {
 
 // Collect walks root and parses every Markdown file into a Page. The returned
 // pages are ordered by their source path for deterministic output.
+//
+// Only regular files become pages. The walk itself does not follow symlinks,
+// but reading one would, so a link is skipped rather than resolved: without
+// that, content/leak.md pointing at a file outside the site would be published
+// as a page of it. That matters most where it is least visible, in a build run
+// unattended over content somebody else can add to.
 func Collect(root string) ([]*Page, error) {
 	var pages []*Page
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		if d.IsDir() || !strings.EqualFold(filepath.Ext(path), mdExt) {
+		if d.IsDir() || !d.Type().IsRegular() {
+			return nil
+		}
+		if !strings.EqualFold(filepath.Ext(path), mdExt) {
 			return nil
 		}
 		rel, err := filepath.Rel(root, path)

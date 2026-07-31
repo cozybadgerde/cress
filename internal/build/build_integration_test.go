@@ -798,3 +798,38 @@ func writeSiteFile(t *testing.T, path, body string) {
 		t.Fatalf("write %s: %v", path, err)
 	}
 }
+
+// A symlink under static/ is not copied. Nothing narrows what static/ holds, so
+// following one would publish any readable file under whatever name the link
+// was given, which is worse than the same trick in content/.
+func TestBuild_staticSkipsSymlinks_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	outside := filepath.Join(t.TempDir(), "secret.txt")
+	if err := os.WriteFile(outside, []byte("SECRET"), 0o600); err != nil {
+		t.Fatalf("writing secret: %v", err)
+	}
+
+	root := t.TempDir()
+	if _, err := scaffold.Create(root, false); err != nil {
+		t.Fatalf("scaffold: %v", err)
+	}
+	writeSiteFile(t, filepath.Join(root, "static", "real.txt"), "real\n")
+	if err := os.Symlink(outside, filepath.Join(root, "static", "leak.txt")); err != nil {
+		t.Skipf("symlinks unavailable: %v", err)
+	}
+
+	if _, err := build.Build(build.Options{Root: root}); err != nil {
+		t.Fatalf("build: %v", err)
+	}
+
+	out := filepath.Join(root, config.OutputDir)
+	if _, err := os.Stat(filepath.Join(out, "real.txt")); err != nil {
+		t.Errorf("a regular static file should still be copied: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(out, "leak.txt")); !os.IsNotExist(err) {
+		t.Errorf("a symlinked static file should not be published, got err=%v", err)
+	}
+}

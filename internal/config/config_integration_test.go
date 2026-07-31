@@ -349,3 +349,57 @@ func TestLoad_missing_integration(t *testing.T) {
 		t.Fatalf("err = %v, want ErrNotFound", err)
 	}
 }
+
+// A theme name selects which templates render every page, and it is joined onto
+// themes/ to find them. filepath.Join resolves ".." rather than refusing it, so
+// anything but a single directory name has to be rejected here: otherwise a
+// config could point the build at a directory outside the site and publish that
+// directory's static/ assets along with it.
+func TestLoad_theme_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	for _, tc := range []struct {
+		name    string
+		theme   string
+		want    string // resolved value, when no error is expected
+		wantErr bool
+	}{
+		// Unset normalizes to the built-in theme, so the check has to run after
+		// normalize and still pass the name it substituted.
+		{name: "unset", theme: "", want: config.DefaultTheme},
+		{name: "a plain name", theme: "mine", want: "mine"},
+		{name: "a name with punctuation", theme: "my-theme_2", want: "my-theme_2"},
+
+		{name: "parent traversal", theme: "../../evil", wantErr: true},
+		{name: "single parent", theme: "..", wantErr: true},
+		{name: "current directory", theme: ".", wantErr: true},
+		{name: "a nested path", theme: "mine/nested", wantErr: true},
+		{name: "an absolute path", theme: "/etc", wantErr: true},
+		{name: "a trailing separator", theme: "mine/", wantErr: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			body := "[site]\n"
+			if tc.theme != "" {
+				body += "theme = \"" + tc.theme + "\"\n"
+			}
+			cfg, err := config.Load(writeConfig(t, body))
+			if tc.wantErr {
+				if err == nil {
+					t.Fatalf("Load(theme=%q) = nil error, want a refusal", tc.theme)
+				}
+				if !strings.Contains(err.Error(), "invalid theme") {
+					t.Errorf("error = %q, want it to name the theme key", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("Load(theme=%q): %v", tc.theme, err)
+			}
+			if cfg.Site.Theme != tc.want {
+				t.Errorf("theme = %q, want %q", cfg.Site.Theme, tc.want)
+			}
+		})
+	}
+}

@@ -3,6 +3,7 @@ package content_test
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/cozybadgerde/cress/internal/content"
@@ -76,5 +77,46 @@ func TestCollectMissingRoot_integration(t *testing.T) {
 	_, err := content.Collect(filepath.Join(t.TempDir(), "nope"))
 	if err == nil {
 		t.Fatal("expected an error for a missing content root")
+	}
+}
+
+// A symlink is not a page. The walk does not follow one, but reading it would,
+// so a link left to resolve would publish whatever it points at: in a build run
+// over content somebody else can add to, that is any file the process can read.
+func TestCollectSkipsSymlinks_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	outside := filepath.Join(t.TempDir(), "secret.txt")
+	if err := os.WriteFile(outside, []byte("SECRET"), 0o600); err != nil {
+		t.Fatalf("writing secret: %v", err)
+	}
+
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, "real.md"), "# Real\n")
+	if err := os.Symlink(outside, filepath.Join(root, "leak.md")); err != nil {
+		t.Skipf("symlinks unavailable: %v", err)
+	}
+	// A link to a file inside the tree is skipped too: the rule is the file type,
+	// not where it points, because deciding that needs the target resolved.
+	if err := os.Symlink(filepath.Join(root, "real.md"), filepath.Join(root, "alias.md")); err != nil {
+		t.Skipf("symlinks unavailable: %v", err)
+	}
+
+	pages, err := content.Collect(root)
+	if err != nil {
+		t.Fatalf("Collect: %v", err)
+	}
+	if len(pages) != 1 {
+		t.Fatalf("collected %d page(s), want only the regular file", len(pages))
+	}
+	if pages[0].SourcePath != "real.md" {
+		t.Errorf("collected %q, want real.md", pages[0].SourcePath)
+	}
+	for _, page := range pages {
+		if strings.Contains(string(page.Body), "SECRET") {
+			t.Errorf("a symlink target reached the page body: %s", page.Body)
+		}
 	}
 }

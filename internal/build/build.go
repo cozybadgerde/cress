@@ -481,14 +481,20 @@ func copyStatic(destDir string, themeStatic fs.FS, siteStaticDir string, written
 	return nil
 }
 
-// copyFS copies every file in srcFS into destDir, preserving relative paths and
-// recording each one in written.
+// copyFS copies every regular file in srcFS into destDir, preserving relative
+// paths and recording each one in written.
+//
+// Only regular files are copied. Opening a symlink would follow it, and unlike
+// the content tree there is no extension to narrow what that reaches, so
+// static/id_rsa pointing anywhere readable would be published under that name.
+// This guards the site's static directory and a theme's alike: an embedded
+// theme cannot carry a link, but one in themes/ can.
 func copyFS(destDir string, srcFS fs.FS, written map[string]bool) error {
 	return fs.WalkDir(srcFS, ".", func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		if d.IsDir() {
+		if d.IsDir() || !d.Type().IsRegular() {
 			return nil
 		}
 		dest := filepath.Join(destDir, filepath.FromSlash(p))

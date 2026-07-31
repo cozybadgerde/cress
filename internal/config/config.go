@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -216,6 +217,9 @@ func Load(path string) (*Config, error) {
 	if err := validateLogos(path, cfg.Site); err != nil {
 		return nil, err
 	}
+	if err := validateTheme(path, cfg.Site); err != nil {
+		return nil, err
+	}
 	return cfg, nil
 }
 
@@ -279,6 +283,25 @@ func validateLogos(path string, site Site) error {
 // arbitrary text out of the rendered CSS. An unset one is left unset rather
 // than defaulted: the theme is the only place that knows its own backgrounds,
 // and therefore the only place that can pick a legible accent for each scheme.
+// validateTheme rejects a theme name that is anything but a single directory
+// name. The value is joined onto themes/ to find the theme on disk, and
+// filepath.Join resolves ".." rather than refusing it, so "../../elsewhere"
+// would select a directory outside the site: its templates would render every
+// page, and its static/ would be copied into the published output. A theme name
+// is the one config value that chooses which code runs, so it is worth checking
+// as closely as the accent that reaches a stylesheet.
+func validateTheme(path string, site Site) error {
+	name := site.Theme
+	if name == "" {
+		return nil
+	}
+	if name != filepath.Base(name) || name == "." || name == ".." ||
+		strings.ContainsRune(name, '/') || strings.ContainsRune(name, filepath.Separator) {
+		return fmt.Errorf("config %s: invalid theme %q (want a directory name under %s/, not a path)", path, name, ThemesDir)
+	}
+	return nil
+}
+
 func validateAccents(path string, site Site) error {
 	for _, accent := range []struct{ key, value string }{
 		{"accent", site.Accent},
