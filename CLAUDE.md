@@ -78,8 +78,8 @@ traceability.
 
 A cozy static site generator: Markdown plus a small TOML config plus a theme,
 rendered into a directory of static HTML. `cress build` renders a site,
-`cress init` scaffolds a new one, and `cress serve` previews it with rebuild on
-change. It is deliberately less opinionated than Hugo: the content folder tree
+`cress init` scaffolds a new one, `cress serve` previews it with rebuild on
+change, and `cress clean` empties the output. It is deliberately less opinionated than Hugo: the content folder tree
 maps straight to the output tree, navigation is an explicit flat list per menu,
 and the theme is the only place styling lives.
 
@@ -142,6 +142,7 @@ theme  ─┘
 | `internal/render`   | Markdown to HTML (goldmark). Pure.                      |
 | `internal/theme`    | Themes, the embedded default, the template contract.    |
 | `internal/build`    | Orchestrate content + theme + config into `public/`.    |
+| `internal/clean`    | `cress clean`: the only package that removes output.    |
 | `internal/serve`    | Preview server: build, watch, rebuild, serve.           |
 | `internal/scaffold` | `cress init` starter site (embedded).                   |
 | `internal/version`  | Build metadata (set via goreleaser ldflags).            |
@@ -155,8 +156,24 @@ theme  ─┘
   the output directory and touches nothing else; files it did not write are
   reported as warnings. No guard can decide which paths are safe to remove
   across every machine, CI runner, and platform, so cress does not try.
-  Removing output is `cress clean`'s job (#28), where asking for it is the
-  consent.
+  Removing output is `cress clean`'s job, and `clean` is the only package that
+  deletes. Nothing in `build` or `serve` can reach it.
+- **Typing `cress clean` is not the consent; the prompt is.** #28 proposed that
+  naming the command was consent enough. It is not, because `--output` makes
+  the target whatever was last typed, so the resolved absolute path and the
+  file count are printed and confirmed before anything goes. `--force` skips
+  the question for CI and nothing else: the guards (site root, an ancestor of
+  it, the input directories, a root with no `cress.toml`) are hard errors with
+  or without it. Detecting "nobody is there to answer" is done by asking and
+  getting no answer, not by inspecting stdin: `/dev/null` is a character
+  device, so the dependency-free isatty check passes it, and only the empty
+  read gives it away.
+- **`clean` means empty.** Every entry in the output directory goes, dotfiles
+  included; only the directory itself stays. A keep-list (`.git`, `.nojekyll`)
+  was rejected deliberately: it is a promise that grows with every host and
+  never shrinks, and maintaining exceptions would undercut the one thing the
+  command is for. A file the site needs at every build belongs in `static/`,
+  which the build copies back.
 - **The theme is the only styling surface.** Core emits plain semantic HTML;
   code fences carry `class="language-..."` but no styling. Do not bake CSS or
   syntax highlighting into the core - it would conflict with custom themes.

@@ -68,6 +68,9 @@ setup; drop a directory under `themes/` when you want your own.
 - **A 404 page you never have to write.** Every build emits `404.html` carrying
   your nav and styling. Override it with `content/404.md` when you want your
   own words.
+- **A build never deletes.** It writes its own files and warns about whatever
+  is left over, so an unattended run in CI cannot destroy anything. Clearing
+  out stale output is `cress clean`, a command you run on purpose.
 - **Preview as you write.** `cress serve` builds the site, serves it, and
   rebuilds when a source file changes.
 - **A single binary.** Rootless install, no runtime dependencies.

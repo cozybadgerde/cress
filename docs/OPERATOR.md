@@ -77,8 +77,52 @@ names it:
 warning: public/guides/styleguide.html was not written by this build
 ```
 
-Remove such files yourself when it matters; `cress build` will not do it for
-you.
+Use `cress clean` to clear them out; `cress build` will not do it for you.
+
+## Clean
+
+Empty the output directory:
+
+```bash
+cress clean --source my-site
+```
+
+It takes `--output` (`-o`) the same way the build does, so it empties whatever
+directory that build wrote into. Because deleting is the point, it asks first:
+
+```console
+$ cress clean
+remove 13 file(s) from /home/you/my-site/public? [y/N]:
+```
+
+The absolute path in that question is the part worth reading. `--output` makes
+the target whatever you last typed, and the prompt is where a mistyped path
+shows itself before anything goes.
+
+Two flags skip the question:
+
+- `--dry-run`: list every file that would go and remove none.
+- `--force` (`-f`): remove without asking. This is the one for CI, a Taskfile,
+  or anywhere no one is watching. Without a terminal to answer from, `cress
+  clean` refuses rather than guessing.
+
+`--force` skips the question, never the checks. `cress clean` refuses outright,
+flag or no flag, when the target is the site root, a directory containing it,
+or `content/`, `static/`, or `themes/`. It also refuses to run in a directory
+with no `cress.toml`, which is what catches a clean aimed at the wrong place.
+
+Clean means empty. Everything in the output directory goes, including dotfiles,
+and the directory itself stays behind. There is no keep-list, because a list of
+survivors is a promise that grows with every host and never shrinks. Two
+consequences are worth planning for:
+
+- **Files your site needs, such as `.nojekyll` or `.well-known/`, belong in
+  `static/`.** The build copies that directory into the output every time, so
+  they come back on the next build instead of needing to survive the clean.
+- **Do not point `cress clean` at a git worktree**, the way a `gh-pages`
+  checkout in `public/` is one. Its `.git` goes with everything else. The repo
+  itself is unharmed and `git worktree repair` relinks it, but the run is not
+  what you wanted.
 
 ## Preview
 

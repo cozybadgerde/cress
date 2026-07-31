@@ -34,12 +34,13 @@ the pinned lint and security tools once with `task tools`.
 ## Project layout
 
 ```text
-cmd/cress/            CLI: build, init, serve, version (urfave/cli v3)
+cmd/cress/            CLI: build, clean, init, serve, version (urfave/cli v3)
 internal/config/      load and validate cress.toml
 internal/content/     discover Markdown, parse front matter into pages
 internal/render/      Markdown to HTML (goldmark)
 internal/theme/       resolve and load themes; the built-in theme is embedded
 internal/build/       orchestration: content + theme + config -> public/
+internal/clean/       `cress clean`; the only package that deletes
 internal/serve/       preview server: build, watch, rebuild, serve
 internal/scaffold/    `cress init`; the starter site is embedded
 internal/version/     build metadata, set by the linker at release
@@ -57,7 +58,10 @@ theme  ─┘
 
 Each package has one responsibility. `content` never renders HTML; `render`
 never touches templates; `theme` never reads content; `build` is the only
-package that writes output.
+package that writes output, and `clean` the only one that removes it. Those
+last two are deliberately separate: a build runs unattended and must never
+delete, so the code that can delete is reachable only from a command a user
+names.
 
 ## The built-in theme
 

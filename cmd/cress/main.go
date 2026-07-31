@@ -19,6 +19,7 @@ const (
 	flagDrafts = "drafts"
 	flagAddr   = "addr"
 	flagForce  = "force"
+	flagDryRun = "dry-run"
 )
 
 func main() {
@@ -41,6 +42,7 @@ func newRootCommand() *cli.Command {
 		EnableShellCompletion: true,
 		Commands: []*cli.Command{
 			newBuildCommand(),
+			newCleanCommand(),
 			newInitCommand(),
 			newServeCommand(),
 			newVersionCommand(),
