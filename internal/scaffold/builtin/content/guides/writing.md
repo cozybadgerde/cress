@@ -59,13 +59,32 @@ Pick the format to suit the artwork:
 - **SVG** for line art, diagrams, and logos, because it stays sharp at any size.
 - **PNG** when you need real transparency or a lossless original.
 
-![Woodland friends tending trays of cress](/example_busy.webp)
+![Woodland friends tending trays of cress](/example_busy.webp "AI-generated illustration.")
 
 Then write the alt text. It is not a caption and not a place for keywords. It
 is what somebody gets *instead of* the picture, so describe what matters about
 this image in this spot. If it is purely decorative, empty alt text
 (`![](/example_busy.webp)`) is the honest answer and better than repeating the
 sentence above it.
+
+## Caption the things a reader should see
+
+The line under the picture above is a caption, written as a quoted title after
+the path:
+
+```markdown
+![Woodland friends tending trays of cress](/example_busy.webp "AI-generated illustration.")
+```
+
+A caption does a different job from alt text. Alt text stands in for the
+picture, so the only person who meets it is somebody who cannot see the image.
+A caption is text everybody reads. That makes it the place for whatever the
+picture should say out loud: who made it, what license it carries, or that a
+machine generated it. Both illustrations in this starter site are AI-generated,
+and their captions say so.
+
+Leave the title off and you get no caption, just the picture. Cress wraps a
+standalone image either way, so a theme has one shape to style.
 
 ## Publish when it is ready
 

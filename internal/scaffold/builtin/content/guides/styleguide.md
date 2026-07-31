@@ -103,10 +103,12 @@ image below still resolves, because the link does not depend on where the page
 sits. A relative `./example_minimal.webp` would have looked inside `/guides/`
 and found nothing.
 
-![A pot of cress on a sunny windowsill](/example_minimal.webp)
+![A pot of cress on a sunny windowsill](/example_minimal.webp "AI-generated illustration.")
 
-Write alt text that describes the picture for anyone who cannot see it.
-[Writing well](/guides/writing.html) has more on that, and on picking a format.
+Write alt text that describes the picture for anyone who cannot see it. Add a
+quoted title after the path and Cress turns it into a visible caption, the way
+the line under the picture above is. [Writing well](/guides/writing.html) has
+more on both, and on picking a format.
 
 ## Dividers
 
