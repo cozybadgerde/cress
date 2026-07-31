@@ -93,6 +93,134 @@ func TestMarkdownWithoutBasePath(t *testing.T) {
 	}
 }
 
+// An image alone in its paragraph becomes a figure, so a caption has somewhere
+// to live. The title carries text a licence or a disclosure obliges the author
+// to show, which is why it has to be visible rather than a tooltip.
+func TestMarkdownFigure(t *testing.T) {
+	tests := []struct {
+		name string
+		src  string
+		want []string
+		omit []string
+	}{
+		{
+			name: "titled image becomes a captioned figure",
+			src:  "![Boats](/img/harbor.webp \"Photo: Jane Doe, CC BY-SA 4.0\")\n",
+			want: []string{
+				"<figure>",
+				`<img src="/img/harbor.webp" alt="Boats">`,
+				"<figcaption>Photo: Jane Doe, CC BY-SA 4.0</figcaption>",
+				"</figure>",
+			},
+			// The caption already shows this text; a title would repeat it as a tooltip.
+			omit: []string{"title="},
+		},
+		{
+			name: "untitled image still wraps, with no caption",
+			src:  "![Boats](/img/harbor.webp)\n",
+			want: []string{"<figure>", `alt="Boats"`, "</figure>"},
+			omit: []string{"<figcaption>"},
+		},
+		{
+			name: "empty title emits no caption",
+			src:  "![Boats](/img/harbor.webp \"\")\n",
+			want: []string{"<figure>"},
+			omit: []string{"<figcaption>"},
+		},
+		{
+			name: "empty alt is preserved, since decorative is a valid choice",
+			src:  "![](/img/harbor.webp \"Photo: Jane Doe\")\n",
+			want: []string{`alt=""`, "<figcaption>Photo: Jane Doe</figcaption>"},
+		},
+		{
+			name: "the figure replaces the paragraph rather than nesting in one",
+			src:  "![Boats](/img/harbor.webp)\n",
+			omit: []string{"<p>"},
+		},
+		{
+			name: "a caption is escaped, not markup",
+			src:  "![Boats](/img/harbor.webp \"<b>Jane</b> & Co\")\n",
+			want: []string{"<figcaption>&lt;b&gt;Jane&lt;/b&gt; &amp; Co</figcaption>"},
+			omit: []string{"<b>Jane</b>"},
+		},
+		{
+			name: "a caption is text, not Markdown",
+			src:  "![Boats](/img/harbor.webp \"Photo by *Jane*\")\n",
+			want: []string{"<figcaption>Photo by *Jane*</figcaption>"},
+			omit: []string{"<em>"},
+		},
+		{
+			name: "an image inside a sentence is left alone",
+			src:  "See ![Boats](/img/harbor.webp \"A tooltip\") here.\n",
+			want: []string{"<p>", `title="A tooltip"`},
+			omit: []string{"<figure>"},
+		},
+		{
+			name: "two images in one paragraph are the author's arrangement",
+			src:  "![One](/img/a.webp)\n![Two](/img/b.webp)\n",
+			want: []string{"<p>"},
+			omit: []string{"<figure>"},
+		},
+		{
+			name: "a linked image is not a figure",
+			src:  "[![Boats](/img/harbor.webp \"A tooltip\")](/img/full.webp)\n",
+			want: []string{"<p>", `href="/img/full.webp"`, `title="A tooltip"`},
+			omit: []string{"<figure>"},
+		},
+		{
+			// Everything after the first replacement has to survive: the wrapper
+			// detaches nodes from the tree it is walking.
+			name: "surrounding content survives the rewrite",
+			src:  "Before\n\n![One](/img/a.webp)\n\nBetween\n\n![Two](/img/b.webp)\n\nAfter\n",
+			want: []string{"<p>Before</p>", "<p>Between</p>", "<p>After</p>", `alt="One"`, `alt="Two"`},
+		},
+		{
+			name: "a figure nested in a list item is wrapped too",
+			src:  "- item\n\n  ![Boats](/img/harbor.webp \"Photo: Jane Doe\")\n",
+			want: []string{"<li>", "<figure>", "<figcaption>Photo: Jane Doe</figcaption>"},
+		},
+	}
+
+	r := render.New()
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			out, err := r.Markdown([]byte(tc.src))
+			if err != nil {
+				t.Fatalf("Markdown: %v", err)
+			}
+			assertHTML(t, string(out), tc.want, tc.omit)
+		})
+	}
+}
+
+// assertHTML reports every string in want that out is missing, and every string
+// in omit that it should not have carried.
+func assertHTML(t *testing.T, out string, want, omit []string) {
+	t.Helper()
+	for _, w := range want {
+		if !strings.Contains(out, w) {
+			t.Errorf("output missing %q\ngot: %s", w, out)
+		}
+	}
+	for _, o := range omit {
+		if strings.Contains(out, o) {
+			t.Errorf("output should not contain %q\ngot: %s", o, out)
+		}
+	}
+}
+
+// The two transformers have to compose: a captioned image is still an image
+// whose destination needs rooting under the base path.
+func TestMarkdownFigureWithBasePath(t *testing.T) {
+	out, err := render.New(render.WithBasePath("/cress")).
+		Markdown([]byte("![Boats](/img/harbor.webp \"Photo: Jane Doe\")\n"))
+	if err != nil {
+		t.Fatalf("Markdown: %v", err)
+	}
+	assertHTML(t, string(out),
+		[]string{`src="/cress/img/harbor.webp"`, "<figcaption>Photo: Jane Doe</figcaption>"}, nil)
+}
+
 func TestMarkdownEmpty(t *testing.T) {
 	out, err := render.New().Markdown(nil)
 	if err != nil {
