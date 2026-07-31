@@ -1,13 +1,32 @@
 # User guide
 
-This guide explains how to author a Cress site: the directory layout, the config
-file, content and front matter, navigation, and themes.
+This guide explains how to use Cress: creating a site, the config file, content
+and front matter, navigation, themes, and the commands that build and preview
+what you wrote.
 
 ## Before you start
 
-Install Cress and create a starter site with the [operator guide](./OPERATOR.md).
-The command `cress init my-site` writes everything described below into a new
-directory.
+Install Cress with the [operator guide](./OPERATOR.md). When the site is ready
+to go out, the [publishing guide](./PUBLISH.md) covers getting it onto a host.
+
+## Create a site
+
+Scaffold a new site into a directory:
+
+```bash
+cress init my-site
+```
+
+This writes `cress.toml`, a `content/` directory with a handful of starter
+pages, and a `static/` directory holding the default logo and favicon. The
+starter pages are a working example of everything below, and they are yours to
+delete once you have found your feet.
+
+The target directory has to be empty, though dotfiles do not count, so
+`git init` first and then `cress init` works. To scaffold into a directory that
+already holds other files, add `--force` (`-f`). Like the build, `cress init`
+never overwrites: a starter file that is already there is left alone and
+counted in the summary, so re-running it only fills in what is missing.
 
 ## Site layout
 
@@ -49,6 +68,13 @@ The `[site]` fields:
   Set it to where the site really lives; see [Publishing to a
   subdirectory](#publishing-to-a-subdirectory) below.
 - `theme`: the theme name. Empty resolves to the built-in `cress` theme.
+- `language`: the site's language tag, such as `en`, `de`, or `en-GB`. It
+  becomes the document's `lang` attribute, which is what tells a screen reader
+  how to pronounce the page and a browser whether to offer a translation.
+  Leaving it out resolves to `en`, because a document with no language declared
+  is worse than one declaring a plausible default. A page can override it in its
+  front matter. The value is passed through as written, so a typo reaches the
+  output unreported.
 
 Unknown keys are rejected, so a typo fails the build instead of being ignored.
 
@@ -192,6 +218,11 @@ Front-matter fields Cress understands:
 - `title`: the page title. When absent, Cress uses the first `# ` heading, then
   the file name.
 - `draft`: when `true`, the page is skipped unless you build with `--drafts`.
+- `description`: a one-line summary of this page, used for the page's own
+  metadata. Falls back to the site's `description` when absent.
+- `language`: this page's language tag, overriding the site's `language` for
+  this page alone. Set it on the one page you wrote in another language; leave
+  it out everywhere else.
 
 Any other field is passed through to the theme untouched, so a theme can read
 its own keys. Unlike `cress.toml`, front matter is deliberately permissive: an
@@ -334,24 +365,13 @@ themes/
 theme = "mine"
 ```
 
-Templates use Go's `html/template`. The `page.html` template receives:
+`page.html` is the only template a theme has to define. Everything else is
+optional, so a theme can be one template and one stylesheet.
 
-- `.Site`: the `[site]` config (`.Site.Title`, `.Site.Description`,
-  `.Site.BaseURL`, `.Site.Logo`, `.Site.LogoDark`, `.Site.Favicon`,
-  `.Site.Accent`, `.Site.AccentDark`, `.Site.Footer`, `.Site.Copyright`), plus
-  `.Site.BasePath`: the path the site is published under, or empty at a domain
-  root. Prefix the theme's own asset links with it, as in
-  `href="{{ .Site.BasePath }}/style.css"`. Every other URL in the data is
-  already rooted for you.
-- `.Nav`: the resolved navigation, as `.Nav.Main` and `.Nav.Footer`. Each is a
-  list of entries with `.Title`, `.URL`, and `.Active` (true on the current
-  page). A group with no entries is empty, so `{{ with .Nav.Footer }}` skips it.
-- `.Page`: the current page, with `.Page.Title`, `.Page.URL`, `.Page.HTML` (the
-  rendered Markdown body), and `.Page.Meta` (the raw front matter).
-
-These names are cress's contract with a theme, and they are as stable as the
-command-line flags: renaming or removing one is a breaking change. Write a
-theme against them and it keeps rendering.
+Writing a theme, rather than dropping one in, is covered by
+[the template data contract](./DEVELOPER.md#the-template-data-contract) in the
+developer guide: the fields a template receives, and which of them are fixed
+for the life of a major version.
 
 ## The 404 page
 
@@ -386,7 +406,7 @@ That page moved or never existed. Try the [home page](/).
 what a visitor to the published site sees. Some hosts need the 404 wired up in
 their own configuration; check your host's documentation.
 
-## Building and previewing
+## Preview
 
 Preview locally while you write:
 
@@ -395,28 +415,108 @@ cress serve
 ```
 
 This builds the site, serves it at `http://localhost:1313`, and rebuilds when a
-source file changes. Reload the browser to see updates.
+source file changes. Reload the browser to see updates; the preview does not
+refresh it for you. Stop the server with Ctrl-C.
 
-Render the final site into `public/`:
+Listen somewhere else with `--addr`:
+
+```bash
+cress serve --addr localhost:8080
+```
+
+A site with a path in its `base_url` is previewed at that path too, so what you
+see locally is what gets published.
+
+## Build
+
+Render the site into `public/`:
 
 ```bash
 cress build
 ```
 
-Add `--drafts` to either command to include pages marked `draft`.
+Run the command from inside the site directory, or pass `--source` (`-s`)
+pointing at the directory that holds `cress.toml`. Two more flags:
 
-`cress build` only ever writes its own files; it never deletes. So if you rename
-or remove a page, its old HTML stays in `public/` and keeps being served. The
-build names each such file in a warning, so you can see what is left over.
+- `--output DIR` (`-o`): write somewhere other than `public/`.
+- `--drafts`: include pages marked `draft`. `cress serve` takes this one too.
 
-Clear them out with:
+The build never deletes. It creates the output directory if needed, then writes
+its own files over whatever is already there and leaves everything else alone.
+That is what makes it safe to run unattended, and it is why a page you rename or
+remove leaves its old HTML behind, still served and indistinguishable from a
+live page. The build names each one:
+
+```text
+warning: public/guides/styleguide.html was not written by this build
+```
+
+## Clean
+
+Empty the output directory:
 
 ```bash
 cress clean
 ```
 
-This empties `public/` and asks before it does, showing the full path and the
-file count. A following `cress build` then produces the site with nothing stale
-in it. Deleting is the whole job of this command, which is why it is a command
-of its own and never something a build does on your behalf. The
-[operator guide](./OPERATOR.md) covers its flags and the paths it refuses.
+It takes `--source` and `--output` the way the build does, so it empties
+whatever directory that build wrote into. Because deleting is the point, it asks
+first:
+
+```console
+$ cress clean
+remove 13 file(s) from /home/you/my-site/public? [y/N]:
+```
+
+The absolute path in that question is the part worth reading. `--output` makes
+the target whatever you last typed, and the prompt is where a mistyped path
+shows itself before anything goes.
+
+Two flags skip the question:
+
+- `--dry-run`: list every file that would go and remove none.
+- `--force` (`-f`): remove without asking. This is the one for CI, a Taskfile,
+  or anywhere no one is watching. Without a terminal to answer from, `cress
+  clean` refuses rather than guessing.
+
+`--force` skips the question, never the checks. `cress clean` refuses outright,
+flag or no flag, when the target is the site root, a directory containing it, or
+`content/`, `static/`, or `themes/`. It also refuses to run in a directory with
+no `cress.toml`, which is what catches a clean aimed at the wrong place.
+
+Clean means empty. Everything in the output directory goes, including dotfiles,
+and the directory itself stays behind. There is no keep-list, because a list of
+survivors is a promise that grows with every host and never shrinks. Two
+consequences are worth planning for:
+
+- **Files your site needs, such as `.nojekyll` or `.well-known/`, belong in
+  `static/`.** The build copies that directory into the output every time, so
+  they come back on the next build instead of needing to survive the clean.
+- **Do not point `cress clean` at a git worktree**, the way a `gh-pages`
+  checkout in `public/` is one. Its `.git` goes with everything else. The repo
+  itself is unharmed and `git worktree repair` relinks it, but the run is not
+  what you wanted.
+
+## Publishing
+
+The `public/` directory is a complete static site, ready for any static host.
+The [publishing guide](./PUBLISH.md) covers GitHub Pages, GitLab Pages, and your
+own server, along with what `base_url` has to say for each.
+
+## Troubleshooting
+
+- **`config not found`**: run the command from the site directory, or pass
+  `--source` pointing at the directory that holds `cress.toml`.
+- **`unknown key(s)`**: a key in `cress.toml` is misspelled or unsupported. The
+  message names the offending keys.
+- **`theme ... not found`**: the `theme` name has no matching directory under
+  `themes/`. Use `cress` for the built-in theme, or add the theme directory.
+- **A nav entry is missing**: a warning like `nav.main entry ... points at
+  missing content` names the group and means the path does not match a file
+  under `content/`.
+- **The site renders unstyled after publishing**: the links point one level too
+  high, which means `base_url` does not match where the site really lives. See
+  [Publishing to a subdirectory](#publishing-to-a-subdirectory).
+
+For problems installing Cress itself, see the
+[operator guide](./OPERATOR.md#troubleshooting-the-install).

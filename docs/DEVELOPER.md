@@ -63,6 +63,53 @@ last two are deliberately separate: a build runs unattended and must never
 delete, so the code that can delete is reachable only from a command a user
 names.
 
+Command bodies in `cmd/cress` parse arguments and format output. All real logic
+lives under `internal/`, which is what keeps it testable without a terminal.
+
+## Design decisions
+
+These are the choices a change is most likely to walk into without knowing they
+were choices. Each one has an alternative that looks obviously better until you
+hit the case it fails on.
+
+**The build never deletes.** It creates and overwrites its own files and leaves
+everything else alone, reporting what it did not write as a warning. The
+tempting alternative is pruning whatever a previous run did not produce. No
+guard can decide which paths are safe to remove across every machine, CI runner,
+and platform a build might run on, and the cost of being wrong is somebody's
+data. Removing output is `cress clean`'s job instead.
+
+**Deleting takes more consent than naming the command.** `cress clean` was
+originally specified so that typing it was consent enough. It is not, because
+`--output` makes the target whatever was last typed, so the resolved absolute
+path and the file count are confirmed before anything goes. `--force` skips the
+question and nothing else; the guards stay hard errors with or without it.
+
+**The theme is the only styling surface.** The core emits plain semantic HTML.
+Code fences carry `class="language-..."` and no styling, and the same goes for
+every other element. Baking CSS or syntax highlighting into the core would put
+it in conflict with every custom theme, which is why config values that could
+inject markup are escaped rather than rendered.
+
+**URLs are root-relative, not relative.** Every emitted URL is prefixed with the
+path component of `base_url`, so one build serves from a subdirectory or a
+domain root. Fully relative URLs were the alternative and need no config at all,
+but they make every URL depend on the page's own depth, which breaks against a
+host that does not redirect `/guide` to `/guide/`. Three places carry the
+prefix: the builder, `render` for the links an author wrote, and the theme for
+its own asset links, which are the URLs cress does not emit.
+
+**Embedded assets ship verbatim.** The default theme
+(`internal/theme/builtin/cress`) and the starter site
+(`internal/scaffold/builtin`) are embedded with `go:embed` and copied without
+transformation, so an edit to either changes what every user gets.
+
+**The schema tracks the config struct.** `schema/config.schema.json` (draft
+2020-12) mirrors `config.Config`, and the scaffolded `cress.toml` carries a
+`#:schema` directive pointing at it, so editors validate a user's config. A new
+config key means a schema change in the same commit; `task audit:schema`
+validates the bundled starter against it.
+
 ## The built-in theme
 
 The default theme lives at `internal/theme/builtin/cress/` and is embedded into
@@ -87,6 +134,34 @@ theme styles one shape rather than two. A theme that styles `p img` and not
 Every template receives a `theme.PageData`, defined in `internal/theme/data.go`
 together with `NavView`, `NavLink`, and `PageView`. `build` fills the value in,
 and `theme` owns the definition, because it already owns the templates.
+
+Templates use Go's `html/template`, and every one of them receives:
+
+- `.Site`: the `[site]` config, as `.Site.Title`, `.Site.Description`,
+  `.Site.BaseURL`, `.Site.Logo`, `.Site.LogoDark`, `.Site.Favicon`,
+  `.Site.Accent`, `.Site.AccentDark`, `.Site.Footer`, and `.Site.Copyright`,
+  plus the derived `.Site.BasePath` described below.
+- `.Nav`: the resolved navigation, as `.Nav.Main` and `.Nav.Footer`. Each is a
+  list of entries with `.Title`, `.URL`, and `.Active`, true on the current
+  page. A group with no entries is empty, so `{{ with .Nav.Footer }}` skips it.
+- `.Page`: the current page, with `.Page.Title`, `.Page.URL`, `.Page.HTML` (the
+  rendered Markdown body), `.Page.Description`, and `.Page.Meta` (the raw front
+  matter), plus four that are easy to miss:
+  - `.Page.Language`, resolved from the page's front matter then the site
+    config. Never empty, and it belongs in the document's `lang` attribute:
+    `<html lang="{{ .Page.Language }}">`.
+  - `.Page.AbsoluteURL`, the full URL, `Site.BaseURL` joined with `URL`. Empty
+    when the site sets no `base_url`, since there is no host to build one from,
+    so a template that renders it has to guard it.
+  - `.Page.IsHome`, true only for the page served at the site root. Themes use
+    it for what reads differently on a front page, such as dropping the site
+    name from a title that already is the site name.
+  - `.Page.Head`, ready-made metadata elements for the document head, already
+    escaped. It carries only what describes the page; the title, charset,
+    viewport, icon, and stylesheets stay the theme's own. A theme that would
+    rather arrange the metadata itself reads `.Page.Description` and
+    `.Page.AbsoluteURL` and omits this, because rendering both emits every tag
+    twice.
 
 Those field names are a public API. Every theme is written against `.Site`,
 `.Nav`, and `.Page`, including themes cress never sees, so renaming or removing
@@ -187,3 +262,22 @@ that a bare URL becomes a link on its own, and that line is the point rather
 than an oversight. gomarklint does support an inline
 `<!-- gomarklint-disable -->` comment, but the scaffold is copied into user
 sites, so a linter directive there would leak this repo's tooling into theirs.
+
+## Continuous integration
+
+Workflows live in `.github/workflows/`: `ci`, `release`, and `security`. CI
+installs Task plus the pinned tools and runs `task check`, which is why the
+Taskfile is the single source of truth rather than a convenience wrapper. Do not
+call `go test ./...` or `golangci-lint` directly from a workflow; call the task,
+so a change to the gate reaches CI and your machine at the same time.
+
+The default branch is `trunk`, and a release fires from a `v*` tag via
+goreleaser.
+
+Dependabot (`.github/dependabot.yml`) watches the workflow actions and the
+`go.mod` requirements. Each ecosystem groups its patch and minor bumps into one
+weekly pull request, and majors arrive on their own. The Go module list includes
+indirect dependencies, because Dependabot skips those by default and that is
+where drift hides. Dependabot alerts and security updates are repository
+settings rather than keys in that file: they cover what GitHub's advisory
+database knows about, and the config covers what has no advisory yet.

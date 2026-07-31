@@ -1,10 +1,34 @@
-# CLAUDE.md — cress
+# CLAUDE.md - cress
 
 Project notes for AI-assisted work on cress. This file is **cress-specific
 only**. Role, communication, the change workflow, testing categories
 (`unit`/`integration`/`e2e`), the commit-message format, and the architecture
 pushback rules all live in the global `~/.claude/CLAUDE.md` and are not repeated
 here. The repo's `.gitmessage` is the commit template.
+
+## Read the guides first
+
+cress documents itself for the people who use it, and those documents are the
+source of truth for how it behaves. Work from them the way any contributor
+would, rather than from a summary kept here: a summary is one more thing that
+goes stale, and a wrong one is worse than none.
+
+| Guide | Answers |
+|---------------------------|--------------------------------------------------|
+| [`README.md`](./README.md) | What cress is, and what it deliberately is not. |
+| [`docs/USER.md`](./docs/USER.md) | `cress.toml`, front matter, navigation, themes, the 404, and every command that builds or previews a site. |
+| [`docs/PUBLISH.md`](./docs/PUBLISH.md) | Getting output onto a host: Pages, `base_url` per target, own server. |
+| [`docs/OPERATOR.md`](./docs/OPERATOR.md) | Installing, pinning, upgrading, removing cress. |
+| [`docs/DEVELOPER.md`](./docs/DEVELOPER.md) | Project layout, the design decisions behind it, the template data contract, image asset rules, commands, and CI. |
+
+Two consequences worth stating outright:
+
+- **A behaviour change is not finished until its guide matches.** The guides are
+  written against real behaviour, so a change that leaves one describing the old
+  behaviour has produced a bug in the documentation.
+- **Do not restate them here.** If something about cress needs writing down and
+  a contributor would want it too, it belongs in the guide that owns that
+  audience. This file is for what has no place there.
 
 ## Issue tracking
 
@@ -74,182 +98,13 @@ not kept in this repo. For an enhancement, mirror that template: a
 considered` section. Footer the body with where the idea came from when it helps
 traceability.
 
-## What cress is
-
-A cozy static site generator: Markdown plus a small TOML config plus a theme,
-rendered into a directory of static HTML. `cress build` renders a site,
-`cress init` scaffolds a new one, `cress serve` previews it with rebuild on
-change, and `cress clean` empties the output. It is deliberately less opinionated than Hugo: the content folder tree
-maps straight to the output tree, navigation is an explicit flat list per menu,
-and the theme is the only place styling lives.
-
-## Architecture / data flow
-
-```text
-config ─┐
-content ─┼─▶ build ─▶ render (Markdown) ─▶ theme (template) ─▶ public/
-theme  ─┘
-```
-
-- **`config`** loads `cress.toml`: the `[site]` metadata (title, description,
-  base_url, theme, plus the white-label `logo`/`favicon`/`accent`/`accent_dark`
-  and the footer's `footer`/`copyright`) and the `[nav.main]`/`[nav.footer]`
-  tables (label = content path). The group
-  names are fixed, so unknown keys are rejected as typos. An empty theme
-  resolves to the built-in default. `base_url` must be an absolute URL when set,
-  and its path component is recorded as the derived `BasePath` (`toml:"-"`, so
-  the key cannot be set by hand and the two cannot disagree). The accents get no
-  default at all: an unset
-  one stays unset so the theme's own applies, and a set one is validated as a
-  hex color (it is interpolated into CSS). Each group's order is recovered from
-  the TOML parse metadata, since decoded tables are otherwise unordered.
-- **`content`** walks `content/`, splits YAML front matter from the Markdown
-  body, and produces a `Page` for each file. It maps the source path to an
-  output path and URL (`about.md` -> `about.html`; an `index` file collapses to
-  its directory URL). It does no HTML conversion.
-- **`render`** owns the goldmark configuration (CommonMark + GFM) and converts a
-  Markdown body to an HTML fragment. Nothing else. Two AST transformers shape
-  the output: one roots the author's site-rooted links under `BasePath`, the
-  other wraps an image that is the whole of its paragraph in a `<figure>`,
-  promoting the CommonMark image title to a `<figcaption>`. The caption is
-  escaped text, not Markdown, because goldmark exposes no inline-only parser.
-- **`theme`** resolves a theme (a directory under `themes/`, else the embedded
-  default) and loads its `html/template` set and static assets. `page.html` is
-  the required entry template; every other template is optional, so the package
-  offers `HasTemplate`/`RenderTemplate` and leaves the choice to the caller. It
-  also defines the template data contract (`PageData` and friends, in
-  `data.go`), which `build` fills in and every theme is written against.
-- **`build`** is the orchestrator and the only package that writes output. It
-  resolves nav links against the collected pages, renders each non-draft page
-  through the theme, and copies theme and site static assets into `public/`. It
-  also expands the `{year}` token in `copyright` (the only place the clock
-  enters a build) and guarantees a `404.html`.
-- **`serve`** builds once, serves the output over HTTP, and rebuilds on
-  debounced filesystem events. It never watches the output directory. A request
-  it cannot satisfy is answered with the built `404.html`. When the site is
-  rooted under a base path it mounts there and redirects `/` to it, so the
-  preview exercises the same links production will: the base path is read from
-  the first build and held, so changing `base_url` needs a restart.
-- **`scaffold`** writes the embedded starter site for `cress init`.
-
-## Package layout
-
-| Path                | Responsibility                                          |
-|---------------------|---------------------------------------------------------|
-| `cmd/cress`         | CLI (urfave/cli v3). Parses args + formats output only. |
-| `internal/config`   | Load and validate `cress.toml`.                         |
-| `internal/content`  | Discover Markdown, parse front matter, build `Page`s.   |
-| `internal/render`   | Markdown to HTML (goldmark). Pure.                      |
-| `internal/theme`    | Themes, the embedded default, the template contract.    |
-| `internal/build`    | Orchestrate content + theme + config into `public/`.    |
-| `internal/clean`    | `cress clean`: the only package that removes output.    |
-| `internal/serve`    | Preview server: build, watch, rebuild, serve.           |
-| `internal/scaffold` | `cress init` starter site (embedded).                   |
-| `internal/version`  | Build metadata (set via goreleaser ldflags).            |
-
-## cress-specific conventions
-
-- **Layering:** command bodies in `cmd/cress` parse args and format output; all
-  real logic lives in `internal/`. `build` is the single writer of output; keep
-  `content`, `render`, and `theme` free of cross-cutting I/O.
-- **The build never deletes.** `build` creates and overwrites its own files in
-  the output directory and touches nothing else; files it did not write are
-  reported as warnings. No guard can decide which paths are safe to remove
-  across every machine, CI runner, and platform, so cress does not try.
-  Removing output is `cress clean`'s job, and `clean` is the only package that
-  deletes. Nothing in `build` or `serve` can reach it.
-- **Typing `cress clean` is not the consent; the prompt is.** #28 proposed that
-  naming the command was consent enough. It is not, because `--output` makes
-  the target whatever was last typed, so the resolved absolute path and the
-  file count are printed and confirmed before anything goes. `--force` skips
-  the question for CI and nothing else: the guards (site root, an ancestor of
-  it, the input directories, a root with no `cress.toml`) are hard errors with
-  or without it. Detecting "nobody is there to answer" is done by asking and
-  getting no answer, not by inspecting stdin: `/dev/null` is a character
-  device, so the dependency-free isatty check passes it, and only the empty
-  read gives it away.
-- **`clean` means empty.** Every entry in the output directory goes, dotfiles
-  included; only the directory itself stays. A keep-list (`.git`, `.nojekyll`)
-  was rejected deliberately: it is a promise that grows with every host and
-  never shrinks, and maintaining exceptions would undercut the one thing the
-  command is for. A file the site needs at every build belongs in `static/`,
-  which the build copies back.
-- **The theme is the only styling surface.** Core emits plain semantic HTML;
-  code fences carry `class="language-..."` but no styling. Do not bake CSS or
-  syntax highlighting into the core - it would conflict with custom themes.
-- **URLs are flat and root-relative, rooted under `base_url`'s path.**
-  `content/x.md` -> `public/x.html`, linked as `/x.html`; an `index` file
-  collapses to its directory (`/`, `/guide/`). Output paths never change, but
-  every emitted URL is prefixed with the path component of `base_url`
-  (`/project/x.html`), so a site can be served from a subdirectory as well as a
-  domain root. Three places carry the prefix: the builder (nav, page URLs, the
-  branding keys), `render` (root-relative links inside content), and the theme,
-  which must prefix its own asset links with `.Site.BasePath` because those are
-  the URLs cress does not emit. Fully relative URLs were rejected as the
-  alternative: they need no config, but they make every URL depend on the page's
-  own depth, which breaks against a host that does not redirect `/guide` to
-  `/guide/`.
-- **Navigation is explicit.** A `[nav.main]` or `[nav.footer]` entry (label =
-  content path) points at a content file; a missing target is a warning naming
-  its group, not a hard error, so the rest of the build still succeeds. Themes
-  read `.Nav.Main` and `.Nav.Footer`. There are no automatic list or section
-  pages in 1.x - a scope decision for the initial release, not a permanent one
-  (see #23).
-- **Every build emits a `404.html`** at the output root, the one output path
-  that does not mirror a source path, because that is where static hosts look.
-  Three tiers, most specific winning: `content/404.md`, then the theme's
-  `templates/404.html`, then one cress synthesizes and renders through
-  `page.html`. Tier 3 is the point - it keeps `404.html` optional for themes
-  rather than a second required template, so a theme written before cress had a
-  404 still gets a styled one. A synthesized 404 is not counted in
-  `Result.Pages`; the author did not write it.
-- **Config values are plain text.** `footer` and `copyright` are escaped by the
-  template, not rendered as markup. A config key that could inject HTML into
-  every page would undercut the theme being the only styling surface.
-- **Image assets have one format per role** (the full rules live in
-  `docs/DEVELOPER.md`): SVG for a line-art logo, WebP for a shaded one and for
-  content images, PNG for favicons. The logo row splits on the artwork, not the
-  role - the scaffold placeholder is vector, cress's own mascot is not. There is
-  no asset pipeline: committed files are already final, converted before the
-  commit and never by `build`. This governs what cress ships, not what a user
-  may put in their own `static/`, which is copied verbatim.
-- **Embedded assets:** the default theme (`internal/theme/builtin/cress`) and the
-  starter site (`internal/scaffold/builtin`) are embedded with `go:embed`. Both
-  are copied verbatim, so edits to those files change what ships.
-- **Schema stays in sync with config:** `schema/config.schema.json` (draft
-  2020-12) mirrors the `Config` struct. Validate the bundled starter config with
-  `task audit:schema` (taplo); the starter carries the `#:schema` directive.
-
 ## Roadmap notes
 
 Out of scope for 1.0: internationalization (i18n), and automatic list or section
-pages (see #23, a candidate for 2.0). Deliberately not planned at any version:
-plugins or a JS ecosystem, data files, shortcodes, taxonomies, and pagination.
+pages (see #23, a candidate for 2.0). The absence of list pages is a scope
+decision for the initial release, not a permanent one.
 
-## Build / test / lint
-
-The **Taskfile is the single source of truth** - CI installs Task plus the
-pinned tools and runs `task check`, so local and CI never drift. Don't run raw
-`go test ./...` / `golangci-lint` in CI; call the task.
-
-| Command             | What it does                                          |
-|---------------------|-------------------------------------------------------|
-| `task check`        | Full gate: fmt:check, vet, lint, sec, test, test:race |
-| `task test`         | Unit tests                                            |
-| `task lint`         | golangci-lint + gomarklint + shellcheck               |
-| `task tools`        | Install all pinned dev tools (matches CI)             |
-| `task audit`        | Complexity and schema audits; not part of `check`/CI  |
-| `task run -- <args>`| Run cress with args (e.g. `task run -- build`)        |
-
-Aggregate tasks (`check`, `lint`, `audit`) run every step even when one fails,
-then report the failures together, so one red step never hides the rest.
-
-CI lives in `.github/workflows/` (`ci`, `release`, `security`). Default branch
-is `trunk`; releases fire on `v*` tags via goreleaser. Dependabot
-(`.github/dependabot.yml`) watches the workflow actions and the `go.mod`
-requirements. Each ecosystem groups its patch and minor bumps into one weekly
-PR, and majors arrive on their own. Go modules include the indirect ones,
-because Dependabot skips those by default and that is where drift hides.
-Dependabot alerts and security updates are repo settings, not keys in that
-file. They cover GitHub's advisory database, and the config covers what has no
-advisory. The pinned dev toolchain (#12) stays a separate decision.
+Deliberately not planned at any version: plugins or a JS ecosystem, data files,
+shortcodes, taxonomies, and pagination. A request for one of these is a request
+to be a different generator, and the answer is the comparison table in the
+README rather than an implementation.

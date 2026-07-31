@@ -103,8 +103,9 @@ Cress is for small sites where simplicity is the point.
 
 The documentation lives in the `docs/` directory:
 
-- [User guide](docs/USER.md): configure and author a Cress site
-- [Operator guide](docs/OPERATOR.md): install Cress and publish the output
+- [User guide](docs/USER.md): create, author, and build a Cress site
+- [Publishing guide](docs/PUBLISH.md): get the output onto a host
+- [Operator guide](docs/OPERATOR.md): install, pin, and upgrade Cress
 - [Developer guide](docs/DEVELOPER.md): build the project and its layout
 
 ## Contributing
