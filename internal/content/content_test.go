@@ -41,6 +41,36 @@ func TestSplitFrontMatter(t *testing.T) {
 			wantTitle: nil,
 			wantBody:  "text --- more\n",
 		},
+		{
+			name:      "toml fence is not front matter",
+			src:       "+++\ntitle = \"Hi\"\n+++\n\nbody\n",
+			wantTitle: nil,
+			wantBody:  "+++\ntitle = \"Hi\"\n+++\n\nbody\n",
+		},
+		{
+			name:      "json fence is not front matter",
+			src:       ";;;\n{\"title\": \"Hi\"}\n;;;\n\nbody\n",
+			wantTitle: nil,
+			wantBody:  ";;;\n{\"title\": \"Hi\"}\n;;;\n\nbody\n",
+		},
+		{
+			name:      "labelled toml fence is not front matter",
+			src:       "---toml\ntitle = \"Hi\"\n---\n\nbody\n",
+			wantTitle: nil,
+			wantBody:  "---toml\ntitle = \"Hi\"\n---\n\nbody\n",
+		},
+		{
+			name:      "labelled yaml fence is not front matter",
+			src:       "---yaml\ntitle: Hi\n---\n\nbody\n",
+			wantTitle: nil,
+			wantBody:  "---yaml\ntitle: Hi\n---\n\nbody\n",
+		},
+		{
+			name:      "bare json object is not front matter",
+			src:       "{\n\"title\": \"Hi\"\n}\n\nbody\n",
+			wantTitle: nil,
+			wantBody:  "{\n\"title\": \"Hi\"\n}\n\nbody\n",
+		},
 	}
 
 	for _, tc := range tests {

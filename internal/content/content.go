@@ -13,7 +13,21 @@ import (
 	"strings"
 
 	"github.com/adrg/frontmatter"
+	"gopkg.in/yaml.v2"
 )
+
+// yamlFrontMatter is the one front-matter format cress accepts: YAML fenced by
+// lines containing only "---".
+//
+// It has to be named explicitly. frontmatter.Parse falls back to a default set
+// of seven formats when given none, TOML (+++) and JSON (;;;) among them, so
+// taking that default meant cress silently parsed syntaxes its own guides rule
+// out, and a page written in one of them worked until it did not.
+//
+// The decoder is yaml.v2 because that is the one the library uses for its own
+// YAML format: passing it leaves a "---" block decoding exactly as it always
+// has, and adds no module the build did not already contain.
+var yamlFrontMatter = frontmatter.NewFormat("---", "---", yaml.Unmarshal)
 
 const (
 	mdExt   = ".md"
@@ -180,10 +194,11 @@ func firstHeading(body []byte) string {
 // splitFrontMatter separates a leading YAML front-matter block, delimited by
 // lines containing only "---", from the Markdown body. When the source has no
 // front matter it returns an empty meta map and the source unchanged; a
-// malformed block is reported as an error.
+// malformed block is reported as an error. A block fenced any other way is not
+// front matter and stays part of the body, where it renders as the text it is.
 func splitFrontMatter(src []byte) (map[string]any, []byte, error) {
 	meta := map[string]any{}
-	body, err := frontmatter.Parse(bytes.NewReader(src), &meta)
+	body, err := frontmatter.Parse(bytes.NewReader(src), &meta, yamlFrontMatter)
 	if err != nil {
 		return nil, nil, fmt.Errorf("front matter: %w", err)
 	}

@@ -8,9 +8,7 @@ require (
 	github.com/fsnotify/fsnotify v1.10.1
 	github.com/urfave/cli/v3 v3.10.1
 	github.com/yuin/goldmark v1.8.4
+	gopkg.in/yaml.v2 v2.4.0
 )
 
-require (
-	golang.org/x/sys v0.47.0 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
-)
+require golang.org/x/sys v0.47.0 // indirect
