@@ -3,6 +3,7 @@ package build
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,6 +17,10 @@ import (
 // homeURL is the URL content gives the site's own index page, before any base
 // path is applied. It is what marks a page as the home page for a theme.
 const homeURL = "/"
+
+// htmlExt is the extension every theme template carries, which is what turns a
+// front-matter layout name into the file a theme defines it in.
+const htmlExt = ".html"
 
 // The synthesized 404, used when neither the content tree nor the theme
 // supplies one. It goes through the theme's entry template, so a theme that
@@ -56,6 +61,10 @@ func fallback(value, siteWide string) string {
 // pageWriter holds what every page render shares: the theme, the renderer, and
 // the site-wide values resolved once at the start of the build. Only the page
 // itself changes between calls.
+//
+// warnings accumulates what a page render found worth reporting but not worth
+// failing over. Collecting it here rather than returning it per page keeps
+// writePage's signature about whether the write succeeded.
 type pageWriter struct {
 	outPath  string
 	thm      *theme.Theme
@@ -63,6 +72,49 @@ type pageWriter struct {
 	site     config.Site
 	nav      theme.NavView
 	basePath string
+	warnings []string
+}
+
+// layoutTemplate maps a front-matter layout name to the template file a theme
+// would define for it. The name is free-form: cress promises no vocabulary, so
+// which layouts exist is the theme's to decide and document.
+func layoutTemplate(layout string) string { return layout + htmlExt }
+
+// resolveLayout picks the template page renders through. A page naming a layout
+// its theme does not define falls back to the entry template and is reported,
+// which follows nav resolution: a build that is missing something still
+// produces a site, and says what was missing.
+//
+// The name needs no sanitizing. Templates are parsed from a glob and keyed by
+// base name, so this asks a map for a name the theme itself defined; it never
+// opens a path, and an absurd layout misses like any other unknown name.
+func (w *pageWriter) resolveLayout(page *content.Page) string {
+	if page.Layout == "" {
+		return ""
+	}
+	name := layoutTemplate(page.Layout)
+	if w.thm.HasTemplate(name) {
+		return name
+	}
+	w.warnings = append(w.warnings, missingLayoutWarning(page.SourcePath, page.Layout, w.thm.Name()))
+	return ""
+}
+
+// missingLayoutWarning phrases an unresolvable layout, naming the page that
+// asked, what it asked for, and the theme that had no answer.
+func missingLayoutWarning(sourcePath, layout, themeName string) string {
+	return fmt.Sprintf("%s names layout %q, which theme %q does not define", sourcePath, layout, themeName)
+}
+
+// renderLayout writes data through the theme template named name, or through
+// the entry template when name is empty. Every caller that may or may not have
+// a template to reach for goes through here, so "fall back to page.html" is
+// written once.
+func renderLayout(w io.Writer, thm *theme.Theme, name string, data theme.PageData) error {
+	if name == "" {
+		return thm.Render(w, data)
+	}
+	return thm.RenderTemplate(w, name, data)
 }
 
 // writePage renders one page through the theme and writes it to the output tree.
@@ -98,7 +150,7 @@ func (w *pageWriter) writePage(page *content.Page) error {
 	}
 
 	var buf bytes.Buffer
-	if err := w.thm.Render(&buf, data); err != nil {
+	if err := renderLayout(&buf, w.thm, w.resolveLayout(page), data); err != nil {
 		return fmt.Errorf("%s: %w", page.SourcePath, err)
 	}
 
@@ -145,12 +197,11 @@ func (w *pageWriter) writeNotFound() error {
 	}
 
 	var buf bytes.Buffer
+	name := ""
 	if w.thm.HasTemplate(notFoundTemplate) {
-		err = w.thm.RenderTemplate(&buf, notFoundTemplate, data)
-	} else {
-		err = w.thm.Render(&buf, data)
+		name = notFoundTemplate
 	}
-	if err != nil {
+	if err := renderLayout(&buf, w.thm, name, data); err != nil {
 		return fmt.Errorf("%s: %w", NotFoundFile, err)
 	}
 

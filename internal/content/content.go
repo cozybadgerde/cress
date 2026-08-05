@@ -58,6 +58,10 @@ type Page struct {
 	// Language is the front-matter "language" tag, empty when the page sets none.
 	// It overrides the site's language for this page, which the builder resolves.
 	Language string
+	// Layout is the front-matter "layout" name, empty when the page sets none.
+	// It names a template the theme may define; whether one does is the
+	// builder's question, since this package knows the file and not the theme.
+	Layout string
 	// Draft marks a page excluded from a normal build.
 	Draft bool
 	// Meta is the parsed front matter, passed through verbatim to templates.
@@ -125,6 +129,7 @@ func parseFile(absPath, relSlash string) (*Page, error) {
 		Title:       titleFor(meta, body, relSlash),
 		Description: stringField(meta, "description"),
 		Language:    stringField(meta, "language"),
+		Layout:      stringField(meta, "layout"),
 		Draft:       draftFor(meta),
 		Meta:        meta,
 		Body:        body,

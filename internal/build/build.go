@@ -87,6 +87,7 @@ func Build(opts Options) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
+	warnings = append(warnings, writer.warnings...)
 	return &Result{
 		Pages:    rendered,
 		Output:   outPath,

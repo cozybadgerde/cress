@@ -1,0 +1,52 @@
+{{/*
+  An alternative layout, reached by a page whose front matter says
+  `layout: landing`. The navigation is the site's usual one; what differs is
+  that the page opens with a panel filling the first screen, so the site says
+  its name before it says anything else. The prose follows below it.
+
+  The site title in the panel is not a heading. The page's own H1 comes from its
+  Markdown, as it does in page.html, and a second one here would leave the page
+  with two.
+
+  The panel ends in a link down to that prose, which is what tells a reader the
+  first screen is not the whole page. It is a link rather than an ornament so
+  that it can be tabbed to and followed, and it is skipped for a page whose body
+  is empty, where it would point at nothing.
+
+  The panel is marked with the site's logo when there is one, and washed with the
+  accent color when there is not, so it has something behind the type either
+  way. The logo's URL reaches the stylesheet as a custom property because only
+  the template knows it; the class says which of the two the stylesheet should
+  draw.
+*/}}
+<!DOCTYPE html>
+<html lang="{{ .Page.Language }}">
+  {{ template "head" . }}
+  <body>
+    <div class="landing-top">
+      {{ template "site-header" . }}
+
+      <section class="hero {{ if .Site.Logo }}hero-logo{{ else }}hero-wash{{ end }}"
+        {{- with .Site.Logo }} style="--site-logo: url('{{ . }}')"{{ end }}>
+        <div class="hero-inner">
+          <p class="hero-title">{{ .Site.Title }}</p>
+          {{ with .Page.Description }}<p class="hero-lede">{{ . }}</p>{{ end }}
+        </div>
+        {{ if .Page.HTML }}
+        <a class="hero-more" href="#content" aria-label="Skip to the content">
+          <svg class="hero-chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+        {{ end }}
+      </section>
+    </div>
+
+    <main class="page" id="content">
+      {{ .Page.HTML }}
+    </main>
+
+    {{ template "site-footer" . }}
+  </body>
+</html>

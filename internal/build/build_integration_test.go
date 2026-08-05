@@ -730,6 +730,211 @@ func TestBuild_notFound_integration(t *testing.T) {
 	})
 }
 
+func TestBuild_layout_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	// A theme offering a layout beyond the required entry template. Each renders
+	// a distinct marker, so which one ran is unambiguous.
+	newSite := func(t *testing.T) string {
+		t.Helper()
+		root := t.TempDir()
+		templates := filepath.Join(root, "themes", "mine", "templates")
+		writeSiteFile(t, filepath.Join(templates, "page.html"), `PAGE:{{ .Page.Title }}`)
+		writeSiteFile(t, filepath.Join(templates, "wide.html"), `WIDE:{{ .Page.Title }}`)
+		writeSiteFile(t, filepath.Join(root, "cress.toml"), "[site]\ntitle = \"S\"\ntheme = \"mine\"\n")
+		return root
+	}
+
+	t.Run("a page renders through the layout it names", func(t *testing.T) {
+		root := newSite(t)
+		writeSiteFile(t, filepath.Join(root, "content", "wide.md"), "---\ntitle: Wide\nlayout: wide\n---\n\nbody\n")
+
+		res, err := build.Build(build.Options{Root: root})
+		if err != nil {
+			t.Fatalf("build: %v", err)
+		}
+		if len(res.Warnings) != 0 {
+			t.Errorf("a layout the theme defines must not warn: %v", res.Warnings)
+		}
+		if got := readFile(t, filepath.Join(root, config.OutputDir, "wide.html")); got != "WIDE:Wide" {
+			t.Errorf("wide.html = %q, want the named layout to render it", got)
+		}
+	})
+
+	t.Run("a page naming no layout keeps the entry template", func(t *testing.T) {
+		root := newSite(t)
+		writeSiteFile(t, filepath.Join(root, "content", "plain.md"), "---\ntitle: Plain\n---\n\nbody\n")
+
+		res, err := build.Build(build.Options{Root: root})
+		if err != nil {
+			t.Fatalf("build: %v", err)
+		}
+		if len(res.Warnings) != 0 {
+			t.Errorf("unexpected warnings: %v", res.Warnings)
+		}
+		if got := readFile(t, filepath.Join(root, config.OutputDir, "plain.html")); got != "PAGE:Plain" {
+			t.Errorf("plain.html = %q, want the entry template to render it", got)
+		}
+	})
+
+	// Naming a layout no theme defines is the case a theme switch produces, so it
+	// must still yield a page. It falls back and says so, the way an unresolvable
+	// nav entry does, rather than failing the build or going quiet.
+	t.Run("an unknown layout falls back and warns", func(t *testing.T) {
+		root := newSite(t)
+		writeSiteFile(t, filepath.Join(root, "content", "odd.md"), "---\ntitle: Odd\nlayout: nope\n---\n\nbody\n")
+
+		res, err := build.Build(build.Options{Root: root})
+		if err != nil {
+			t.Fatalf("build: %v", err)
+		}
+		if got := readFile(t, filepath.Join(root, config.OutputDir, "odd.html")); got != "PAGE:Odd" {
+			t.Errorf("odd.html = %q, want the entry template as the fallback", got)
+		}
+		if len(res.Warnings) != 1 {
+			t.Fatalf("warnings = %v, want exactly one naming the missing layout", res.Warnings)
+		}
+		for _, want := range []string{"odd.md", `"nope"`, `"mine"`} {
+			if !strings.Contains(res.Warnings[0], want) {
+				t.Errorf("warning %q does not mention %s", res.Warnings[0], want)
+			}
+		}
+	})
+
+	// A layout name is a template lookup, never a file path, so a name that looks
+	// like one reaches nothing outside the theme's own templates.
+	t.Run("a traversing layout name is an ordinary miss", func(t *testing.T) {
+		root := newSite(t)
+		writeSiteFile(t, filepath.Join(root, "content", "evil.md"),
+			"---\ntitle: Evil\nlayout: ../../../../etc/passwd\n---\n\nbody\n")
+
+		res, err := build.Build(build.Options{Root: root})
+		if err != nil {
+			t.Fatalf("build: %v", err)
+		}
+		if got := readFile(t, filepath.Join(root, config.OutputDir, "evil.html")); got != "PAGE:Evil" {
+			t.Errorf("evil.html = %q, want the entry template as the fallback", got)
+		}
+		if len(res.Warnings) != 1 {
+			t.Errorf("warnings = %v, want exactly one", res.Warnings)
+		}
+	})
+}
+
+// The built-in theme ships the layout its scaffold names, so `cress init`
+// followed by `cress build` demonstrates the feature without a warning.
+func TestBuild_builtinLandingLayout_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := t.TempDir()
+	if _, err := scaffold.Create(root, false); err != nil {
+		t.Fatalf("scaffold: %v", err)
+	}
+
+	res, err := build.Build(build.Options{Root: root})
+	if err != nil {
+		t.Fatalf("build: %v", err)
+	}
+	if len(res.Warnings) != 0 {
+		t.Errorf("the scaffold must build clean: %v", res.Warnings)
+	}
+	out := filepath.Join(root, config.OutputDir)
+
+	home := readFile(t, filepath.Join(out, "index.html"))
+	assertMarkers(t, "index.html", home, []marker{
+		{`class="landing-top"`, "the full-screen opening panel"},
+		{`class="hero-title"`, "the site name set as display type"},
+		// The landing layout differs below the header, not in place of it: the
+		// site's usual navigation is still the way off this page.
+		{`class="site-header"`, "the standard header bar, kept"},
+		{`href="/about.html"`, "a nav link, so a landing page can still be left"},
+		{`class="site-footer"`, "the shared footer"},
+		// The arrow says the first screen is not the whole page. It is a link, so
+		// it needs somewhere to land and a name to be announced by.
+		{`href="#content"`, "the arrow down to the content"},
+		{`aria-label="Skip to the content"`, "the arrow's accessible name"},
+		{`id="content"`, "the target the arrow points at"},
+		// The scaffold sets a logo, so the panel is marked with it. Only the
+		// template knows the URL, so it reaches the stylesheet as a property.
+		{`class="hero hero-logo"`, "the panel marked with the site's logo"},
+		{`--site-logo: url('/logo.svg')`, "the logo URL handed to the stylesheet"},
+	})
+	// The page's own H1 comes from its Markdown. A landing page that also set one
+	// in the panel would have two, so the panel sets none.
+	if got := strings.Count(home, "<h1"); got != 1 {
+		t.Errorf("index.html has %d <h1> elements, want exactly 1", got)
+	}
+
+	// Every other scaffold page names no layout and is untouched by this.
+	about := readFile(t, filepath.Join(out, "about.html"))
+	assertMarkers(t, "about.html", about, []marker{
+		{`class="site-header"`, "the standard header bar"},
+	})
+	if strings.Contains(about, `class="hero"`) {
+		t.Error("a page naming no layout must not get the landing panel")
+	}
+}
+
+// An arrow down to the content is a promise that there is some. A landing page
+// carrying nothing below the panel gets no arrow rather than one pointing at an
+// empty main.
+func TestBuild_landingWithoutBody_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := t.TempDir()
+	writeSiteFile(t, filepath.Join(root, "cress.toml"), "[site]\ntitle = \"S\"\n")
+	writeSiteFile(t, filepath.Join(root, "content", "index.md"), "---\ntitle: Home\nlayout: landing\n---\n")
+
+	res, err := build.Build(build.Options{Root: root})
+	if err != nil {
+		t.Fatalf("build: %v", err)
+	}
+	if len(res.Warnings) != 0 {
+		t.Errorf("unexpected warnings: %v", res.Warnings)
+	}
+
+	home := readFile(t, filepath.Join(root, config.OutputDir, "index.html"))
+	assertMarkers(t, "index.html", home, []marker{
+		{`class="hero-title"`, "the panel, which does not depend on there being a body"},
+	})
+	if strings.Contains(home, "hero-more") {
+		t.Errorf("an empty body must not get an arrow pointing at it:\n%s", home)
+	}
+}
+
+// The panel's highlight is drawn from the site's logo, so a site without one
+// falls back to a wash the stylesheet mixes from the accent. Either way the
+// panel has something behind its type.
+func TestBuild_landingWithoutLogo_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := t.TempDir()
+	writeSiteFile(t, filepath.Join(root, "cress.toml"), "[site]\ntitle = \"S\"\n")
+	writeSiteFile(t, filepath.Join(root, "content", "index.md"), "---\ntitle: Home\nlayout: landing\n---\n\n# Home\n\nbody\n")
+
+	if _, err := build.Build(build.Options{Root: root}); err != nil {
+		t.Fatalf("build: %v", err)
+	}
+
+	home := readFile(t, filepath.Join(root, config.OutputDir, "index.html"))
+	assertMarkers(t, "index.html", home, []marker{
+		{`class="hero hero-wash"`, "the accent wash, standing in for an absent logo"},
+	})
+	// Naming a property with no URL behind it would leave the panel asking the
+	// browser for `url()` of nothing.
+	if strings.Contains(home, "--site-logo") {
+		t.Errorf("a site with no logo must not emit the logo property:\n%s", home)
+	}
+}
+
 func TestBuild_refusesSiteRootOutput(t *testing.T) {
 	root := t.TempDir()
 	if _, err := scaffold.Create(root, false); err != nil {

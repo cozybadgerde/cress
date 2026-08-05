@@ -226,6 +226,9 @@ Front-matter fields Cress understands:
 - `language`: this page's language tag, overriding the site's `language` for
   this page alone. Set it on the one page you wrote in another language; leave
   it out everywhere else.
+- `layout`: the name of an alternative layout in your theme. Leave it out and
+  the page gets the theme's standard layout, which is what nearly every page
+  wants. See [Page layouts](#page-layouts).
 
 Any other field is passed through to the theme untouched, so a theme can read
 its own keys. Unlike `cress.toml`, front matter is deliberately permissive: an
@@ -381,6 +384,7 @@ themes/
     templates/
       page.html      required: renders one page
       404.html       optional: renders the 404 page
+      wide.html      optional: an alternative layout, named by a page
     static/          optional: CSS and other assets, copied to the site root
 ```
 
@@ -396,6 +400,65 @@ Writing a theme, rather than dropping one in, is covered by
 [the template data contract](./DEVELOPER.md#the-template-data-contract) in the
 developer guide: the fields a template receives, and which of them are fixed
 for the life of a major version.
+
+### Page layouts
+
+Most pages should look alike, and by default they do: every page is rendered
+through the theme's `page.html`. A page that needs a different shape names a
+layout in its front matter, and the theme renders it through the matching
+template instead.
+
+```markdown
+---
+title: Welcome
+layout: landing
+---
+
+# Welcome
+```
+
+That page renders through `templates/landing.html`. The built-in `cress` theme
+ships one alternative layout, `landing`, which opens the page with a panel
+filling the first screen, the site's name set large and centered in it, and the
+page's own content following below. An arrow at the foot of the panel links
+down to that content, so the first screen does not read as the whole page. The
+header and footer are the site's usual ones, so navigation works exactly as it
+does everywhere else. The site `cress init` creates uses it on the home page,
+so you can see the difference immediately.
+
+Behind the panel's text sits your `logo`, enlarged, flattened to a single
+shade and faded almost into the background, running off the right edge. It
+takes only the shape of your logo and none of its color, so it works whatever
+your logo looks like and in both the light and dark schemes. Set no `logo` and
+the panel is washed with your `accent` color instead.
+
+Write the page as you would any other. The panel takes the site's name from
+`title` in `cress.toml` and its line of text from the page's `description`,
+falling back to the site's, so the Markdown below is only the content: give it
+its own `# ` heading the way every other page has one.
+
+Layout names belong to the theme, not to Cress. There is no fixed list of
+names: a theme offers whatever layouts it documents, and `landing` means
+whatever the theme in use decides it means. Two consequences are worth knowing
+before you reach for the key:
+
+- **Swapping themes can change a page.** If your new theme defines no
+  `landing`, the page falls back to the standard layout and the build says so:
+
+  ```text
+  content/index.md names layout "landing", which theme "birch" does not define
+  ```
+
+  The build still succeeds and the page is still published. Remove the key, or
+  rename it to something the new theme offers.
+- **A typo behaves the same way.** `layout: lading` is a name no theme defines,
+  so you get the standard layout and that warning. Read the warnings a build
+  prints and a mistyped layout is obvious; ignore them and it looks like the
+  key did nothing.
+
+Use `layout` on the handful of pages that genuinely differ, such as a home
+page. Setting it on every page means repeating it in every file, and Cress has
+no way to set a layout for a whole directory at once.
 
 ## The 404 page
 

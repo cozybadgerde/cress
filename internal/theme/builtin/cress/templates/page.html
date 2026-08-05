@@ -1,55 +1,13 @@
 <!DOCTYPE html>
 <html lang="{{ .Page.Language }}">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{{ if not .Page.IsHome }}{{ .Page.Title }} · {{ end }}{{ .Site.Title }}</title>
-    {{ .Page.Head }}
-    {{ with .Site.Favicon }}<link rel="icon" href="{{ . }}" />{{ end }}
-    <link rel="stylesheet" href="{{ .Site.BasePath }}/style.css" />
-    {{ if or .Site.Accent .Site.AccentDark }}
-    <style>
-      {{ with .Site.Accent }}:root { --accent: {{ . }}; }{{ end }}
-      {{ with .Site.AccentDark }}@media (prefers-color-scheme: dark) { :root { --accent: {{ . }}; } }{{ end }}
-    </style>
-    {{ end }}
-  </head>
+  {{ template "head" . }}
   <body>
-    <header class="site-header">
-      <a class="site-title" href="{{ .Site.BasePath }}/">
-        {{- with .Site.Logo }}
-        <picture>
-          {{- with $.Site.LogoDark }}
-          <source media="(prefers-color-scheme: dark)" srcset="{{ . }}" />
-          {{- end }}
-          <img class="site-logo" src="{{ . }}" alt="" />
-        </picture>
-        {{- end }}
-        <span>{{ .Site.Title }}</span>
-      </a>
-      {{ with .Nav.Main }}
-      <nav class="site-nav">
-        {{ range . }}<a href="{{ .URL }}"{{ if .Active }} aria-current="page"{{ end }}>{{ .Title }}</a>{{ end }}
-      </nav>
-      {{ end }}
-    </header>
+    {{ template "site-header" . }}
 
     <main class="page">
       {{ .Page.HTML }}
     </main>
 
-    <footer class="site-footer">
-      {{ with .Nav.Footer }}
-      <nav class="footer-nav" aria-label="Secondary">
-        {{ range . }}<a href="{{ .URL }}"{{ if .Active }} aria-current="page"{{ end }}>{{ .Title }}</a>{{ end }}
-      </nav>
-      {{ end }}
-      <p class="footer-text">
-        {{ with .Site.Footer }}{{ . }}{{ else }}Made with
-        <a href="https://github.com/cozybadgerde/cress">Cress</a>.
-        Fresh little sites, fast.{{ end }}
-      </p>
-      {{ with .Site.Copyright }}<p class="footer-copyright">{{ . }}</p>{{ end }}
-    </footer>
+    {{ template "site-footer" . }}
   </body>
 </html>

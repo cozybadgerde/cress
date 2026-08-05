@@ -27,8 +27,14 @@
   box-sizing: border-box;
 }
 
+/* Reserve the scrollbar's width on every page, whether or not that page is long
+   enough to need one. Without it a short page is laid out wider than a long one,
+   and moving between the two shifts everything centered by half a scrollbar. The
+   gutter is only reserved where scrollbars take layout space at all, so it costs
+   nothing under the overlay scrollbars macOS and iOS use by default. */
 html {
   -webkit-text-size-adjust: 100%;
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -100,6 +106,146 @@ body {
 .site-nav a:hover,
 .site-nav a[aria-current="page"] {
   color: var(--accent);
+}
+
+/* The landing layout opens with the header and a panel that together fill the
+   first screen. Sizing the pair rather than the panel is what keeps that exact:
+   the hero takes whatever height the header leaves, so the header can change
+   without a magic number here going stale. */
+.landing-top {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.hero {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* The larger bottom padding is the arrow's room: it is positioned against the
+     panel's floor, and centered content must not run underneath it on a short
+     screen. */
+  padding-block: 3rem 5.5rem;
+  padding-inline: 1.25rem;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+
+/* Both highlights are drawn on one layer behind the type, never on the panel
+   itself: a filter or an opacity set on .hero would take the title down with
+   the artwork. */
+.hero-logo::before,
+.hero-wash::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* The site's own logo, oversized and running off the right edge so it reads as
+   texture rather than as a second copy of the one in the header.
+
+   brightness(0) flattens it to a silhouette, which is what makes this work for
+   a logo the theme has never seen: the color is discarded and only the shape
+   is kept, so a black wordmark and a bright green icon both land at the same
+   weight against the page. Desaturating alone would leave a dark logo invisible
+   on the dark scheme and a pale one invisible on the light. */
+.hero-logo::before {
+  /* The offset pushes the mark past the right edge, so what shows is a slice of
+     it rather than the whole thing sitting in the corner. It is a length rather
+     than a percentage on purpose: a percentage offset resolves against the
+     difference between the panel and the image, which is negative for an image
+     this size and makes the result read backwards. */
+  background: var(--site-logo) no-repeat right -3.5rem center / auto 130%;
+  filter: grayscale(1) brightness(0);
+  opacity: 0.045;
+}
+
+@media (prefers-color-scheme: dark) {
+  .hero-logo::before {
+    filter: grayscale(1) brightness(0) invert(1);
+    opacity: 0.07;
+  }
+}
+
+/* The fallback, for a site that sets no logo. Mixed from the accent rather than
+   stored as a color of its own, so it follows a custom accent instead of
+   drifting out of step with one. */
+.hero-wash::before {
+  background: radial-gradient(
+    60% 55% at 72% 45%,
+    color-mix(in srgb, var(--accent) 16%, transparent),
+    transparent 70%
+  );
+}
+
+.hero-inner {
+  position: relative;
+  width: 100%;
+  max-width: var(--max-width);
+  margin-inline: auto;
+}
+
+/* The site's name, set as display type. It is a <p>, not a heading: the page's
+   own H1 belongs to its content. */
+.hero-title {
+  margin: 0;
+  font-size: clamp(2.5rem, 9vw, 5rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.hero-lede {
+  margin: 1.25rem auto 0;
+  max-width: 34rem;
+  font-size: 1.15rem;
+  color: var(--muted);
+}
+
+/* The way down to the page's own content, and the sign that the first screen is
+   not all there is. */
+.hero-more {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  padding: 0.5rem;
+  border-radius: 50%;
+  color: var(--muted);
+}
+
+.hero-more:hover,
+.hero-more:focus-visible {
+  color: var(--accent);
+}
+
+.hero-chevron {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+/* The nudge is what draws the eye downward, so it is worth having, but motion
+   that repeats forever is exactly what a reduced-motion preference is asking to
+   be spared. Without the animation the arrow still says which way is down. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-more {
+    animation: hero-bob 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes hero-bob {
+  0%,
+  100% {
+    translate: -50% 0;
+  }
+
+  50% {
+    translate: -50% 0.4rem;
+  }
 }
 
 .page {

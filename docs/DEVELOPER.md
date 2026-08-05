@@ -113,14 +113,71 @@ validates the bundled starter against it.
 ## The built-in theme
 
 The default theme lives at `internal/theme/builtin/cress/` and is embedded into
-the binary with `go:embed`. A `templates/page.html` renders one page, and
-`static/style.css` styles it. Editing these files changes the theme every site
-gets by default.
+the binary with `go:embed`. `templates/page.html` renders one page,
+`templates/landing.html` renders a page that names `layout: landing`,
+`templates/partials.html` holds what those two share, and `static/style.css`
+styles the result. Editing these files changes the theme every site gets by
+default.
 
 `page.html` is the only template a theme must define. A theme may add
 `templates/404.html` to render the 404 page itself; without one, `build`
 synthesizes a 404 and renders it through `page.html`. That is why the 404 is
 free for every theme instead of being a second required template.
+
+Every other file in `templates/` is a layout a page can name. `theme.Resolve`
+parses `templates/*.html` into one template set keyed by base name, so
+`layout: wide` in front matter reaches `wide.html` and nothing else has to be
+registered. Two properties follow from that and are worth keeping:
+
+- **A layout name is a map key, not a path.** `HasTemplate` looks up a name the
+  theme itself defined, so a layout name needs no sanitizing and cannot escape
+  the theme. Do not add path cleaning here; there is no path.
+- **A miss is not an error.** A page naming a layout the theme lacks renders
+  through `page.html` and adds a build warning. That is what lets a site keep
+  building when its theme is swapped for one with a different vocabulary, and it
+  matches how an unresolvable nav entry behaves.
+
+Cress promises no layout vocabulary. Which layouts exist, and what they mean,
+is each theme's to define and document. The built-in theme offers `landing`,
+and its two layouts call the shared partials in `partials.html` for the head,
+the header, and the footer rather than repeating them, so adding a third layout
+cannot leave the site with two different headers.
+
+`landing` differs from `page` below the header rather than in place of it: it
+adds a panel sized to the first screen and keeps the site's usual navigation.
+Four details in it are worth preserving in any layout added later:
+
+- The panel's site name is a `<p>`, not a heading. The page's H1 comes from its
+  Markdown, and a second one would leave the page with two.
+- The header and panel are sized together, as `.landing-top`, so the panel takes
+  whatever height the header leaves. Sizing the panel alone needs a magic number
+  that goes stale the moment the header's padding changes.
+- The arrow at the panel's foot is an `<a href="#content">` with an
+  `aria-label`, not an ornament, so it can be tabbed to and followed and does
+  not announce as a shape. It is omitted when `.Page.HTML` is empty, where it
+  would point at nothing.
+- Its animation sits behind `@media (prefers-reduced-motion: no-preference)`.
+  Motion that repeats forever is what that preference exists to switch off, and
+  the arrow still points down without it.
+- The panel's highlight is drawn on a `::before` layer, never on `.hero` itself,
+  because a filter or an opacity set on the panel would take the title down with
+  the artwork.
+
+The highlight is the one place the template hands the stylesheet a value. Only
+the template knows `.Site.Logo`, so `landing.html` emits it as a `--site-logo`
+custom property and picks the class that says which highlight to draw:
+`hero-logo` for a site with a logo, `hero-wash` for one without. `html/template`
+escapes the URL in its CSS context, replacing anything that is not a plain URL
+with `#ZgotmplZ`, so a logo path cannot become a style injection.
+
+The logo is flattened with `grayscale(1) brightness(0)`, which discards its
+color and keeps only its shape. That is what makes it work for a logo the theme
+has never seen: desaturating alone leaves a dark logo invisible on the dark
+scheme and a pale one invisible on the light, while a silhouette tinted by
+opacity lands at the same weight either way. The `hero-wash` fallback is mixed
+from `var(--accent)` rather than stored as a color of its own, for the reason
+given in the accent discussion: a second stored color drifts out of step with
+the configured one.
 
 The rendered Markdown a theme drops into the page is plain semantic HTML, with
 one shape worth knowing about: an image that is the whole of its paragraph
@@ -133,7 +190,10 @@ theme styles one shape rather than two. A theme that styles `p img` and not
 
 Every template receives a `theme.PageData`, defined in `internal/theme/data.go`
 together with `NavView`, `NavLink`, and `PageView`. `build` fills the value in,
-and `theme` owns the definition, because it already owns the templates.
+and `theme` owns the definition, because it already owns the templates. That
+holds for every template equally: `page.html`, `404.html`, and any layout a page
+names all get the same shape, so a layout rearranges what is already there
+rather than receiving data of its own.
 
 Templates use Go's `html/template`, and every one of them receives:
 

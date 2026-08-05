@@ -69,6 +69,46 @@ func TestCollect_integration(t *testing.T) {
 	}
 }
 
+// A page's layout is read verbatim and never checked here: whether a theme
+// defines one is the builder's question, so this package reports what the
+// author wrote and nothing more.
+func TestCollect_layout_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, "blank.md"), "---\nlayout: \"   \"\n---\nbody\n")
+	writeFile(t, filepath.Join(root, "named.md"), "---\nlayout: landing\n---\nbody\n")
+	writeFile(t, filepath.Join(root, "numeric.md"), "---\nlayout: 42\n---\nbody\n")
+	writeFile(t, filepath.Join(root, "padded.md"), "---\nlayout: \" wide \"\n---\nbody\n")
+	writeFile(t, filepath.Join(root, "unknown.md"), "---\nlayout: no-theme-has-this\n---\nbody\n")
+	writeFile(t, filepath.Join(root, "unset.md"), "---\ntitle: Plain\n---\nbody\n")
+
+	pages, err := content.Collect(root)
+	if err != nil {
+		t.Fatalf("Collect: %v", err)
+	}
+
+	// WalkDir yields lexical order, so the slice is deterministic.
+	want := map[string]string{
+		"blank.md":   "",
+		"named.md":   "landing",
+		"numeric.md": "",
+		"padded.md":  "wide",
+		"unknown.md": "no-theme-has-this",
+		"unset.md":   "",
+	}
+	if len(pages) != len(want) {
+		t.Fatalf("collected %d pages, want %d", len(pages), len(want))
+	}
+	for _, p := range pages {
+		if got := p.Layout; got != want[p.SourcePath] {
+			t.Errorf("%s: Layout = %q, want %q", p.SourcePath, got, want[p.SourcePath])
+		}
+	}
+}
+
 func TestCollectMissingRoot_integration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
