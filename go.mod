@@ -7,7 +7,7 @@ require (
 	github.com/adrg/frontmatter v0.2.0
 	github.com/fsnotify/fsnotify v1.10.1
 	github.com/urfave/cli/v3 v3.10.1
-	github.com/yuin/goldmark v1.8.4
+	github.com/yuin/goldmark v1.8.5
 	gopkg.in/yaml.v2 v2.4.0
 )
 
