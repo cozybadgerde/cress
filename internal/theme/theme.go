@@ -38,6 +38,10 @@ const (
 	staticDir   = "static"
 	builtinRoot = "builtin"
 	htmlExt     = ".html"
+	// definesProbe names the throwaway template a file is parsed into when its
+	// {{ define }} names are being read, so that the file's own body has a name
+	// to sit under and can be told apart from what it defines.
+	definesProbe = "\x00probe"
 )
 
 // Theme is a loaded theme ready to render pages and expose its assets.
@@ -89,6 +93,9 @@ func load(name string, fsys fs.FS) (*Theme, error) {
 	if !layouts[entryTemplate] {
 		return nil, fmt.Errorf("theme %q: missing %s template", name, entryTemplate)
 	}
+	if err := checkLayoutDefines(fsys); err != nil {
+		return nil, fmt.Errorf("theme %q: %w", name, err)
+	}
 	if err := parsePartials(tmpl, fsys); err != nil {
 		return nil, fmt.Errorf("theme %q: %w", name, err)
 	}
@@ -123,6 +130,56 @@ func layoutNames(fsys fs.FS) (map[string]bool, error) {
 	return layouts, nil
 }
 
+// checkLayoutDefines applies the define-name rule to the layouts themselves. A
+// layout is as able to define a name as a partial is, so the same collision is
+// reachable without a partials directory at all.
+func checkLayoutDefines(fsys fs.FS) error {
+	files, err := fs.Glob(fsys, layoutsGlob)
+	if err != nil {
+		return fmt.Errorf("listing layouts: %w", err)
+	}
+	for _, file := range files {
+		data, err := fs.ReadFile(fsys, file)
+		if err != nil {
+			return fmt.Errorf("reading %s: %w", file, err)
+		}
+		if err := checkDefineNames(file, data); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// checkDefineNames rejects a template file that defines a name ending in
+// htmlExt.
+//
+// Layout names are file names, so they always carry that suffix. A define
+// wearing it can therefore take a layout's name, and because a later parse
+// replaces an earlier one, the layout set would still list the name while the
+// template behind it had become the define's: every page rendering through
+// something that is not the layout, with nothing said about it. Forbidding the
+// shape makes that unrepresentable rather than something to detect, and costs a
+// theme nothing, since a fragment has no reason to be named like a file.
+//
+// The names are read from a throwaway parse because a redefinition replaces a
+// name rather than adding one, so comparing the real template set before and
+// after would find nothing. A file that does not parse is left to the real parse
+// to report, which knows what it was doing at the time.
+func checkDefineNames(path string, text []byte) error {
+	probe, err := template.New(definesProbe).Parse(string(text))
+	if err != nil {
+		return nil
+	}
+	for _, t := range probe.Templates() {
+		defined := t.Name()
+		if defined == definesProbe || !strings.HasSuffix(defined, htmlExt) {
+			continue
+		}
+		return fmt.Errorf("%s defines %q, but a {{ define }} name must not end in %s, because that is how layouts are named", path, defined, htmlExt)
+	}
+	return nil
+}
+
 // parsePartials adds every template under partialsDir to tmpl.
 //
 // The tree is walked rather than globbed because a partial's path means nothing:
@@ -148,6 +205,9 @@ func parsePartials(tmpl *template.Template, fsys fs.FS) error {
 		data, err := fs.ReadFile(fsys, p)
 		if err != nil {
 			return fmt.Errorf("reading %s: %w", p, err)
+		}
+		if err := checkDefineNames(p, data); err != nil {
+			return err
 		}
 		// Registering the file under its full path keeps it clear of the layout
 		// namespace, which holds base names only. What matters is the {{ define }}

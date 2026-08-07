@@ -419,6 +419,11 @@ is reached only by its `{{ define }}` name, from a template that composes it,
 and never by a page. Group partials into subdirectories if it helps. The loader
 does not care where they sit.
 
+The two naming systems are kept apart: a layout is named by its file, so its
+name ends in `.html`, and a `{{ define }}` name must not. Cress refuses to load
+a theme that breaks that rule, because a define taking a layout's name would
+replace it and every page would render through the wrong template.
+
 Writing a theme, rather than dropping one in, is covered by
 [the template data contract](./DEVELOPER.md#the-template-data-contract) in the
 developer guide: the fields a template receives, and which of them are fixed

@@ -150,6 +150,14 @@ Three properties follow from that and are worth keeping:
   under `templates/`, not from the parsed template set, so a fragment cannot be
   reached by a page that names it. Deriving it from the parse would put both
   kinds in one namespace, which is what this split undoes.
+- **A `{{ define }}` name must not end in `.html`.** Layout names are file
+  names, so they always carry that suffix, and a define wearing it can take a
+  layout's name. A later parse replaces an earlier one, so the layout set would
+  still list the name while the template behind it had become the define's, and
+  every page would render through something that is not the layout with nothing
+  said about it. Loading such a theme is refused. Forbidding the shape makes the
+  collision unrepresentable instead of something to detect, and it costs a theme
+  nothing: a fragment has no reason to be named like a file.
 
 Cress promises no layout vocabulary. Which layouts exist, and what they mean,
 is each theme's to define and document. The built-in theme offers `landing`,

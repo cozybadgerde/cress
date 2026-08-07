@@ -137,7 +137,7 @@ func TestPartialIsNotALayout(t *testing.T) {
 // fragment that layout composes with rather than a layout a page may name.
 func TestLayoutsAreFileNamesOnly(t *testing.T) {
 	fsys := fstest.MapFS{
-		"templates/page.html": {Data: []byte(`{{ define "sidebar.html" }}SIDE{{ end }}PAGE`)},
+		"templates/page.html": {Data: []byte(`{{ define "sidebar" }}SIDE{{ end }}PAGE`)},
 	}
 
 	thm, err := load("defines", fsys)
@@ -147,8 +147,98 @@ func TestLayoutsAreFileNamesOnly(t *testing.T) {
 	if !thm.HasLayout("page.html") {
 		t.Error(`HasLayout("page.html") = false, want true`)
 	}
-	if thm.HasLayout("sidebar.html") {
-		t.Error(`HasLayout("sidebar.html") = true, want false for a define inside a layout`)
+	for _, name := range []string{"sidebar", "sidebar.html"} {
+		if thm.HasLayout(name) {
+			t.Errorf("HasLayout(%q) = true, want false for a define inside a layout", name)
+		}
+	}
+}
+
+// A define may not wear a layout's shape. One taking the name of a layout that
+// exists would replace it, leaving the layout set still listing the name while
+// every page rendered through the define instead, with nothing said about it.
+func TestDefineMayNotEndInHTML(t *testing.T) {
+	tests := []struct {
+		name    string
+		fsys    fstest.MapFS
+		file    string
+		defined string
+	}{
+		{
+			name: "a partial taking an existing layout's name",
+			fsys: fstest.MapFS{
+				"templates/page.html":          {Data: []byte(`REAL`)},
+				"templates/partials/bits.html": {Data: []byte(`{{ define "page.html" }}HIJACKED{{ end }}`)},
+			},
+			file:    "templates/partials/bits.html",
+			defined: "page.html",
+		},
+		{
+			// Rejected even though nothing collides yet, so that adding
+			// sidebar.html later cannot quietly turn this into the case above.
+			name: "a partial taking a name no layout has yet",
+			fsys: fstest.MapFS{
+				"templates/page.html":          {Data: []byte(`REAL`)},
+				"templates/partials/bits.html": {Data: []byte(`{{ define "sidebar.html" }}X{{ end }}`)},
+			},
+			file:    "templates/partials/bits.html",
+			defined: "sidebar.html",
+		},
+		{
+			name: "a nested partial",
+			fsys: fstest.MapFS{
+				"templates/page.html":              {Data: []byte(`REAL`)},
+				"templates/partials/a/b/deep.html": {Data: []byte(`{{ define "page.html" }}HIJACKED{{ end }}`)},
+			},
+			file:    "templates/partials/a/b/deep.html",
+			defined: "page.html",
+		},
+		{
+			// A partials directory is not required to reach the collision: one
+			// layout can define another layout's name just as well.
+			name: "a layout taking another layout's name",
+			fsys: fstest.MapFS{
+				"templates/page.html":    {Data: []byte(`REAL`)},
+				"templates/landing.html": {Data: []byte(`{{ define "page.html" }}HIJACKED{{ end }}LANDING`)},
+			},
+			file:    "templates/landing.html",
+			defined: "page.html",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := load("bad", tc.fsys)
+			if err == nil {
+				t.Fatal("expected an error for a define ending in .html")
+			}
+			// The theme author has to find both halves to fix it: the file that
+			// holds the define, and the name it took.
+			for _, want := range []string{tc.file, tc.defined} {
+				if !strings.Contains(err.Error(), want) {
+					t.Errorf("error %q does not name %q", err, want)
+				}
+			}
+		})
+	}
+}
+
+// The shape a theme switch produces: a theme whose partial carries the name
+// another theme uses for a layout, minus the extension. It is legal, it loads,
+// and a page asking for that layout must still miss, because the lookup asks for
+// the name with the extension and only files answer to those.
+func TestPartialNamedLikeALayoutStem(t *testing.T) {
+	fsys := fstest.MapFS{
+		"templates/page.html":          {Data: []byte(`PAGE`)},
+		"templates/partials/bits.html": {Data: []byte(`{{ define "landing" }}PARTIAL{{ end }}`)},
+	}
+
+	thm, err := load("third", fsys)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	if thm.HasLayout("landing.html") {
+		t.Error(`HasLayout("landing.html") = true, want false: "landing" is a partial, not a layout`)
 	}
 }
 
