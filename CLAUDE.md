@@ -16,10 +16,11 @@ goes stale, and a wrong one is worse than none.
 | Guide | Answers |
 |---------------------------|--------------------------------------------------|
 | [`README.md`](./README.md) | What cress is, and what it deliberately is not. |
-| [`docs/USER.md`](./docs/USER.md) | `cress.toml`, front matter, navigation, themes, the 404, and every command that builds or previews a site. |
+| [`docs/USER.md`](./docs/USER.md) | `cress.toml`, front matter, navigation, choosing a theme, the 404, and every command that builds or previews a site. |
 | [`docs/PUBLISH.md`](./docs/PUBLISH.md) | Getting output onto a host: Pages, `base_url` per target, own server. |
+| [`docs/THEME.md`](./docs/THEME.md) | Writing a theme: the theme directory, layouts and partials, the template data contract, and what a theme must honor. |
 | [`docs/OPERATOR.md`](./docs/OPERATOR.md) | Installing, pinning, upgrading, removing cress. |
-| [`docs/DEVELOPER.md`](./docs/DEVELOPER.md) | Project layout, the design decisions behind it, the template data contract, image asset rules, commands, and CI. |
+| [`docs/DEVELOPER.md`](./docs/DEVELOPER.md) | Project layout, the design decisions behind it, image asset rules, commands, and CI. |
 
 Two consequences worth stating outright:
 

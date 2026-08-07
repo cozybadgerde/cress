@@ -137,33 +137,32 @@ only by their `{{ define }}` name. That tree is walked rather than globbed,
 because a partial's path carries no meaning: a theme may group its fragments
 into subdirectories without any of it reaching the loader.
 
-Three properties follow from that and are worth keeping:
+The [theme guide](./THEME.md) states those rules for the people who write
+themes. What matters here is why the implementation is shaped that way, because
+each one has a change that looks like a simplification:
 
 - **A layout name is a map key, not a path.** `HasLayout` looks up a name the
   theme itself declared, so a layout name needs no sanitizing and cannot escape
   the theme. Do not add path cleaning here; there is no path.
-- **A miss is not an error.** A page naming a layout the theme lacks renders
-  through `page.html` and adds a build warning. That is what lets a site keep
-  building when its theme is swapped for one with a different vocabulary, and it
-  matches how an unresolvable nav entry behaves.
-- **A partial is not a layout.** The layout set is built from the file names
-  under `templates/`, not from the parsed template set, so a fragment cannot be
-  reached by a page that names it. Deriving it from the parse would put both
-  kinds in one namespace, which is what this split undoes.
-- **A `{{ define }}` name must not end in `.html`.** Layout names are file
-  names, so they always carry that suffix, and a define wearing it can take a
-  layout's name. A later parse replaces an earlier one, so the layout set would
-  still list the name while the template behind it had become the define's, and
-  every page would render through something that is not the layout with nothing
-  said about it. Loading such a theme is refused. Forbidding the shape makes the
-  collision unrepresentable instead of something to detect, and it costs a theme
-  nothing: a fragment has no reason to be named like a file.
+- **A miss is not an error.** An unknown layout falls back to `page.html` and
+  adds a build warning, which is what lets a site keep building when its theme
+  is swapped for one with a different vocabulary. It matches how an unresolvable
+  nav entry behaves, and both are deliberate.
+- **The layout set comes from file names, not from the parsed set.** Deriving it
+  from the parse would put layouts and partials in one namespace, which is the
+  thing that split undoes.
+- **A `{{ define }}` name ending in `.html` is refused at load.** Such a name
+  can take a layout's, and a later parse replaces an earlier one, so the layout
+  set would still list the name while the template behind it had become the
+  define's. Forbidding the shape makes that unrepresentable rather than
+  something to detect. Detecting it instead would mean comparing template sets,
+  which cannot see a redefinition: replacing a name adds nothing to compare.
 
-Cress promises no layout vocabulary. Which layouts exist, and what they mean,
-is each theme's to define and document. The built-in theme offers `landing`,
-and its two layouts call the shared partials in `templates/partials/` for the
-head, the header, and the footer rather than repeating them, so adding a third
-layout cannot leave the site with two different headers.
+Cress promises no layout vocabulary, so the built-in theme's `landing` is an
+offer rather than a standard. Its two layouts call the shared partials in
+`templates/partials/` for the head, the header, and the footer rather than
+repeating them, so adding a third layout cannot leave the site with two
+different headers.
 
 `landing` differs from `page` below the header rather than in place of it: it
 adds a panel sized to the first screen and keeps the site's usual navigation.
@@ -201,12 +200,11 @@ from `var(--accent)` rather than stored as a color of its own, for the reason
 given in the accent discussion: a second stored color drifts out of step with
 the configured one.
 
-The rendered Markdown a theme drops into the page is plain semantic HTML, with
-one shape worth knowing about: an image that is the whole of its paragraph
-arrives wrapped in a `<figure>`, with the image title as a `<figcaption>` when
-the author wrote one. The wrapper is there with or without a caption, so a
-theme styles one shape rather than two. A theme that styles `p img` and not
-`figure img` misses every standalone image on the site.
+The rendered Markdown a theme drops into the page is plain semantic HTML. The
+shapes a theme has to style, including the `<figure>` wrapper a standalone image
+arrives in, are listed in the [theme guide](./THEME.md#what-cress-emits). Adding
+a shape to what `render` emits means adding it there too, because a theme cannot
+style what nothing told it about.
 
 ## The starter theme
 
@@ -236,60 +234,26 @@ holds for every template equally: `page.html`, `404.html`, and any layout a page
 names all get the same shape, so a layout rearranges what is already there
 rather than receiving data of its own.
 
-Templates use Go's `html/template`, and every one of them receives:
+The field-by-field reference is in the
+[theme guide](./THEME.md#the-template-data-contract), where the people writing
+against it will look. What a contributor needs is narrower.
 
-- `.Site`: the `[site]` config, as `.Site.Title`, `.Site.Description`,
-  `.Site.BaseURL`, `.Site.Logo`, `.Site.LogoDark`, `.Site.Favicon`,
-  `.Site.Accent`, `.Site.AccentDark`, `.Site.Footer`, and `.Site.Copyright`,
-  plus the derived `.Site.BasePath` described below.
-- `.Nav`: the resolved navigation, as `.Nav.Main` and `.Nav.Footer`. Each is a
-  list of entries with `.Title`, `.URL`, and `.Active`, true on the current
-  page. A group with no entries is empty, so `{{ with .Nav.Footer }}` skips it.
-- `.Page`: the current page, with `.Page.Title`, `.Page.URL`, `.Page.HTML` (the
-  rendered Markdown body), `.Page.Description`, and `.Page.Meta` (the raw front
-  matter), plus four that are easy to miss:
-  - `.Page.Language`, resolved from the page's front matter then the site
-    config. Never empty, and it belongs in the document's `lang` attribute:
-    `<html lang="{{ .Page.Language }}">`.
-  - `.Page.AbsoluteURL`, the full URL, `Site.BaseURL` joined with `URL`. Empty
-    when the site sets no `base_url`, since there is no host to build one from,
-    so a template that renders it has to guard it.
-  - `.Page.IsHome`, true only for the page served at the site root. Themes use
-    it for what reads differently on a front page, such as dropping the site
-    name from a title that already is the site name.
-  - `.Page.Head`, ready-made metadata elements for the document head, already
-    escaped. It carries only what describes the page; the title, charset,
-    viewport, icon, and stylesheets stay the theme's own. A theme that would
-    rather arrange the metadata itself reads `.Page.Description` and
-    `.Page.AbsoluteURL` and omits this, because rendering both emits every tag
-    twice.
-
-Those field names are a public API. Every theme is written against `.Site`,
+**These field names are a public API.** Every theme is written against `.Site`,
 `.Nav`, and `.Page`, including themes cress never sees, so renaming or removing
-one is a breaking change and takes the same care as changing a CLI flag. Each
-field carries a doc comment naming its type, when it is empty, and whether it
-is already escaped. `.Page.HTML` is a `template.HTML` for that reason: it holds
-rendered Markdown, and escaping it a second time would print the page source to
-the reader.
+one is a breaking change and takes the same care as changing a CLI flag. The
+contract is frozen for the life of a major version.
 
-Two things hold the contract in place. `Render` and `RenderTemplate` take
-`PageData` rather than `any`, so a caller cannot quietly invent a second shape.
+**The doc comments are part of it.** Each field names its type, when it is
+empty, and whether it is already escaped. `.Page.HTML` is a `template.HTML` for
+that reason: it holds rendered Markdown, and escaping it a second time would
+print the page source to the reader. A new field arrives with a doc comment
+answering those three questions, or it arrives incomplete.
+
+**Two things hold it in place.** `Render` and `RenderTemplate` take `PageData`
+rather than `any`, so a caller cannot quietly invent a second shape.
 `TestPageDataContract` renders a template that reads every field, which turns a
-rename into a failing test instead of a broken build on a user's machine.
-
-One field carries an obligation for the theme. `.Site.BasePath` is the path the
-site is published under, from the path component of `base_url`, and it is empty
-for a site at a domain root. Every URL in `PageData` is already rooted under it,
-so a theme needs it only for its own asset links:
-
-```html
-<link rel="stylesheet" href="{{ .Site.BasePath }}/style.css" />
-```
-
-A theme that hardcodes `/style.css` instead works at a domain root and renders
-unstyled under a subdirectory, and nothing reports it: the build cannot tell
-which URLs a theme meant to be its own. The built-in theme uses the form above
-for its stylesheet and its home link, which is the pattern to copy.
+rename into a failing test instead of a broken build on a user's machine. A
+field added without a line in that test is a field the suite does not defend.
 
 ## Image assets
 

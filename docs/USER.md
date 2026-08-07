@@ -401,33 +401,18 @@ A theme is a directory under `themes/`, whether scaffolded or written by hand:
 ```text
 themes/
   mine/
-    templates/
-      page.html      required: renders one page
-      404.html       optional: renders the 404 page
-      wide.html      optional: an alternative layout, named by a page
-      partials/      optional: fragments the layouts share
-        head.html
-    static/          optional: CSS and other assets, copied to the site root
+    templates/       the templates that render your pages
+    static/          CSS and other assets, copied to the site root
 ```
 
-`page.html` is the only template a theme has to define. Everything else is
-optional, so a theme can be one template and one stylesheet.
+A theme somebody sent you goes in the same place. Drop the directory under
+`themes/`, name it in `theme =`, and it renders your site. A name with no
+matching directory is an error, so a typo fails the build rather than quietly
+falling back to the default.
 
-A file directly in `templates/` is a layout. A page reaches it by name with
-`layout:` in its front matter. A file in `templates/partials/` is a fragment. It
-is reached only by its `{{ define }}` name, from a template that composes it,
-and never by a page. Group partials into subdirectories if it helps. The loader
-does not care where they sit.
-
-The two naming systems are kept apart: a layout is named by its file, so its
-name ends in `.html`, and a `{{ define }}` name must not. Cress refuses to load
-a theme that breaks that rule, because a define taking a layout's name would
-replace it and every page would render through the wrong template.
-
-Writing a theme, rather than dropping one in, is covered by
-[the template data contract](./DEVELOPER.md#the-template-data-contract) in the
-developer guide: the fields a template receives, and which of them are fixed
-for the life of a major version.
+Writing a theme, rather than dropping one in, is its own guide. The
+[theme guide](./THEME.md) covers the directory in full, the data a template
+receives, and the rules a theme has to follow.
 
 ### Page layouts
 

@@ -105,6 +105,7 @@ The documentation lives in the `docs/` directory:
 
 - [User guide](docs/USER.md): create, author, and build a Cress site
 - [Publishing guide](docs/PUBLISH.md): get the output onto a host
+- [Theme guide](docs/THEME.md): write a theme for Cress
 - [Operator guide](docs/OPERATOR.md): install, pin, and upgrade Cress
 - [Developer guide](docs/DEVELOPER.md): build the project and its layout
 
