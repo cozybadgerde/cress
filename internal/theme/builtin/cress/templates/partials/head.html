@@ -1,0 +1,29 @@
+{{/*
+  The document head every layout in this theme shares. It lives here so that
+  adding a layout cannot leave the site with two different heads: page.html and
+  landing.html both call this rather than repeat it.
+
+  Like every partial, it receives the whole PageData, and its body is indented
+  for where a layout calls it: Go templates emit a partial verbatim rather than
+  re-indenting it to the call site.
+
+  The accent reaches the stylesheet from here because only the template knows
+  what the site configured. The stylesheet ships defaults for both schemes, so
+  this overrides only what was actually set.
+*/}}
+{{- define "head" -}}
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ if not .Page.IsHome }}{{ .Page.Title }} · {{ end }}{{ .Site.Title }}</title>
+    {{ .Page.Head }}
+    {{ with .Site.Favicon }}<link rel="icon" href="{{ . }}" />{{ end }}
+    <link rel="stylesheet" href="{{ .Site.BasePath }}/style.css" />
+    {{ if or .Site.Accent .Site.AccentDark }}
+    <style>
+      {{ with .Site.Accent }}:root { --accent: {{ . }}; }{{ end }}
+      {{ with .Site.AccentDark }}@media (prefers-color-scheme: dark) { :root { --accent: {{ . }}; } }{{ end }}
+    </style>
+    {{ end }}
+  </head>
+{{- end -}}

@@ -385,6 +385,8 @@ themes/
       page.html      required: renders one page
       404.html       optional: renders the 404 page
       wide.html      optional: an alternative layout, named by a page
+      partials/      optional: fragments the layouts share
+        head.html
     static/          optional: CSS and other assets, copied to the site root
 ```
 
@@ -395,6 +397,12 @@ theme = "mine"
 
 `page.html` is the only template a theme has to define. Everything else is
 optional, so a theme can be one template and one stylesheet.
+
+A file directly in `templates/` is a layout. A page reaches it by name with
+`layout:` in its front matter. A file in `templates/partials/` is a fragment. It
+is reached only by its `{{ define }}` name, from a template that composes it, and
+never by a page. Group partials into subdirectories if it helps. The loader does
+not care where they sit.
 
 Writing a theme, rather than dropping one in, is covered by
 [the template data contract](./DEVELOPER.md#the-template-data-contract) in the

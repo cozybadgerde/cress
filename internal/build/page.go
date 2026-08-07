@@ -85,15 +85,16 @@ func layoutTemplate(layout string) string { return layout + htmlExt }
 // which follows nav resolution: a build that is missing something still
 // produces a site, and says what was missing.
 //
-// The name needs no sanitizing. Templates are parsed from a glob and keyed by
-// base name, so this asks a map for a name the theme itself defined; it never
-// opens a path, and an absurd layout misses like any other unknown name.
+// The name needs no sanitizing. It is looked up in the set of layout file names
+// the theme itself declared, so this opens no path, and an absurd layout misses
+// like any other unknown name. A partial misses too: it is not a layout, so a
+// page cannot reach one by asking for it.
 func (w *pageWriter) resolveLayout(page *content.Page) string {
 	if page.Layout == "" {
 		return ""
 	}
 	name := layoutTemplate(page.Layout)
-	if w.thm.HasTemplate(name) {
+	if w.thm.HasLayout(name) {
 		return name
 	}
 	w.warnings = append(w.warnings, missingLayoutWarning(page.SourcePath, page.Layout, w.thm.Name()))
@@ -198,7 +199,7 @@ func (w *pageWriter) writeNotFound() error {
 
 	var buf bytes.Buffer
 	name := ""
-	if w.thm.HasTemplate(notFoundTemplate) {
+	if w.thm.HasLayout(notFoundTemplate) {
 		name = notFoundTemplate
 	}
 	if err := renderLayout(&buf, w.thm, name, data); err != nil {

@@ -821,6 +821,27 @@ func TestBuild_layout_integration(t *testing.T) {
 			t.Errorf("warnings = %v, want exactly one", res.Warnings)
 		}
 	})
+
+	// A partial is not a layout. It renders a fragment, so a page reaching one
+	// would emit a document fragment as a whole page, and the name it would be
+	// reached by is exactly the sort a theme author picks for a partial.
+	t.Run("a partial cannot be reached as a layout", func(t *testing.T) {
+		root := newSite(t)
+		partials := filepath.Join(root, "themes", "mine", "templates", "partials")
+		writeSiteFile(t, filepath.Join(partials, "banner.html"), `{{ define "banner" }}BANNER{{ end }}`)
+		writeSiteFile(t, filepath.Join(root, "content", "try.md"), "---\ntitle: Try\nlayout: banner\n---\n\nbody\n")
+
+		res, err := build.Build(build.Options{Root: root})
+		if err != nil {
+			t.Fatalf("build: %v", err)
+		}
+		if got := readFile(t, filepath.Join(root, config.OutputDir, "try.html")); got != "PAGE:Try" {
+			t.Errorf("try.html = %q, want the entry template rather than the partial", got)
+		}
+		if len(res.Warnings) != 1 {
+			t.Fatalf("warnings = %v, want exactly one naming the partial as missing", res.Warnings)
+		}
+	})
 }
 
 // The built-in theme ships the layout its scaffold names, so `cress init`

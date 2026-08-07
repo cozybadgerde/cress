@@ -115,7 +115,7 @@ validates the bundled starter against it.
 The default theme lives at `internal/theme/builtin/cress/` and is embedded into
 the binary with `go:embed`. `templates/page.html` renders one page,
 `templates/landing.html` renders a page that names `layout: landing`,
-`templates/partials.html` holds what those two share, and `static/style.css`
+`templates/partials/` holds what those two share, and `static/style.css`
 styles the result. Editing these files changes the theme every site gets by
 default.
 
@@ -124,24 +124,34 @@ default.
 synthesizes a 404 and renders it through `page.html`. That is why the 404 is
 free for every theme instead of being a second required template.
 
-Every other file in `templates/` is a layout a page can name. `theme.Resolve`
-parses `templates/*.html` into one template set keyed by base name, so
-`layout: wide` in front matter reaches `wide.html` and nothing else has to be
-registered. Two properties follow from that and are worth keeping:
+Every other file directly in `templates/` is a layout a page can name.
+`theme.Resolve` parses `templates/*.html` into one template set keyed by base
+name, so `layout: wide` in front matter reaches `wide.html` and nothing else has
+to be registered. Fragments live one level down in `templates/partials/`. They
+are parsed into the same set, so any layout can call them, and they are reached
+only by their `{{ define }}` name. That tree is walked rather than globbed,
+because a partial's path carries no meaning: a theme may group its fragments
+into subdirectories without any of it reaching the loader.
 
-- **A layout name is a map key, not a path.** `HasTemplate` looks up a name the
-  theme itself defined, so a layout name needs no sanitizing and cannot escape
+Three properties follow from that and are worth keeping:
+
+- **A layout name is a map key, not a path.** `HasLayout` looks up a name the
+  theme itself declared, so a layout name needs no sanitizing and cannot escape
   the theme. Do not add path cleaning here; there is no path.
 - **A miss is not an error.** A page naming a layout the theme lacks renders
   through `page.html` and adds a build warning. That is what lets a site keep
   building when its theme is swapped for one with a different vocabulary, and it
   matches how an unresolvable nav entry behaves.
+- **A partial is not a layout.** The layout set is built from the file names
+  under `templates/`, not from the parsed template set, so a fragment cannot be
+  reached by a page that names it. Deriving it from the parse would put both
+  kinds in one namespace, which is what this split undoes.
 
 Cress promises no layout vocabulary. Which layouts exist, and what they mean,
 is each theme's to define and document. The built-in theme offers `landing`,
-and its two layouts call the shared partials in `partials.html` for the head,
-the header, and the footer rather than repeating them, so adding a third layout
-cannot leave the site with two different headers.
+and its two layouts call the shared partials in `templates/partials/` for the
+head, the header, and the footer rather than repeating them, so adding a third
+layout cannot leave the site with two different headers.
 
 `landing` differs from `page` below the header rather than in place of it: it
 adds a panel sized to the first screen and keeps the site's usual navigation.
