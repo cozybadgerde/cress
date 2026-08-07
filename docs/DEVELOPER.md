@@ -34,7 +34,7 @@ the pinned lint and security tools once with `task tools`.
 ## Project layout
 
 ```text
-cmd/cress/            CLI: build, clean, init, serve, version (urfave/cli v3)
+cmd/cress/            CLI: build, clean, init, serve, theme, version (urfave/cli v3)
 internal/config/      load and validate cress.toml
 internal/content/     discover Markdown, parse front matter into pages
 internal/render/      Markdown to HTML (goldmark)
@@ -42,7 +42,7 @@ internal/theme/       resolve and load themes; the built-in theme is embedded
 internal/build/       orchestration: content + theme + config -> public/
 internal/clean/       `cress clean`; the only package that deletes
 internal/serve/       preview server: build, watch, rebuild, serve
-internal/scaffold/    `cress init`; the starter site is embedded
+internal/scaffold/    `cress init` and `cress theme init`; both starters are embedded
 internal/version/     build metadata, set by the linker at release
 schema/               JSON Schema for cress.toml
 docs/                 user, operator, and developer guides
@@ -100,9 +100,13 @@ prefix: the builder, `render` for the links an author wrote, and the theme for
 its own asset links, which are the URLs cress does not emit.
 
 **Embedded assets ship verbatim.** The default theme
-(`internal/theme/builtin/cress`) and the starter site
-(`internal/scaffold/builtin`) are embedded with `go:embed` and copied without
-transformation, so an edit to either changes what every user gets.
+(`internal/theme/builtin/cress`), the starter site
+(`internal/scaffold/builtin/site`) and the starter theme
+(`internal/scaffold/builtin/theme`) are embedded with `go:embed` and copied
+without transformation, so an edit to any of them changes what every user gets.
+Both starters go through one writer, which never overwrites: `--allow-existing`
+relaxes the empty-directory precondition and grants no permission to replace a
+file.
 
 **The schema tracks the config struct.** `schema/config.schema.json` (draft
 2020-12) mirrors `config.Config`, and the scaffolded `cress.toml` carries a
@@ -195,6 +199,25 @@ arrives wrapped in a `<figure>`, with the image title as a `<figcaption>` when
 the author wrote one. The wrapper is there with or without a caption, so a
 theme styles one shape rather than two. A theme that styles `p img` and not
 `figure img` misses every standalone image on the site.
+
+## The starter theme
+
+`cress theme init` scaffolds a different theme: the starter at
+`internal/scaffold/builtin/theme/`, which is close to unstyled and commented
+line by line. It is deliberately not a fork of the built-in theme, so an author
+starts from the contract rather than from this project's design decisions.
+
+Two things about it are load-bearing:
+
+- **It ships `landing.html`.** The scaffolded site's home page names
+  `layout: landing`, so a starter without it would warn on the first build after
+  a user switched themes. A starter that warns out of the box teaches its user
+  to ignore warnings.
+- **A test builds a site through it.** `html/template` fails on a field a struct
+  does not have, so renaming one in `PageData` breaks that test rather than
+  quietly emitting an empty string in every theme scaffolded afterwards. Keep it
+  that way: the starter is the one template set in this repository whose job is
+  to be copied.
 
 ## The template data contract
 
@@ -325,8 +348,8 @@ task audit            # complexity and schema audits, not part of check
 ```
 
 `task lint:md` covers the root Markdown files, `docs/`, and the starter site
-under `internal/scaffold/builtin/content/`, which is linted because it ships
-verbatim to every user. Rules live in `.gomarklint.json`. One is off
+under `internal/scaffold/builtin/site/content/`, which is linted because it
+ships verbatim to every user. Rules live in `.gomarklint.json`. One is off
 deliberately: `no-bare-urls`, because the scaffolded style guide demonstrates
 that a bare URL becomes a link on its own, and that line is the point rather
 than an oversight. gomarklint does support an inline

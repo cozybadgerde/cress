@@ -49,6 +49,7 @@ func newRootCommand() *cli.Command {
 			newCleanCommand(),
 			newInitCommand(),
 			newServeCommand(),
+			newThemeCommand(),
 			newVersionCommand(),
 		},
 		Action: runRoot,

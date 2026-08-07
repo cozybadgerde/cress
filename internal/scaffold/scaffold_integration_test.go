@@ -142,3 +142,75 @@ func TestCreateIgnoresDotEntries_integration(t *testing.T) {
 		t.Errorf("the site should have been scaffolded: %v", err)
 	}
 }
+
+func TestCreateTheme_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	dir := t.TempDir()
+	if _, err := scaffold.CreateTheme(dir, false); err != nil {
+		t.Fatalf("CreateTheme: %v", err)
+	}
+
+	for _, rel := range []string{
+		filepath.Join("templates", "page.html"),
+		filepath.Join("templates", "partials", "head.html"),
+		filepath.Join("static", "style.css"),
+	} {
+		if _, err := os.Stat(filepath.Join(dir, rel)); err != nil {
+			t.Errorf("missing scaffolded file %s: %v", rel, err)
+		}
+	}
+}
+
+func TestCreateThemeRefusesNonEmpty_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "page.html"), []byte("mine"), 0o644); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+
+	if _, err := scaffold.CreateTheme(dir, false); !errors.Is(err, scaffold.ErrExists) {
+		t.Fatalf("CreateTheme error = %v, want ErrExists", err)
+	}
+}
+
+// The flag relaxes the empty-directory precondition. It grants no permission to
+// overwrite, so a file already in the way stays exactly as it was.
+func TestCreateThemeAllowExistingKeepsExistingFiles_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	dir := t.TempDir()
+	kept := filepath.Join(dir, "templates", "page.html")
+	if err := os.MkdirAll(filepath.Dir(kept), 0o755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+	if err := os.WriteFile(kept, []byte("MINE"), 0o644); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+
+	skipped, err := scaffold.CreateTheme(dir, true)
+	if err != nil {
+		t.Fatalf("CreateTheme: %v", err)
+	}
+
+	got, err := os.ReadFile(kept) // #nosec G304 -- test path
+	if err != nil {
+		t.Fatalf("read: %v", err)
+	}
+	if string(got) != "MINE" {
+		t.Errorf("page.html = %q, want the existing file untouched", got)
+	}
+	if len(skipped) != 1 || skipped[0] != "templates/page.html" {
+		t.Errorf("skipped = %v, want the one file left alone", skipped)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "static", "style.css")); err != nil {
+		t.Errorf("the rest of the starter should still be written: %v", err)
+	}
+}

@@ -1,6 +1,8 @@
-// Package scaffold writes a starter cress site: a minimal cress.toml and a
-// couple of content pages, enough for `cress build` to produce a site with the
-// built-in theme. The starter files are embedded in the binary.
+// Package scaffold writes cress's starter trees: a site, which is a minimal
+// cress.toml and a couple of content pages, and a theme, which is one layout,
+// one partial and a stylesheet. Both are embedded in the binary and copied out
+// verbatim, so what a user starts from is a file somebody edited rather than a
+// string assembled in Go.
 package scaffold
 
 import (
@@ -14,12 +16,13 @@ import (
 )
 
 //go:embed all:builtin
-var siteFS embed.FS
+var builtinFS embed.FS
 
 const (
-	builtinRoot = "builtin"
-	dirPerm     = 0o755
-	filePerm    = 0o644
+	siteRoot  = "builtin/site"
+	themeRoot = "builtin/theme"
+	dirPerm   = 0o755
+	filePerm  = 0o644
 )
 
 // ErrExists is returned by Create when the target directory already contains
@@ -35,23 +38,39 @@ var ErrExists = errors.New("target directory not empty")
 // already holding files is refused: it relaxes a precondition rather than
 // granting permission to write over anything.
 func Create(dir string, allowExisting bool) ([]string, error) {
+	return create(siteRoot, dir, allowExisting)
+}
+
+// CreateTheme writes the starter theme into dir on the same terms as Create:
+// the target is a themes/<name> directory, and an existing file is left where
+// it is rather than replaced.
+func CreateTheme(dir string, allowExisting bool) ([]string, error) {
+	return create(themeRoot, dir, allowExisting)
+}
+
+// create copies one embedded tree into dir. Both starters go through here so
+// that "never overwrite" is written once: it is the property that makes
+// scaffolding safe to run over a directory somebody is already working in, and
+// a second copy of it would be a second chance to get it wrong.
+func create(root, dir string, allowExisting bool) ([]string, error) {
 	if !allowExisting {
 		if err := requireEmpty(dir); err != nil {
 			return nil, err
 		}
 	}
-	w := &siteWriter{dir: dir}
-	if err := fs.WalkDir(siteFS, builtinRoot, w.copyEntry); err != nil {
+	w := &treeWriter{root: root, dir: dir}
+	if err := fs.WalkDir(builtinFS, root, w.copyEntry); err != nil {
 		return nil, err
 	}
 	return w.skipped, nil
 }
 
-// siteWriter copies the embedded starter site into a target directory,
+// treeWriter copies one embedded starter tree into a target directory,
 // collecting the files it left alone. The accumulator is what earns it a type:
 // as a closure over a local it shared a scope with the walk itself, so a reader
 // tracked the traversal, the per-entry work, and the result at once.
-type siteWriter struct {
+type treeWriter struct {
+	root    string
 	dir     string
 	skipped []string
 }
@@ -59,11 +78,11 @@ type siteWriter struct {
 // copyEntry writes one entry of the embedded tree into the target directory. It
 // is an fs.WalkDirFunc, so it reports a name it skipped rather than returning
 // it: a starter file that is already there is left untouched and recorded.
-func (w *siteWriter) copyEntry(p string, d fs.DirEntry, err error) error {
+func (w *treeWriter) copyEntry(p string, d fs.DirEntry, err error) error {
 	if err != nil {
 		return err
 	}
-	rel, err := filepath.Rel(builtinRoot, p)
+	rel, err := filepath.Rel(w.root, p)
 	if err != nil {
 		return err
 	}
@@ -72,7 +91,7 @@ func (w *siteWriter) copyEntry(p string, d fs.DirEntry, err error) error {
 		return os.MkdirAll(dest, dirPerm)
 	}
 
-	data, err := siteFS.ReadFile(p)
+	data, err := builtinFS.ReadFile(p)
 	if err != nil {
 		return err
 	}

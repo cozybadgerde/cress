@@ -1,0 +1,38 @@
+{{/*
+  A second layout, reached by a page whose front matter says `layout: landing`.
+
+  Cress promises no layout vocabulary: name a file whatever suits the theme and
+  a page can ask for it. A page naming a layout the theme does not have renders
+  through page.html instead, and the build says so rather than failing.
+
+  It shares the head, the header and the footer with page.html by calling the
+  same partials, which is what keeps two layouts from becoming two sites. Only
+  the block above the prose differs.
+*/ -}}
+<!DOCTYPE html>
+<html lang="{{ .Page.Language }}">
+  {{ template "head" . }}
+  <body>
+    {{ template "site-header" . }}
+
+    {{/*
+      The site's own words, above the page's own. .Site.Description is the
+      tagline from cress.toml, empty until the site sets one, so it is guarded.
+
+      Deliberately not a heading: the page's H1 comes from its Markdown, as it
+      does in page.html, and a second one here would leave the page with two.
+    */ -}}
+    <section>
+      <p>{{ .Site.Title }}</p>
+      {{- with .Site.Description }}
+      <p>{{ . }}</p>
+      {{- end }}
+    </section>
+
+    <main>
+      {{ .Page.HTML }}
+    </main>
+
+    {{ template "site-footer" . }}
+  </body>
+</html>

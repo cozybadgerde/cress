@@ -295,11 +295,19 @@ func validateTheme(path string, site Site) error {
 	if name == "" {
 		return nil
 	}
-	if name != filepath.Base(name) || name == "." || name == ".." ||
-		strings.ContainsRune(name, '/') || strings.ContainsRune(name, filepath.Separator) {
+	if !ValidThemeName(name) {
 		return fmt.Errorf("config %s: invalid theme %q (want a directory name under %s/, not a path)", path, name, ThemesDir)
 	}
 	return nil
+}
+
+// ValidThemeName reports whether name is usable as a theme: a single directory
+// name and nothing else. Scaffolding a theme joins the name onto themes/ just as
+// resolving one does, so both ask here rather than keeping a rule each, which
+// would leave a name cress writes and a name cress refuses to load.
+func ValidThemeName(name string) bool {
+	return name != "" && name == filepath.Base(name) && name != "." && name != ".." &&
+		!strings.ContainsRune(name, '/') && !strings.ContainsRune(name, filepath.Separator)
 }
 
 func validateAccents(path string, site Site) error {

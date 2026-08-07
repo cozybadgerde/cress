@@ -142,7 +142,7 @@ tasks:
     desc: Lint Markdown with gomarklint
     cmds:
       # The scaffold is shipped content, so it is linted like the docs are.
-      - gomarklint *.md docs/ internal/scaffold/builtin/content/
+      - gomarklint *.md docs/ internal/scaffold/builtin/site/content/
 
   lint:sh:
     desc: Lint shell scripts with shellcheck
@@ -213,7 +213,7 @@ tasks:
   audit:schema:
     desc: Validate the bundled starter config against the config JSON Schema (taplo)
     cmds:
-      - taplo lint --schema "file://$PWD/schema/config.schema.json" internal/scaffold/builtin/cress.toml
+      - taplo lint --schema "file://$PWD/schema/config.schema.json" internal/scaffold/builtin/site/cress.toml
 
   # --- Release ---
 

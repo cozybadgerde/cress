@@ -1,0 +1,31 @@
+{{/*
+  The masthead both layouts share. It lives here rather than in each layout for
+  the reason partials exist: adding a third layout cannot leave the site with
+  two different headers.
+
+  Indented for where a layout calls it, since Go templates emit a partial's body
+  verbatim rather than re-indenting it to the call site.
+*/ -}}
+{{- define "site-header" -}}
+  <header>
+      {{/*
+        Every in-site URL cress hands a template is already rooted correctly, so
+        links built from .Nav and .Page need no prefix. Only the links a theme
+        invents itself do, which is what {{ .Site.BasePath }} is for. See the
+        stylesheet link in head.html.
+      */ -}}
+      <a href="{{ .Site.BasePath }}/">{{ .Site.Title }}</a>
+      {{/*
+        [nav.main] in cress.toml, in the order it was written. `with` skips the
+        whole block when the site configures no menu, so an empty nav leaves no
+        empty landmark behind. .Active marks the entry pointing at this page.
+      */ -}}
+      {{- with .Nav.Main }}
+      <nav>
+        {{- range . }}
+        <a href="{{ .URL }}"{{ if .Active }} aria-current="page"{{ end }}>{{ .Title }}</a>
+        {{- end }}
+      </nav>
+      {{- end }}
+    </header>
+{{- end -}}

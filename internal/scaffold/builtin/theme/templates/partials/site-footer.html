@@ -1,0 +1,25 @@
+{{/*
+  The footer both layouts share, on the same terms as the header.
+
+  [nav.footer] is the secondary menu, then the site's footer line and its
+  copyright. Each is empty until the site sets it, so each is guarded.
+
+  Indented for its call site, like every partial here.
+*/ -}}
+{{- define "site-footer" -}}
+  <footer>
+      {{- with .Nav.Footer }}
+      <nav aria-label="Secondary">
+        {{- range . }}
+        <a href="{{ .URL }}"{{ if .Active }} aria-current="page"{{ end }}>{{ .Title }}</a>
+        {{- end }}
+      </nav>
+      {{- end }}
+      {{- with .Site.Footer }}
+      <p>{{ . }}</p>
+      {{- end }}
+      {{- with .Site.Copyright }}
+      <p>{{ . }}</p>
+      {{- end }}
+    </footer>
+{{- end -}}

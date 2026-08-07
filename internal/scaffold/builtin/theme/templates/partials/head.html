@@ -1,0 +1,54 @@
+{{/*
+  A partial: a fragment a layout composes with, rather than a page of its own.
+
+  It lives under partials/ because that is what makes it a fragment. A file
+  directly in templates/ is a layout a page can name; anything in here is
+  reached only by its {{ define }} name, from a template that calls it. Group
+  these into subdirectories if it helps, since a partial's path means nothing.
+
+  Keeping the head here means adding a second layout cannot leave the site with
+  two different ones. A partial receives the same data its caller did.
+*/ -}}
+{{- define "head" -}}
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {{/*
+      The document title is the theme's to arrange. This drops the site name on
+      the front page, where it would otherwise appear twice.
+    */ -}}
+    <title>{{ if not .Page.IsHome }}{{ .Page.Title }} - {{ end }}{{ .Site.Title }}</title>
+
+    {{/*
+      The metadata cress renders for this page: the meta description and the
+      canonical link, each omitted when it has nothing to say. Emit it and let
+      cress own what goes in it. Do not also render .Page.Description or
+      .Page.AbsoluteURL here, or each tag is emitted twice.
+    */ -}}
+    {{ .Page.Head }}
+
+    {{ with .Site.Favicon }}<link rel="icon" href="{{ . }}" />{{ end }}
+
+    {{/*
+      A theme's own asset links are the one set of URLs cress does not build, so
+      they carry {{ .Site.BasePath }} themselves. It is empty for a site at a
+      domain root, which is why this form is correct there too. Hardcoding
+      "/style.css" instead works at a root and renders silently unstyled under a
+      subdirectory, with nothing to say which of the two is at fault.
+    */ -}}
+    <link rel="stylesheet" href="{{ .Site.BasePath }}/style.css" />
+
+    {{/*
+      accent and accent_dark reach the stylesheet from here, because only a
+      template knows what the site configured. The stylesheet ships a default
+      for each scheme, so this overrides only what was actually set.
+    */ -}}
+    {{- if or .Site.Accent .Site.AccentDark }}
+    <style>
+      {{ with .Site.Accent }}:root { --accent: {{ . }}; }{{ end }}
+      {{ with .Site.AccentDark }}@media (prefers-color-scheme: dark) { :root { --accent: {{ . }}; } }{{ end }}
+    </style>
+    {{- end }}
+  </head>
+{{- end -}}

@@ -1,0 +1,88 @@
+/*
+ * A starting point, not a design. Everything here is the minimum that makes a
+ * page readable: a measure, a scale, and colors that work in both schemes.
+ * Replace it.
+ *
+ * Files in this directory are copied to the site root as they are, so this one
+ * is served at /style.css, which is what partials/head.html links to.
+ */
+
+/*
+ * --accent is the one custom property worth keeping. A site sets `accent` and
+ * `accent_dark` in cress.toml, and partials/head.html overrides these defaults
+ * with them. Drop the property and a site's own accent stops working.
+ */
+:root {
+  color-scheme: light dark;
+  --fg: #1a1a1a;
+  --bg: #ffffff;
+  --muted: #5a5a5a;
+  --accent: #38618c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fg: #e8e8e8;
+    --bg: #161616;
+    --muted: #a0a0a0;
+    --accent: #8ab4d8;
+  }
+}
+
+body {
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  max-width: 40rem;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, sans-serif;
+  line-height: 1.6;
+}
+
+a {
+  color: var(--accent);
+}
+
+header,
+footer {
+  color: var(--muted);
+}
+
+header nav,
+footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* The entry for the page being read, which cress marks for you. */
+nav a[aria-current="page"] {
+  font-weight: 600;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/*
+ * Cress emits a language class on fenced code blocks and no styling to go with
+ * it, so the colors below are the theme's own and highlighting is off until a
+ * site turns it on.
+ */
+pre {
+  padding: 1rem;
+  overflow-x: auto;
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+}
+
+code {
+  font-family: ui-monospace, monospace;
+}
+
+blockquote {
+  margin-inline: 0;
+  padding-left: 1rem;
+  border-left: 3px solid var(--accent);
+  color: var(--muted);
+}

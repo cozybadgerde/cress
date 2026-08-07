@@ -1,0 +1,45 @@
+{{/*
+  The one template every theme must define. It renders a whole page, and it is
+  what cress falls back to whenever a page does not name a layout of its own.
+
+  Everything a template receives is on the dot: .Site is the [site] table from
+  cress.toml, .Nav is the resolved navigation, and .Page is the page being
+  rendered. Those three names are fixed for the life of a major version, so a
+  theme written against them keeps working through 1.x.
+
+  A file directly in templates/ is a layout, which a page reaches by name with
+  `layout:` in its front matter; landing.html next to this one is the example. A
+  file in partials/ is a fragment, reached only by its {{ define }} name from a
+  template that calls it, which is how both layouts here share one header.
+*/ -}}
+<!DOCTYPE html>
+
+{{/*
+  .Page.Language is the page's language tag, falling back to the site's. It is
+  never empty, and it belongs here rather than in the head, since it is an
+  attribute rather than an element.
+*/ -}}
+<html lang="{{ .Page.Language }}">
+  {{ template "head" . }}
+  <body>
+    {{ template "site-header" . }}
+
+    <main>
+      {{/*
+        The rendered Markdown body. It is already-escaped markup, so it is
+        emitted as-is: escaping it again would show readers their own page
+        source.
+
+        Other fields worth knowing, none of them needed here. .Page.Title is the
+        page title as plain text, and .Page.IsHome marks the page at the site
+        root, for the things that read differently on a front page.
+        .Page.URL and .Page.AbsoluteURL are this page's own links, the second
+        empty unless the site sets base_url. .Page.Meta carries any front-matter
+        key cress does not define, so a theme can read its own.
+      */ -}}
+      {{ .Page.HTML }}
+    </main>
+
+    {{ template "site-footer" . }}
+  </body>
+</html>

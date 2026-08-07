@@ -53,3 +53,31 @@ func TestIsHexColor(t *testing.T) {
 		})
 	}
 }
+
+func TestValidThemeName(t *testing.T) {
+	tests := []struct {
+		in   string
+		want bool
+	}{
+		{"cress", true},
+		{"my-theme", true},
+		{"theme.2", true},
+		{"", false},
+		{".", false},
+		{"..", false},
+		{"a/b", false},
+		{"../elsewhere", false},
+		{"../../etc/passwd", false},
+		{"/absolute", false},
+		{"themes/mine", false},
+		{"trailing/", false},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.in, func(t *testing.T) {
+			if got := ValidThemeName(tc.in); got != tc.want {
+				t.Errorf("ValidThemeName(%q) = %v, want %v", tc.in, got, tc.want)
+			}
+		})
+	}
+}

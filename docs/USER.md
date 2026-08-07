@@ -375,8 +375,28 @@ rejected as an unknown key rather than silently rendering nothing.
 ## Themes
 
 A theme owns the templates and the styling. The built-in `cress` theme needs no
-setup. To use your own, create a directory under `themes/` and name it in the
-config:
+setup. To start your own, scaffold one:
+
+```bash
+cress theme init mine
+```
+
+That writes `themes/mine/`: `page.html`, a `landing` layout so the scaffolded
+home page keeps working, the partials the two share, and a stylesheet. Every
+file is commented, so the starter doubles as a tour of what a template receives.
+Name it in the config and it renders your site:
+
+```toml
+[site]
+theme = "mine"
+```
+
+The command takes the same flags as `cress init`. Use `--source`/`-s` to name a
+site root other than the current directory, and `--allow-existing` to scaffold
+into a theme directory that already has files. Like `cress init`, it never
+overwrites: a file already there is left alone and reported.
+
+A theme is a directory under `themes/`, whether scaffolded or written by hand:
 
 ```text
 themes/
@@ -390,19 +410,14 @@ themes/
     static/          optional: CSS and other assets, copied to the site root
 ```
 
-```toml
-[site]
-theme = "mine"
-```
-
 `page.html` is the only template a theme has to define. Everything else is
 optional, so a theme can be one template and one stylesheet.
 
 A file directly in `templates/` is a layout. A page reaches it by name with
 `layout:` in its front matter. A file in `templates/partials/` is a fragment. It
-is reached only by its `{{ define }}` name, from a template that composes it, and
-never by a page. Group partials into subdirectories if it helps. The loader does
-not care where they sit.
+is reached only by its `{{ define }}` name, from a template that composes it,
+and never by a page. Group partials into subdirectories if it helps. The loader
+does not care where they sit.
 
 Writing a theme, rather than dropping one in, is covered by
 [the template data contract](./DEVELOPER.md#the-template-data-contract) in the
