@@ -1,0 +1,25 @@
+#:schema https://raw.githubusercontent.com/cozybadgerde/cress/trunk/schema/theme.schema.json
+
+# What this theme says about itself. The whole file is optional and a theme
+# without one works exactly the same, so treat it as the label rather than the
+# machinery: fill it in before you give the theme to anybody else.
+
+# Display name. Cress finds the theme by its directory, so this is what people
+# read and never what gets resolved: renaming the directory is what renames
+# the theme.
+name = "My theme"
+description = "A starter theme, close to unstyled and ready to build on."
+# author = "You"
+# license = "MIT"
+# homepage = "https://github.com/you/my-theme"
+
+# The template contract this theme is written against.
+#
+# It reads as a statement of what you built on rather than a range, and cress
+# checks it in both directions: an older cress may not have every field your
+# templates read, and a cress a whole major version newer no longer promises
+# the contract you wrote against. Either way it warns and builds the site.
+#
+# The field names in .Site, .Nav and .Page are fixed for the life of a major
+# version, so this needs no bumping until one of them changes.
+cress = "1.1"

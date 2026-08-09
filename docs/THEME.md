@@ -27,9 +27,10 @@ Scaffold a theme rather than starting from an empty directory:
 cress theme init mine
 ```
 
-That writes `themes/mine/` with two layouts, the partials they share, and a
-stylesheet. Every file is commented, so the starter is a working tour of what
-this guide describes. Name it in `cress.toml` and preview it:
+That writes `themes/mine/` with two layouts, the partials they share, a
+stylesheet, and a `theme.toml` to fill in. Every file is commented, so the
+starter is a working tour of what this guide describes. Name it in `cress.toml`
+and preview it:
 
 ```toml
 [site]
@@ -51,6 +52,7 @@ A theme is a directory under `themes/`, named by whatever `cress.toml` says:
 ```text
 themes/
   mine/
+    theme.toml       optional: what the theme says about itself
     templates/
       page.html      required: renders one page
       landing.html   optional: an alternative layout, named by a page
@@ -71,6 +73,56 @@ nothing and imposes no formats on what you put there.
 A directory under `themes/` wins over the built-in theme of the same name. Any
 other name with no matching directory is an error, so a typo in `theme =` fails
 the build rather than silently falling back.
+
+## What a theme says about itself
+
+`theme.toml` at the root of the theme is how it introduces itself. The file is
+optional and so is every field in it, so a theme without one works exactly the
+same. Write it before you give the theme to anybody else:
+
+```toml
+name = "Birch"
+description = "Clean black on white, for sites that are mostly code."
+author = "You"
+license = "MIT"
+homepage = "https://github.com/you/birch"
+
+cress = "1.1"
+```
+
+`name` is a display name. Cress finds a theme by its directory, so this is what
+people read and never what gets resolved: renaming the directory is what renames
+the theme, and the two are allowed to disagree.
+
+`cress` is the field that does something. It names the template contract you
+wrote the theme against, which is the version of Cress whose `.Site`, `.Nav`, and
+`.Page` fields you built on. Cress compares it against itself and warns in either
+direction:
+
+- **An older Cress** may not have every field your templates read. Those render
+  as an empty string rather than failing, so without the declaration the site
+  looks quietly wrong instead of saying so.
+- **A Cress a whole major version newer** no longer promises the contract you
+  wrote against, since the field names are only fixed for the life of a major
+  version.
+
+Either way it is a warning and the site still builds. Cress will not refuse to
+build somebody's site because their theme author was cautious about a version
+number.
+
+Two consequences worth knowing:
+
+- **Set it to the version you actually developed against**, not the newest one
+  you can think of. Naming a version older than the one running is never
+  punished, so `1.1` stays correct for the whole of 1.x.
+- **A key Cress does not recognize is a warning, not an error.** That is also
+  what a theme looks like to an older Cress once a later one adds a field, and
+  nothing in this file decides how a page renders. It should not be able to stop
+  a build.
+
+An untagged development build of Cress has no version to compare against, so it
+skips the check entirely. A `theme.toml` that is not valid TOML is the one hard
+error here, because there is nothing in it to read.
 
 ## Layouts
 
@@ -315,4 +367,6 @@ still serves: read what it prints rather than only looking at the page.
 - The site is usable with no `logo`, no `favicon`, no `[nav.footer]`, no
   `footer`, and no `copyright`. Every one of those is optional.
 - A page naming a layout your theme does not define still renders.
+- `theme.toml` names you, the license, and the `cress` version you developed
+  against.
 - Document the layouts your theme offers, since Cress cannot.

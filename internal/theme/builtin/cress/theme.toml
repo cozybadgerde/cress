@@ -1,0 +1,13 @@
+#:schema https://raw.githubusercontent.com/cozybadgerde/cress/trunk/schema/theme.schema.json
+
+name = "Cress"
+description = "The default theme: a serif body face, warm paper, a green accent."
+author = "Cozy Badger"
+license = "MIT"
+homepage = "https://github.com/cozybadgerde/cress"
+
+# There is deliberately no `cress` key here. This theme ships inside the binary,
+# so the contract it was written against is always the one rendering it: the
+# declaration could never catch a mismatch, and could only ever be wrong. A theme
+# somebody publishes is the one that needs it, which is why `cress theme init`
+# scaffolds it and this does not.

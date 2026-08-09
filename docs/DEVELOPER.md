@@ -44,7 +44,7 @@ internal/clean/       `cress clean`; the only package that deletes
 internal/serve/       preview server: build, watch, rebuild, serve
 internal/scaffold/    `cress init` and `cress theme init`; both starters are embedded
 internal/version/     build metadata, set by the linker at release
-schema/               JSON Schema for cress.toml
+schema/               JSON Schema for cress.toml and theme.toml
 docs/                 user, operator, and developer guides
 ```
 
@@ -108,11 +108,24 @@ Both starters go through one writer, which never overwrites: `--allow-existing`
 relaxes the empty-directory precondition and grants no permission to replace a
 file.
 
-**The schema tracks the config struct.** `schema/config.schema.json` (draft
-2020-12) mirrors `config.Config`, and the scaffolded `cress.toml` carries a
-`#:schema` directive pointing at it, so editors validate a user's config. A new
-config key means a schema change in the same commit; `task audit:schema`
-validates the bundled starter against it.
+**The schemas track the structs.** `schema/config.schema.json` mirrors
+`config.Config` and `schema/theme.schema.json` mirrors `theme.Meta` (both draft
+2020-12). Every TOML file Cress bundles carries a `#:schema` directive pointing
+at one of them, so editors validate what a user writes. A new key in either
+struct means a schema change in the same commit; `task audit:schema` validates
+the bundled files against them.
+
+**A theme's own metadata can only ever warn.** `theme.toml` is optional
+provenance plus the `cress` version a theme was written against, and the loader
+treats an unknown key and a version mismatch alike: both produce a build warning
+and neither stops a build. The strict-key rule `cress.toml` uses is wrong here,
+because an unknown key is also what a published theme looks like to an older
+Cress once a later one adds a field, and nothing in the file decides how a page
+renders. Only a `theme.toml` that is not TOML at all is an error, since there is
+nothing in it to read. The built-in theme deliberately declares no `cress`
+version: it ships inside the binary, so the contract it was written against is
+always the one rendering it, and a declaration there could never catch a
+mismatch and could only ever be wrong.
 
 ## The built-in theme
 
@@ -213,7 +226,7 @@ style what nothing told it about.
 line by line. It is deliberately not a fork of the built-in theme, so an author
 starts from the contract rather than from this project's design decisions.
 
-Two things about it are load-bearing:
+Three things about it are load-bearing:
 
 - **It ships `landing.html`.** The scaffolded site's home page names
   `layout: landing`, so a starter without it would warn on the first build after
@@ -224,6 +237,12 @@ Two things about it are load-bearing:
   quietly emitting an empty string in every theme scaffolded afterwards. Keep it
   that way: the starter is the one template set in this repository whose job is
   to be copied.
+- **It ships a `theme.toml` that declares a `cress` version.** Unlike the
+  built-in theme, the starter is copied out of the binary and published, so it
+  is where an author reads that field for the first time. The test above pins
+  the running version to whatever the starter declares before it builds, because
+  an untagged build has no version, would skip the check, and would leave a typo
+  in that file invisible.
 
 ## The template data contract
 

@@ -13,6 +13,8 @@ import (
 	"github.com/cozybadgerde/cress/internal/build"
 	"github.com/cozybadgerde/cress/internal/config"
 	"github.com/cozybadgerde/cress/internal/scaffold"
+	"github.com/cozybadgerde/cress/internal/theme"
+	"github.com/cozybadgerde/cress/internal/version"
 )
 
 // scaffoldPages is how many pages `cress init` produces: index, about, imprint,
@@ -954,6 +956,109 @@ func TestBuild_landingWithoutLogo_integration(t *testing.T) {
 	if strings.Contains(home, "--site-logo") {
 		t.Errorf("a site with no logo must not emit the logo property:\n%s", home)
 	}
+}
+
+// A theme's own metadata reaches the person building the site, and nothing in
+// it can stop them: theme.toml is optional provenance, so every problem it
+// carries is a warning. The one exception is a file that is not TOML at all,
+// where there is nothing to recover and nothing to warn about.
+func TestBuild_themeMeta_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	newSite := func(t *testing.T, meta string) string {
+		t.Helper()
+		root := t.TempDir()
+		dir := filepath.Join(root, "themes", "mine")
+		writeSiteFile(t, filepath.Join(dir, "templates", "page.html"), `PAGE:{{ .Page.Title }}`)
+		writeSiteFile(t, filepath.Join(dir, theme.MetaFile), meta)
+		writeSiteFile(t, filepath.Join(root, "cress.toml"), "[site]\ntitle = \"S\"\ntheme = \"mine\"\n")
+		writeSiteFile(t, filepath.Join(root, "content", "index.md"), "---\ntitle: Home\n---\n\nbody\n")
+		return root
+	}
+
+	t.Run("a theme declaring the running contract does not warn", func(t *testing.T) {
+		root := newSite(t, "name = \"Mine\"\ncress = \"1.1\"\n")
+		stubVersion(t, "1.1.0")
+
+		res, err := build.Build(build.Options{Root: root})
+		if err != nil {
+			t.Fatalf("build: %v", err)
+		}
+		if len(res.Warnings) != 0 {
+			t.Errorf("unexpected warnings: %v", res.Warnings)
+		}
+	})
+
+	// The contract a theme names is checked against the cress running it, in
+	// both directions, and either way the site still builds.
+	t.Run("a mismatched contract warns and still builds", func(t *testing.T) {
+		for _, tc := range []struct {
+			name      string
+			declared  string
+			runningIs string
+			want      string
+		}{
+			{
+				name:     "cress is older than the theme asks for",
+				declared: "9.0", runningIs: "1.1.0",
+				want: "may read fields this version does not provide",
+			},
+			{
+				name: "cress is a major version newer", declared: "1.1", runningIs: "2.0.0",
+				want: "not promised across a major version",
+			},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				root := newSite(t, "cress = \""+tc.declared+"\"\n")
+				stubVersion(t, tc.runningIs)
+
+				res, err := build.Build(build.Options{Root: root})
+				if err != nil {
+					t.Fatalf("build: %v", err)
+				}
+				assertWarns(t, res.Warnings, tc.want, `theme "mine"`)
+				if got := readFile(t, filepath.Join(root, config.OutputDir, "index.html")); got != "PAGE:Home" {
+					t.Errorf("index.html = %q, want the page to have been built anyway", got)
+				}
+			})
+		}
+	})
+
+	// An unknown key is also what a theme looks like when it declares something
+	// a later cress added, so it must never be worse than a warning.
+	t.Run("an unknown key warns and still builds", func(t *testing.T) {
+		root := newSite(t, "name = \"Mine\"\nscreenshot = \"preview.png\"\n")
+
+		res, err := build.Build(build.Options{Root: root})
+		if err != nil {
+			t.Fatalf("build: %v", err)
+		}
+		assertWarns(t, res.Warnings, "screenshot", `theme "mine"`)
+		if got := readFile(t, filepath.Join(root, config.OutputDir, "index.html")); got != "PAGE:Home" {
+			t.Errorf("index.html = %q, want the page to have been built anyway", got)
+		}
+	})
+
+	t.Run("a theme.toml that is not TOML fails the build", func(t *testing.T) {
+		root := newSite(t, "name = \nnot toml")
+
+		if _, err := build.Build(build.Options{Root: root}); err == nil {
+			t.Fatal("expected an error for a theme.toml that does not parse")
+		}
+	})
+}
+
+// stubVersion sets the build metadata a theme's declared contract is compared
+// against, restoring it afterwards. The linker owns this variable in a release,
+// and an untagged local build leaves it unparseable, so a test that wants the
+// comparison to happen at all has to say what is running.
+func stubVersion(t *testing.T, v string) {
+	t.Helper()
+	previous := version.Version
+	t.Cleanup(func() { version.Version = previous })
+	version.Version = v
 }
 
 func TestBuild_refusesSiteRootOutput(t *testing.T) {

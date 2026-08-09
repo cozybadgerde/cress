@@ -401,6 +401,7 @@ A theme is a directory under `themes/`, whether scaffolded or written by hand:
 ```text
 themes/
   mine/
+    theme.toml       optional: who made the theme, and what it needs
     templates/       the templates that render your pages
     static/          CSS and other assets, copied to the site root
 ```
@@ -409,6 +410,21 @@ A theme somebody sent you goes in the same place. Drop the directory under
 `themes/`, name it in `theme =`, and it renders your site. A name with no
 matching directory is an error, so a typo fails the build rather than quietly
 falling back to the default.
+
+Open its `theme.toml`, if it has one, to see who wrote the theme and under what
+license. It may also name the version of Cress the theme was built for, and if
+that does not match the Cress you are running, the build says so:
+
+```console
+$ cress build
+warning: theme "borrowed": theme.toml declares cress = "1.4", but this is cress 1.1.0; the theme may read fields this version does not provide
+built 7 page(s) into public
+```
+
+That is a warning and the site still builds. A theme reading something your
+Cress does not have gets an empty value rather than an error, so pages may come
+out missing a piece. Upgrading Cress is the fix; see the
+[operator guide](./OPERATOR.md).
 
 Writing a theme, rather than dropping one in, is its own guide. The
 [theme guide](./THEME.md) covers the directory in full, the data a template

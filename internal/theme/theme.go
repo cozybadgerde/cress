@@ -54,10 +54,17 @@ type Theme struct {
 	// in here can be asked for by a page.
 	layouts map[string]bool
 	static  fs.FS // nil when the theme ships no static assets
+	meta    *Meta // nil when the theme ships no MetaFile
 }
 
 // Name reports the resolved theme name.
 func (t *Theme) Name() string { return t.name }
+
+// Meta reports what the theme says about itself, or nil when it ships no
+// MetaFile. The metadata describes the theme rather than the pages it renders,
+// so it is deliberately not part of PageData: a template has no use for it, and
+// putting it there would widen the contract this file exists to protect.
+func (t *Theme) Meta() *Meta { return t.meta }
 
 // Resolve loads the theme named name for the site rooted at siteRoot. A theme
 // directory at siteRoot/themesDir/name takes precedence; otherwise the built-in
@@ -79,8 +86,8 @@ func Resolve(siteRoot, themesDir, name string) (*Theme, error) {
 }
 
 // load parses a theme from fsys, which must contain a templates/ directory (with
-// entryTemplate), may contain templates/partials/, and may contain a static/
-// directory.
+// entryTemplate), may contain templates/partials/, may contain a static/
+// directory, and may describe itself in a MetaFile.
 func load(name string, fsys fs.FS) (*Theme, error) {
 	tmpl, err := template.ParseFS(fsys, layoutsGlob)
 	if err != nil {
@@ -100,7 +107,12 @@ func load(name string, fsys fs.FS) (*Theme, error) {
 		return nil, fmt.Errorf("theme %q: %w", name, err)
 	}
 
-	t := &Theme{name: name, tmpl: tmpl, layouts: layouts}
+	meta, err := loadMeta(fsys)
+	if err != nil {
+		return nil, fmt.Errorf("theme %q: %w", name, err)
+	}
+
+	t := &Theme{name: name, tmpl: tmpl, layouts: layouts, meta: meta}
 	if info, err := fs.Stat(fsys, staticDir); err == nil && info.IsDir() {
 		sub, err := fs.Sub(fsys, staticDir)
 		if err != nil {

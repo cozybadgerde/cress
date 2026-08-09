@@ -14,6 +14,7 @@ import (
 	"github.com/cozybadgerde/cress/internal/content"
 	"github.com/cozybadgerde/cress/internal/render"
 	"github.com/cozybadgerde/cress/internal/theme"
+	"github.com/cozybadgerde/cress/internal/version"
 )
 
 // NotFoundFile is the site's 404 page, written at the output root. Static hosts
@@ -63,6 +64,7 @@ func Build(opts Options) (*Result, error) {
 
 	base := in.cfg.Site.BasePath
 	nav, warnings := resolveNav(in.cfg.Nav, in.pages, base)
+	warnings = append(warnings, themeWarnings(in.thm)...)
 	writer := &pageWriter{
 		outPath:  outPath,
 		thm:      in.thm,
@@ -143,6 +145,22 @@ func loadInputs(root string) (*inputs, error) {
 		return nil, err
 	}
 	return &inputs{cfg: cfg, pages: pages, thm: thm}, nil
+}
+
+// themeWarnings reports what the theme's own metadata has to say to the cress
+// running it, each line prefixed with the theme it came from so it reads like
+// every other build warning.
+//
+// The running version enters the build here, which is what keeps internal/theme
+// a pure function of the directory it reads: the comparison takes the version as
+// an argument rather than reaching for the package that holds it.
+func themeWarnings(thm *theme.Theme) []string {
+	found := thm.Meta().Warnings(version.Version)
+	warnings := make([]string, 0, len(found))
+	for _, w := range found {
+		warnings = append(warnings, fmt.Sprintf("theme %q: %s", thm.Name(), w))
+	}
+	return warnings
 }
 
 // siteData prepares the site metadata every page is rendered with: the branding

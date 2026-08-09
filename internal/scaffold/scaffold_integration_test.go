@@ -154,6 +154,7 @@ func TestCreateTheme_integration(t *testing.T) {
 	}
 
 	for _, rel := range []string{
+		"theme.toml",
 		filepath.Join("templates", "page.html"),
 		filepath.Join("templates", "partials", "head.html"),
 		filepath.Join("static", "style.css"),

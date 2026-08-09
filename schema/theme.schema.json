@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/cozybadgerde/cress/trunk/schema/theme.schema.json",
+  "title": "cress theme metadata",
+  "description": "Schema for a cress theme's metadata file (theme.toml): what the theme says about itself, and the template contract it was written against. The file is optional, and so is every field in it.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "description": "Display name of the theme. Cress resolves a theme by its directory under themes/, so this is what people read and never what gets loaded; the two are allowed to differ.",
+      "type": "string"
+    },
+    "description": {
+      "description": "One-line summary of what the theme is for.",
+      "type": "string"
+    },
+    "author": {
+      "description": "Whoever wrote the theme.",
+      "type": "string"
+    },
+    "license": {
+      "description": "License the theme is published under, ideally an SPDX identifier such as \"MIT\".",
+      "type": "string"
+    },
+    "homepage": {
+      "description": "Where the theme lives, e.g. its repository.",
+      "type": "string",
+      "format": "uri"
+    },
+    "cress": {
+      "description": "The template contract the theme was written against, as a version such as \"1.1\". A cress older than this may not provide every field the theme reads, and a cress a whole major version newer no longer promises the contract; either way cress warns and still builds the site. Pre-release and build metadata are ignored when comparing.",
+      "type": "string",
+      "pattern": "^v?[0-9]+(\\.[0-9]+){0,2}([-+][0-9A-Za-z.-]+)?$"
+    }
+  }
+}

@@ -211,9 +211,10 @@ tasks:
       - gocognit -over {{.COMPLEXITY_BUDGET}} .
 
   audit:schema:
-    desc: Validate the bundled starter config against the config JSON Schema (taplo)
+    desc: Validate the bundled TOML against its JSON Schema (taplo)
     cmds:
       - taplo lint --schema "file://$PWD/schema/config.schema.json" internal/scaffold/builtin/site/cress.toml
+      - taplo lint --schema "file://$PWD/schema/theme.schema.json" internal/scaffold/builtin/theme/theme.toml internal/theme/builtin/cress/theme.toml
 
   # --- Release ---
 

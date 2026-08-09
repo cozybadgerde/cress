@@ -7,6 +7,9 @@ import (
 	"testing"
 
 	"github.com/cozybadgerde/cress/internal/build"
+	"github.com/cozybadgerde/cress/internal/config"
+	"github.com/cozybadgerde/cress/internal/theme"
+	"github.com/cozybadgerde/cress/internal/version"
 )
 
 // writeFile writes one file under dir, creating parents.
@@ -122,6 +125,21 @@ func TestCLIThemeInitMatchesScaffoldedSite_integration(t *testing.T) {
 		t.Fatal("scaffolded cress.toml no longer names the default theme; update this test")
 	}
 	writeFile(t, filepath.Join(site, "cress.toml"), swapped)
+
+	// An untagged local build has no version, which would skip the contract
+	// check and leave the starter's theme.toml out of the clean-build promise
+	// entirely. Running as the version the starter declares puts it back in: a
+	// typo in that declaration, or a key cress does not know, then warns here.
+	thm, err := theme.Resolve(site, config.ThemesDir, "mine")
+	if err != nil {
+		t.Fatalf("resolve scaffolded theme: %v", err)
+	}
+	if thm.Meta() == nil || thm.Meta().Cress == "" {
+		t.Fatalf("the scaffolded theme declares no contract; update this test")
+	}
+	previous := version.Version
+	t.Cleanup(func() { version.Version = previous })
+	version.Version = thm.Meta().Cress
 
 	// Through the build package rather than the CLI, because a warning is
 	// printed rather than returned and this test is about what it says.
