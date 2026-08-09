@@ -2,6 +2,12 @@
 // wraps rendered page HTML, plus the static assets shipped alongside it. The
 // default theme ("cress") is embedded in the binary; sites may override it with
 // a directory under themes/.
+//
+// It also checks a theme against the contract, which lives here rather than
+// beside the command that asks for it. What counts as a layout, what counts as
+// a partial, and what fields a template may read are this package's rules
+// already, and a checker that worked them out a second time would be the half
+// of the policy that drifts.
 package theme
 
 import (
@@ -71,18 +77,36 @@ func (t *Theme) Meta() *Meta { return t.meta }
 // default theme (config.DefaultTheme) is used. Any other name with no matching
 // directory is an error.
 func Resolve(siteRoot, themesDir, name string) (*Theme, error) {
+	fsys, _, err := locate(siteRoot, themesDir, name)
+	if err != nil {
+		return nil, err
+	}
+	return load(name, fsys)
+}
+
+// locate finds the file tree a theme lives in, along with a path to call it by
+// when reporting. Resolving and validating a theme have to agree on which
+// directory is the theme, so they ask the same question here rather than
+// keeping a copy of the precedence rule each.
+//
+// The returned path is for humans: a directory for a theme on disk, and a label
+// for the built-in one, which has no path a reader could open.
+func locate(siteRoot, themesDir, name string) (fs.FS, string, error) {
 	diskPath := filepath.Join(siteRoot, themesDir, name)
 	if info, err := os.Stat(diskPath); err == nil && info.IsDir() {
-		return load(name, os.DirFS(diskPath))
+		return os.DirFS(diskPath), diskPath, nil
 	}
 	if name == config.DefaultTheme {
-		sub, err := fs.Sub(builtinFS, filepath.Join(builtinRoot, config.DefaultTheme))
+		// path.Join rather than filepath.Join: an fs.FS is addressed with slashes
+		// on every platform, so building this with the OS separator would fail to
+		// find the built-in theme on Windows.
+		sub, err := fs.Sub(builtinFS, path.Join(builtinRoot, config.DefaultTheme))
 		if err != nil {
-			return nil, fmt.Errorf("loading built-in theme: %w", err)
+			return nil, "", fmt.Errorf("loading built-in theme: %w", err)
 		}
-		return load(name, sub)
+		return sub, name + " (built-in)", nil
 	}
-	return nil, fmt.Errorf("theme %q not found under %s", name, filepath.Join(siteRoot, themesDir))
+	return nil, "", fmt.Errorf("theme %q not found under %s", name, filepath.Join(siteRoot, themesDir))
 }
 
 // load parses a theme from fsys, which must contain a templates/ directory (with

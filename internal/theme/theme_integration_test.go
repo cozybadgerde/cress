@@ -167,6 +167,85 @@ func TestBuiltinCarriesMeta_integration(t *testing.T) {
 	}
 }
 
+// The theme cress ships is the one people read before writing their own, so it
+// has to pass the check the command applies to theirs.
+func TestValidateBuiltin_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	report, err := theme.Validate(theme.ValidateOptions{
+		SiteRoot:     t.TempDir(),
+		ThemesDir:    config.ThemesDir,
+		Name:         config.DefaultTheme,
+		CressVersion: version.Version,
+	})
+	if err != nil {
+		t.Fatalf("Validate: %v", err)
+	}
+	if !report.OK() {
+		t.Errorf("the built-in theme does not satisfy its own contract: %v", report.Findings)
+	}
+}
+
+func TestValidateOnDisk_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := writeTheme(t, "mine", map[string]string{
+		"templates/wide.html":          "<img src=\"/logo.svg\">\n{{ .Page.Titel }}\n",
+		"templates/partials/head.html": `{{ define "head" }}{{ .Site.Title }}{{ end }}`,
+		theme.MetaFile:                 "name = \"Mine\"\ncress = \"1.1\"\n",
+	})
+
+	report, err := theme.Validate(theme.ValidateOptions{
+		SiteRoot:     root,
+		ThemesDir:    config.ThemesDir,
+		Name:         "mine",
+		CressVersion: "1.1.0",
+	})
+	if err != nil {
+		t.Fatalf("Validate: %v", err)
+	}
+	if report.Name != "mine" {
+		t.Errorf("Name = %q, want %q", report.Name, "mine")
+	}
+	if !strings.Contains(report.Path, filepath.Join(config.ThemesDir, "mine")) {
+		t.Errorf("Path = %q, want the theme directory", report.Path)
+	}
+
+	want := []string{"is not rooted under", "is not a field of PageView"}
+	if len(report.Findings) != len(want) {
+		t.Fatalf("got %d findings, want %d: %v", len(report.Findings), len(want), report.Findings)
+	}
+	for i, substr := range want {
+		if !strings.Contains(report.Findings[i].Message, substr) {
+			t.Errorf("finding %d = %q, want it to contain %q", i, report.Findings[i].Message, substr)
+		}
+		if report.Findings[i].File != filepath.ToSlash("templates/wide.html") {
+			t.Errorf("finding %d is in %q, want templates/wide.html", i, report.Findings[i].File)
+		}
+	}
+}
+
+func TestValidateUnknownTheme_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	// A theme that is not there is an error rather than a report: there is
+	// nothing to validate, which is a different answer from "nothing is wrong".
+	_, err := theme.Validate(theme.ValidateOptions{
+		SiteRoot:  t.TempDir(),
+		ThemesDir: config.ThemesDir,
+		Name:      "does-not-exist",
+	})
+	if err == nil {
+		t.Fatal("expected an error for a theme with no directory")
+	}
+}
+
 // writeTheme lays out a minimal theme under root/themes/name, plus whatever
 // extra files the caller names (relative to the theme directory), and returns
 // the site root.
@@ -182,7 +261,11 @@ func writeTheme(t *testing.T, name string, files map[string]string) string {
 		t.Fatalf("write template: %v", err)
 	}
 	for rel, body := range files {
-		if err := os.WriteFile(filepath.Join(dir, filepath.FromSlash(rel)), []byte(body), 0o644); err != nil {
+		path := filepath.Join(dir, filepath.FromSlash(rel))
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatalf("mkdir for %s: %v", rel, err)
+		}
+		if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
 			t.Fatalf("write %s: %v", rel, err)
 		}
 	}
