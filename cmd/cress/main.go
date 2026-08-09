@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -20,11 +21,18 @@ const (
 	flagAddr   = "addr"
 	flagForce  = "force"
 	flagDryRun = "dry-run"
+	flagQuiet  = "quiet"
 	// flagAllowExisting is init's, and deliberately not force: it relaxes the
 	// empty-directory precondition and grants no power to overwrite, which
 	// `cress init` never does either way.
 	flagAllowExisting = "allow-existing"
 )
+
+// errFailed asks for a non-zero exit without a message. It is for a command
+// whose output is the answer: a validator has already said what is wrong, in
+// its own words and in the place the user was looking, and appending "cress:
+// something is wrong" to that would be the same news a second time.
+var errFailed = errors.New("")
 
 func main() {
 	cli.VersionPrinter = func(cmd *cli.Command) {
@@ -32,7 +40,9 @@ func main() {
 	}
 
 	if err := newRootCommand().Run(context.Background(), os.Args); err != nil {
-		fprintln(os.Stderr, "cress:", err)
+		if !errors.Is(err, errFailed) {
+			fprintln(os.Stderr, "cress:", err)
+		}
 		os.Exit(1)
 	}
 }

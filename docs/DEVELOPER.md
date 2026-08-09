@@ -38,7 +38,7 @@ cmd/cress/            CLI: build, clean, init, serve, theme, version (urfave/cli
 internal/config/      load and validate cress.toml
 internal/content/     discover Markdown, parse front matter into pages
 internal/render/      Markdown to HTML (goldmark)
-internal/theme/       resolve and load themes; the built-in theme is embedded
+internal/theme/       resolve, load and validate themes; the built-in one is embedded
 internal/build/       orchestration: content + theme + config -> public/
 internal/clean/       `cress clean`; the only package that deletes
 internal/serve/       preview server: build, watch, rebuild, serve
@@ -114,6 +114,19 @@ file.
 at one of them, so editors validate what a user writes. A new key in either
 struct means a schema change in the same commit; `task audit:schema` validates
 the bundled files against them.
+
+**The theme checker reports only what it is certain of.** `cress theme validate`
+walks the parse trees rather than rendering a sample page, and it tracks what
+the dot is through `range`, `with` and variable assignment. Wherever it stops
+being able to name a type, it stops checking rather than guessing: a fragment
+reached with two different types is skipped, and so is everything under
+`.Page.Meta`, which is a map and takes any key by design. That asymmetry is the
+whole design. A genuine unknown field already fails the build, so the command's
+only contribution is finding one early and finding all of them at once, and a
+single false positive would trade that for an author who turns it off. When a
+check cannot be made certain it does not ship: that is why nothing verifies
+that a referenced `static/` file exists, since a site legitimately supplies its
+theme's assets.
 
 **A theme's own metadata can only ever warn.** `theme.toml` is optional
 provenance plus the `cress` version a theme was written against, and the loader
@@ -226,7 +239,7 @@ style what nothing told it about.
 line by line. It is deliberately not a fork of the built-in theme, so an author
 starts from the contract rather than from this project's design decisions.
 
-Three things about it are load-bearing:
+Four things about it are load-bearing:
 
 - **It ships `landing.html`.** The scaffolded site's home page names
   `layout: landing`, so a starter without it would warn on the first build after
@@ -237,6 +250,9 @@ Three things about it are load-bearing:
   quietly emitting an empty string in every theme scaffolded afterwards. Keep it
   that way: the starter is the one template set in this repository whose job is
   to be copied.
+- **A test validates it.** Both bundled themes go through
+  `cress theme validate` in the test suite, so cress cannot ship an example of
+  something its own validator rejects.
 - **It ships a `theme.toml` that declares a `cress` version.** Unlike the
   built-in theme, the starter is copied out of the binary and published, so it
   is where an author reads that field for the first time. The test above pins

@@ -341,23 +341,66 @@ Two things to know. A missing address is answered with the site's 404, so you
 can see that page without navigating to it directly. And a build that warns
 still serves: read what it prints rather than only looking at the page.
 
+## Checking your theme
+
+Previewing shows you the pages your content happens to reach. To check the
+whole theme, including the parts no page reaches:
+
+```bash
+cress theme validate mine
+```
+
+```console
+themes/mine: 2 problem(s)
+  templates/page.html:14  .Page.Titel is not a field of PageView (did you mean Title?)
+  templates/wide.html:3   href="/style.css" is not rooted under {{ .Site.BasePath }}, so it breaks when the site is published to a subdirectory
+```
+
+With no name it checks the theme your `cress.toml` already points at. It exits
+non-zero when it finds anything, so it belongs in your own pipeline, and
+`--quiet` prints nothing and leaves only the exit status.
+
+What it checks:
+
+- **Fields your templates read.** Every one, against the contract above.
+- **`templates/page.html` exists, and every template parses.**
+- **Your own asset links carry `.Site.BasePath`.**
+- **Two files do not define the same `{{ define }}` name.**
+- **A file in `templates/` renders something of its own.**
+- **`theme.toml` parses**, and its `cress` version matches the Cress running.
+
+Coverage is the reason to run it. A build only executes the templates and
+branches some page reaches, so a bad field in a layout no page names, or behind
+an `{{ if }}` no page takes, builds perfectly cleanly and breaks the day
+somebody writes the page that reaches it. Validating reads every branch of every
+template and needs no content at all.
+
+It is deliberately quiet where it cannot be certain. A fragment reached with
+something other than the whole `PageData` is checked against whatever its
+callers pass it, and one reached with two different things is not checked at
+all. Anything it does report is something to fix.
+
 ## Gotchas
 
 - **A template that reads a field that does not exist fails the build.** Go
-  templates error on an unknown struct field, so `.Page.Titel` is caught. A
-  misspelled *layout* name is not: it warns and falls back.
+  templates error on an unknown struct field, so `.Page.Titel` is caught, but
+  only once a page renders that template and takes that branch.
+  `cress theme validate` catches it without either. A misspelled *layout* name
+  is not caught at all: it warns and falls back.
 - **Drafts are not rendered** unless the build passes `--drafts`, so a theme
   never sees them.
 - **`static/` in the site beats `static/` in the theme** on a name collision.
   That is how a site overrides a theme's asset, and it means a theme cannot rely
   on owning a common name like `style.css` if the site ships one too.
 - **Two partials with the same `{{ define }}` name** resolve to whichever parsed
-  last. Nothing warns, so keep the names distinct.
+  last. No build warns about it, so keep the names distinct;
+  `cress theme validate` is what finds one.
 - **Indentation inside a partial is emitted verbatim.** Go templates do not
   re-indent a fragment to its call site.
 
 ## Before you publish a theme
 
+- `cress theme validate` reports no problems.
 - `cress build` runs clean, with no warnings, against a scaffolded site.
 - The site renders correctly under a subdirectory: set `base_url` to something
   like `https://example.com/sub`, rebuild, and confirm the stylesheet still

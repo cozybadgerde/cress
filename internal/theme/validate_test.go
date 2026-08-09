@@ -94,7 +94,7 @@ func TestValidateDuplicateDefines(t *testing.T) {
 			"templates/partials/a.html":    `{{ define "head" }}a{{ end }}`,
 			"templates/partials/head.html": `{{ define "head" }}b{{ end }}`,
 		})
-		assertOne(t, report, "templates/partials/head.html", `defines "head", which templates/partials/a.html also defines`)
+		assertOne(t, report, "templates/partials/a.html", `defines "head", which templates/partials/head.html also defines`)
 	})
 
 	t.Run("between a layout and a partial", func(t *testing.T) {
@@ -102,7 +102,7 @@ func TestValidateDuplicateDefines(t *testing.T) {
 			"templates/page.html":          `{{ define "aside" }}a{{ end }}body`,
 			"templates/partials/side.html": `{{ define "aside" }}b{{ end }}`,
 		})
-		assertOne(t, report, "templates/partials/side.html", `defines "aside"`)
+		assertOne(t, report, "templates/page.html", `defines "aside", which templates/partials/side.html also defines`)
 	})
 
 	// The same name in two files is only a collision when both are the theme's.

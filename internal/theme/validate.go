@@ -230,14 +230,16 @@ func checkDuplicateDefines(files []*themeFile) []Finding {
 		if len(paths) < 2 {
 			continue
 		}
+		// Neither file is the offender: both define the name and one of them
+		// silently loses. So it is one finding rather than one per file, placed on
+		// the first of them and naming the rest, which keeps a single problem
+		// counted once while still saying everywhere it has to be fixed.
 		sort.Strings(paths)
-		for _, p := range paths[1:] {
-			findings = append(findings, Finding{
-				File:    p,
-				Line:    defineLine(files, p, name),
-				Message: fmt.Sprintf("defines %q, which %s also defines; whichever parses last wins and nothing warns", name, paths[0]),
-			})
-		}
+		findings = append(findings, Finding{
+			File:    paths[0],
+			Line:    defineLine(files, paths[0], name),
+			Message: fmt.Sprintf("defines %q, which %s also defines; whichever parses last wins and nothing warns", name, strings.Join(paths[1:], " and ")),
+		})
 	}
 	return findings
 }

@@ -116,15 +116,7 @@ func TestCLIThemeInitMatchesScaffoldedSite_integration(t *testing.T) {
 		t.Fatalf("cress theme init: %v", err)
 	}
 
-	cfg, err := os.ReadFile(filepath.Join(site, "cress.toml")) // #nosec G304 -- test path
-	if err != nil {
-		t.Fatalf("read config: %v", err)
-	}
-	swapped := strings.Replace(string(cfg), `theme = "cress"`, `theme = "mine"`, 1)
-	if swapped == string(cfg) {
-		t.Fatal("scaffolded cress.toml no longer names the default theme; update this test")
-	}
-	writeFile(t, filepath.Join(site, "cress.toml"), swapped)
+	swapTheme(t, site, "mine")
 
 	// An untagged local build has no version, which would skip the contract
 	// check and leave the starter's theme.toml out of the clean-build promise

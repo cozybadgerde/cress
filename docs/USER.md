@@ -426,9 +426,20 @@ Cress does not have gets an empty value rather than an error, so pages may come
 out missing a piece. Upgrading Cress is the fix; see the
 [operator guide](./OPERATOR.md).
 
+To check a theme against the rules Cress expects of it, without building a site:
+
+```bash
+cress theme validate mine
+```
+
+With no name it checks the theme your config already points at. It prints what
+is wrong and where, exits non-zero when it finds anything, and takes `--quiet`
+to print nothing and leave only the exit status. It is most useful while writing
+a theme, and it works just as well on one somebody sent you.
+
 Writing a theme, rather than dropping one in, is its own guide. The
 [theme guide](./THEME.md) covers the directory in full, the data a template
-receives, and the rules a theme has to follow.
+receives, the rules a theme has to follow, and what `validate` checks.
 
 ### Page layouts
 
