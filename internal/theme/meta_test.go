@@ -161,13 +161,19 @@ screenshot = "preview.png"
 	}
 }
 
-func TestMetaWarnings(t *testing.T) {
-	tests := []struct {
-		name     string
-		declared string
-		running  string
-		want     string
-	}{
+// warningsFor loads a theme declaring the given contract and asks what it has
+// to say to the cress named by running.
+func warningsFor(t *testing.T, declared, running string) []string {
+	t.Helper()
+	meta, err := loadMeta(fstest.MapFS{MetaFile: {Data: []byte("cress = \"" + declared + "\"\n")}})
+	if err != nil {
+		t.Fatalf("loadMeta: %v", err)
+	}
+	return meta.Warnings(running)
+}
+
+func TestMetaWarningsStaysSilent(t *testing.T) {
+	tests := []struct{ name, declared, running string }{
 		{name: "same version", declared: "1.1", running: "1.1.0"},
 		{name: "newer patch", declared: "1.1", running: "1.1.4"},
 		{name: "newer minor", declared: "1.1", running: "1.9.0"},
@@ -175,7 +181,19 @@ func TestMetaWarnings(t *testing.T) {
 		{name: "no declaration", declared: "", running: "1.1.0"},
 		{name: "untagged local build", declared: "1.1", running: "dev"},
 		{name: "no running version", declared: "1.1", running: ""},
+	}
 
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if warnings := warningsFor(t, tc.declared, tc.running); len(warnings) != 0 {
+				t.Errorf("Warnings = %v, want none", warnings)
+			}
+		})
+	}
+}
+
+func TestMetaWarningsReports(t *testing.T) {
+	tests := []struct{ name, declared, running, want string }{
 		{
 			name: "older minor", declared: "1.1", running: "1.0.1",
 			want: "may read fields this version does not provide",
@@ -196,18 +214,7 @@ func TestMetaWarnings(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			meta, err := loadMeta(fstest.MapFS{MetaFile: {Data: []byte("cress = \"" + tc.declared + "\"\n")}})
-			if err != nil {
-				t.Fatalf("loadMeta: %v", err)
-			}
-
-			warnings := meta.Warnings(tc.running)
-			if tc.want == "" {
-				if len(warnings) != 0 {
-					t.Fatalf("Warnings = %v, want none", warnings)
-				}
-				return
-			}
+			warnings := warningsFor(t, tc.declared, tc.running)
 			if len(warnings) != 1 {
 				t.Fatalf("Warnings = %v, want one", warnings)
 			}

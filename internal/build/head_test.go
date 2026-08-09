@@ -61,20 +61,41 @@ func TestRenderHead(t *testing.T) {
 			if err != nil {
 				t.Fatalf("renderHead: %v", err)
 			}
-			for _, want := range tc.want {
-				if !strings.Contains(string(got), want) {
-					t.Errorf("head is missing %q\ngot: %s", want, got)
-				}
-			}
-			for _, omit := range tc.omit {
-				if strings.Contains(string(got), omit) {
-					t.Errorf("head should not contain %q\ngot: %s", omit, got)
-				}
-			}
+			assertHead(t, string(got), tc.want, tc.omit)
 			if strings.HasSuffix(string(got), "\n") {
 				t.Errorf("head should carry no trailing newline, got %q", got)
 			}
 		})
+	}
+}
+
+// assertHead checks a rendered head for the elements a case expects and against
+// the ones it expects to be absent.
+//
+// Absence carries most of the meaning here: what this template does is leave
+// out the tag it has no value for, so a case that could only assert presence
+// would not be testing the behaviour at all.
+//
+// It is a near twin of assertDoc in the integration tests, and stays separate
+// because those are an external test package. Sharing one would mean exporting
+// a test helper from the package under test.
+func assertHead(t *testing.T, head string, want, omit []string) {
+	t.Helper()
+	wrong := false
+	for _, text := range want {
+		if !strings.Contains(head, text) {
+			t.Errorf("head is missing %q", text)
+			wrong = true
+		}
+	}
+	for _, text := range omit {
+		if strings.Contains(head, text) {
+			t.Errorf("head should not contain %q", text)
+			wrong = true
+		}
+	}
+	if wrong {
+		t.Logf("head was:\n%s", head)
 	}
 }
 

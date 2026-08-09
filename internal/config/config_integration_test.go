@@ -20,6 +20,40 @@ func writeConfig(t *testing.T, body string) string {
 	return path
 }
 
+// mustLoad loads a config that is expected to be valid, failing the test if it
+// is not.
+//
+// The tests below come in pairs, one for what a key accepts and one for what it
+// refuses, rather than a single table with a wantErr column. A row in such a
+// table carries the columns for both jobs and uses half of them, and the body
+// has to branch before it can assert anything. These two helpers are what the
+// pairs cost: each table then does one job and reads straight down.
+func mustLoad(t *testing.T, body string) *config.Config {
+	t.Helper()
+	cfg, err := config.Load(writeConfig(t, body))
+	if err != nil {
+		t.Fatalf("Load(%q): %v", body, err)
+	}
+	return cfg
+}
+
+// assertRejected checks that a config is refused, and that the error quotes
+// each of names. What the message says matters as much as the refusal: these
+// are values an author typed on purpose, so the error has to point at the key
+// and at their own text rather than announce that something is wrong.
+func assertRejected(t *testing.T, body string, names ...string) {
+	t.Helper()
+	_, err := config.Load(writeConfig(t, body))
+	if err == nil {
+		t.Fatalf("Load(%q) = nil error, want a refusal", body)
+	}
+	for _, name := range names {
+		if !strings.Contains(err.Error(), name) {
+			t.Errorf("error %q does not name %s", err, name)
+		}
+	}
+}
+
 func TestLoad_integration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
@@ -138,11 +172,8 @@ func TestLoad_accents_integration(t *testing.T) {
 	for _, tc := range []struct {
 		name            string
 		body            string
-		wantErr         bool
 		accent, accent2 string
 	}{
-		{name: "invalid accent", body: "accent = \"not-a-color\"\n", wantErr: true},
-		{name: "invalid accent_dark", body: "accent_dark = \"not-a-color\"\n", wantErr: true},
 		{name: "both set", body: "accent = \"#4f7a4a\"\naccent_dark = \"#9ccb8f\"\n", accent: "#4f7a4a", accent2: "#9ccb8f"},
 		// Only a light accent: it applies to both schemes, which is what the
 		// theme's cascade does when no dark override is emitted.
@@ -151,19 +182,25 @@ func TestLoad_accents_integration(t *testing.T) {
 		{name: "accent_dark only", body: "accent_dark = \"#9ccb8f\"\n", accent2: "#9ccb8f"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			cfg, err := config.Load(writeConfig(t, "[site]\n"+tc.body))
-			if tc.wantErr {
-				if err == nil {
-					t.Fatalf("Load(%q) = nil error, want one", tc.body)
-				}
-				return
-			}
-			if err != nil {
-				t.Fatalf("Load(%q): %v", tc.body, err)
-			}
+			cfg := mustLoad(t, "[site]\n"+tc.body)
 			if cfg.Site.Accent != tc.accent || cfg.Site.AccentDark != tc.accent2 {
 				t.Errorf("accent/accent_dark = %q/%q, want %q/%q", cfg.Site.Accent, cfg.Site.AccentDark, tc.accent, tc.accent2)
 			}
+		})
+	}
+}
+
+func TestLoad_rejectsInvalidAccents_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	for _, tc := range []struct{ name, body string }{
+		{name: "invalid accent", body: "accent = \"not-a-color\"\n"},
+		{name: "invalid accent_dark", body: "accent_dark = \"not-a-color\"\n"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			assertRejected(t, "[site]\n"+tc.body)
 		})
 	}
 }
@@ -179,7 +216,6 @@ func TestLoad_logos_integration(t *testing.T) {
 	for _, tc := range []struct {
 		name       string
 		body       string
-		wantErr    bool
 		logo, dark string
 	}{
 		{name: "neither set", body: ""},
@@ -189,27 +225,22 @@ func TestLoad_logos_integration(t *testing.T) {
 			body: "logo = \"/logo.svg\"\nlogo_dark = \"/logo-dark.svg\"\n",
 			logo: "/logo.svg", dark: "/logo-dark.svg",
 		},
-		{name: "logo_dark without logo", body: "logo_dark = \"/logo-dark.svg\"\n", wantErr: true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			cfg, err := config.Load(writeConfig(t, "[site]\n"+tc.body))
-			if tc.wantErr {
-				if err == nil {
-					t.Fatalf("Load(%q) = nil error, want one", tc.body)
-				}
-				if !strings.Contains(err.Error(), "logo_dark") {
-					t.Errorf("error %q does not name the offending key", err)
-				}
-				return
-			}
-			if err != nil {
-				t.Fatalf("Load(%q): %v", tc.body, err)
-			}
+			cfg := mustLoad(t, "[site]\n"+tc.body)
 			if cfg.Site.Logo != tc.logo || cfg.Site.LogoDark != tc.dark {
 				t.Errorf("logo/logo_dark = %q/%q, want %q/%q", cfg.Site.Logo, cfg.Site.LogoDark, tc.logo, tc.dark)
 			}
 		})
 	}
+}
+
+func TestLoad_rejectsALoneDarkLogo_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	assertRejected(t, "[site]\nlogo_dark = \"/logo-dark.svg\"\n", "logo_dark")
 }
 
 // base_url decides where in-site links are rooted, so a value that parses as
@@ -223,8 +254,6 @@ func TestLoad_baseURL_integration(t *testing.T) {
 	for _, tc := range []struct {
 		name     string
 		body     string
-		wantErr  bool
-		errNames string // the text the error must quote back
 		baseURL  string
 		basePath string
 	}{
@@ -255,38 +284,38 @@ func TestLoad_baseURL_integration(t *testing.T) {
 			name: "nested path", body: "base_url = \"https://example.com/a/b\"\n",
 			baseURL: "https://example.com/a/b", basePath: "/a/b",
 		},
-		// A host with no scheme parses as a bare path, which would root every link
-		// under a directory named after the domain.
-		{name: "no scheme", body: "base_url = \"example.com/cress\"\n", wantErr: true, errNames: `"example.com/cress"`},
-		{name: "path only", body: "base_url = \"/cress\"\n", wantErr: true, errNames: `"/cress"`},
-		// The quoted value must be what the author typed. Canonicalizing before
-		// validating once made this one report a value nobody wrote ("https:").
-		{name: "scheme only", body: "base_url = \"https://\"\n", wantErr: true, errNames: `"https://"`},
-		{name: "unparseable", body: "base_url = \"://nope\"\n", wantErr: true, errNames: `"://nope"`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			cfg, err := config.Load(writeConfig(t, "[site]\n"+tc.body))
-			if tc.wantErr {
-				if err == nil {
-					t.Fatalf("Load(%q) = nil error, want one", tc.body)
-				}
-				if !strings.Contains(err.Error(), "base_url") {
-					t.Errorf("error should name base_url: %v", err)
-				}
-				if !strings.Contains(err.Error(), tc.errNames) {
-					t.Errorf("error should quote the author's own value %s: %v", tc.errNames, err)
-				}
-				return
-			}
-			if err != nil {
-				t.Fatalf("Load(%q): %v", tc.body, err)
-			}
+			cfg := mustLoad(t, "[site]\n"+tc.body)
 			if cfg.Site.BaseURL != tc.baseURL {
 				t.Errorf("BaseURL = %q, want %q", cfg.Site.BaseURL, tc.baseURL)
 			}
 			if cfg.Site.BasePath != tc.basePath {
 				t.Errorf("BasePath = %q, want %q", cfg.Site.BasePath, tc.basePath)
 			}
+		})
+	}
+}
+
+// A rejected base_url has to quote the author's own text back at them, because
+// the values that get refused are the ones that look right.
+func TestLoad_rejectsInvalidBaseURL_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	for _, tc := range []struct{ name, value string }{
+		// A host with no scheme parses as a bare path, which would root every link
+		// under a directory named after the domain.
+		{name: "no scheme", value: "example.com/cress"},
+		{name: "path only", value: "/cress"},
+		// Canonicalizing before validating once made this one report a value
+		// nobody wrote ("https:").
+		{name: "scheme only", value: "https://"},
+		{name: "unparseable", value: "://nope"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			assertRejected(t, "[site]\nbase_url = \""+tc.value+"\"\n", "base_url", `"`+tc.value+`"`)
 		})
 	}
 }
@@ -360,46 +389,41 @@ func TestLoad_theme_integration(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	for _, tc := range []struct {
-		name    string
-		theme   string
-		want    string // resolved value, when no error is expected
-		wantErr bool
-	}{
+	for _, tc := range []struct{ name, body, want string }{
 		// Unset normalizes to the built-in theme, so the check has to run after
 		// normalize and still pass the name it substituted.
-		{name: "unset", theme: "", want: config.DefaultTheme},
-		{name: "a plain name", theme: "mine", want: "mine"},
-		{name: "a name with punctuation", theme: "my-theme_2", want: "my-theme_2"},
-
-		{name: "parent traversal", theme: "../../evil", wantErr: true},
-		{name: "single parent", theme: "..", wantErr: true},
-		{name: "current directory", theme: ".", wantErr: true},
-		{name: "a nested path", theme: "mine/nested", wantErr: true},
-		{name: "an absolute path", theme: "/etc", wantErr: true},
-		{name: "a trailing separator", theme: "mine/", wantErr: true},
+		{name: "unset", body: "", want: config.DefaultTheme},
+		{name: "a plain name", body: "theme = \"mine\"\n", want: "mine"},
+		{name: "a name with punctuation", body: "theme = \"my-theme_2\"\n", want: "my-theme_2"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			body := "[site]\n"
-			if tc.theme != "" {
-				body += "theme = \"" + tc.theme + "\"\n"
+			if got := mustLoad(t, "[site]\n"+tc.body).Site.Theme; got != tc.want {
+				t.Errorf("theme = %q, want %q", got, tc.want)
 			}
-			cfg, err := config.Load(writeConfig(t, body))
-			if tc.wantErr {
-				if err == nil {
-					t.Fatalf("Load(theme=%q) = nil error, want a refusal", tc.theme)
-				}
-				if !strings.Contains(err.Error(), "invalid theme") {
-					t.Errorf("error = %q, want it to name the theme key", err)
-				}
-				return
-			}
-			if err != nil {
-				t.Fatalf("Load(theme=%q): %v", tc.theme, err)
-			}
-			if cfg.Site.Theme != tc.want {
-				t.Errorf("theme = %q, want %q", cfg.Site.Theme, tc.want)
-			}
+		})
+	}
+}
+
+// The theme name is the one config value that chooses which code runs, since it
+// is joined onto themes/ to find the templates every page renders through. So
+// anything that is not a single directory name is refused rather than cleaned
+// up: filepath.Join resolves ".." instead of rejecting it, and a theme outside
+// the site would render every page and copy its static/ into the output.
+func TestLoad_rejectsAThemeThatIsAPath_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	for _, tc := range []struct{ name, theme string }{
+		{name: "parent traversal", theme: "../../evil"},
+		{name: "single parent", theme: ".."},
+		{name: "current directory", theme: "."},
+		{name: "a nested path", theme: "mine/nested"},
+		{name: "an absolute path", theme: "/etc"},
+		{name: "a trailing separator", theme: "mine/"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			assertRejected(t, "[site]\ntheme = \""+tc.theme+"\"\n", "invalid theme")
 		})
 	}
 }
