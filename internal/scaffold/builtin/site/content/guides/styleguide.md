@@ -123,7 +123,7 @@ call, and Cress ships three:
 
 | Theme   | Feels like                                              |
 |---------|---------------------------------------------------------|
-| `cress` | the default: warm paper, a serif body, a green accent    |
+| `cress` | the default: warm paper, a serif body, quiet and roomy   |
 | `birch` | a developer tool: crisp, sans-serif, built around code   |
 | `poppy` | a hand-made book: photos taped in, quotes on torn scraps |
 

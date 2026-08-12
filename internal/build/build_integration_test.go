@@ -972,11 +972,16 @@ func TestBuild_builtinLandingLayout_integration(t *testing.T) {
 		{`href="#content"`, "the arrow down to the content"},
 		{`aria-label="Skip to the content"`, "the arrow's accessible name"},
 		{`id="content"`, "the target the arrow points at"},
-		// The scaffold sets a logo, so the panel is marked with it. Only the
-		// template knows the URL, so it reaches the stylesheet as a property.
-		{`class="hero hero-logo"`, "the panel marked with the site's logo"},
-		{`--site-logo: url('/logo.svg')`, "the logo URL handed to the stylesheet"},
 	})
+	// The panel carries no artwork. It used to be washed with the site's logo,
+	// which meant scaling an image the theme had never seen: a low-resolution
+	// logo came out blurred across half the first screen, and nothing in the
+	// build could tell in advance. The type carries the panel instead.
+	for _, gone := range []string{"hero-logo", "hero-wash", "--site-logo"} {
+		if strings.Contains(home, gone) {
+			t.Errorf("index.html still carries %q, which the landing panel no longer uses", gone)
+		}
+	}
 	// The page's own H1 comes from its Markdown. A landing page that also set one
 	// in the panel would have two, so the panel sets none.
 	if got := strings.Count(home, "<h1"); got != 1 {
@@ -1034,13 +1039,16 @@ func TestBuild_landingWithoutLogo_integration(t *testing.T) {
 	buildSite(t, root)
 
 	home := readFile(t, filepath.Join(root, config.OutputDir, "index.html"))
+	// The panel is the same panel with or without a logo. It used to switch
+	// between washing the logo across itself and washing the accent instead,
+	// which made a site's first screen depend on the resolution of a file the
+	// theme had never seen.
 	assertMarkers(t, "index.html", home, []marker{
-		{`class="hero hero-wash"`, "the accent wash, standing in for an absent logo"},
+		{`class="hero"`, "the panel, unconditional"},
+		{`class="hero-title"`, "the site name, which is what carries it"},
 	})
-	// Naming a property with no URL behind it would leave the panel asking the
-	// browser for `url()` of nothing.
-	if strings.Contains(home, "--site-logo") {
-		t.Errorf("a site with no logo must not emit the logo property:\n%s", home)
+	if strings.Contains(home, "site-logo") {
+		t.Errorf("a site with no logo must emit nothing about one:\n%s", home)
 	}
 }
 

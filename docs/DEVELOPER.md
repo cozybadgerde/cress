@@ -154,7 +154,7 @@ mismatch and could only ever be wrong.
 
 Each directory under `internal/theme/builtin/` is a theme embedded into the
 binary with `go:embed` and reachable by that directory's name: `cress`, the
-cozy default, `birch`, a crisp developer-tool look built around code, and
+quiet default, `birch`, a crisp developer-tool look built around code, and
 `poppy`, a hand-made recipe book.
 `templates/page.html` renders one page, `templates/landing.html` renders a page
 that names `layout: landing`, `templates/partials/` holds what those two share,
@@ -225,25 +225,13 @@ Four details in it are worth preserving in any layout added later:
 - Its animation sits behind `@media (prefers-reduced-motion: no-preference)`.
   Motion that repeats forever is what that preference exists to switch off, and
   the arrow still points down without it.
-- The panel's highlight is drawn on a `::before` layer, never on `.hero` itself,
-  because a filter or an opacity set on the panel would take the title down with
-  the artwork.
-
-The highlight is the one place the template hands the stylesheet a value. Only
-the template knows `.Site.Logo`, so `landing.html` emits it as a `--site-logo`
-custom property and picks the class that says which highlight to draw:
-`hero-logo` for a site with a logo, `hero-wash` for one without. `html/template`
-escapes the URL in its CSS context, replacing anything that is not a plain URL
-with `#ZgotmplZ`, so a logo path cannot become a style injection.
-
-The logo is flattened with `grayscale(1) brightness(0)`, which discards its
-color and keeps only its shape. That is what makes it work for a logo the theme
-has never seen: desaturating alone leaves a dark logo invisible on the dark
-scheme and a pale one invisible on the light, while a silhouette tinted by
-opacity lands at the same weight either way. The `hero-wash` fallback is mixed
-from `var(--accent)` rather than stored as a color of its own, for the reason
-given in the accent discussion: a second stored color drifts out of step with
-the configured one.
+- Whatever a theme draws behind the panel goes on a `::before` layer, never on
+  `.hero` itself, because a filter or an opacity set on the panel would take the
+  title down with the artwork.
+- None of it is the site's own artwork. The panel used to enlarge `.Site.Logo`
+  behind the title, which meant scaling an image the theme had never seen: a
+  low-resolution logo came out blurred across half the first screen and nothing
+  in the build could tell in advance. Each theme draws its own mark instead.
 
 The rendered Markdown a theme drops into the page is plain semantic HTML. The
 shapes a theme has to style, including the `<figure>` wrapper a standalone image

@@ -60,8 +60,8 @@ with no setup; drop a directory under `themes/` when you want your own.
   `cress.toml`, mkdocs-style. What you list is what shows up, in the order you
   write it.
 - **One place for styling.** The theme owns every template and stylesheet.
-  Three themes ship in the binary, all light and dark aware: `cress`, cozy and
-  warm, `birch`, a crisp developer-tool look built around code, and `poppy`, a
+  Three themes ship in the binary, all light and dark aware: `cress`, warm and
+  quiet, `birch`, a crisp developer-tool look built around code, and `poppy`, a
   hand-made recipe book.
 - **White-label ready.** Set a logo, favicon, accent color, footer message, and
   copyright line in `cress.toml`. `cress init` drops placeholder logo and

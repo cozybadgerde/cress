@@ -1,15 +1,38 @@
-/* cress — the default theme. Cozy, minimal, light + dark aware. */
+/* cress — the default theme. Warm, quiet, a lot of air. Light + dark aware. */
 
 :root {
-  --bg: #fbfaf7;
-  --fg: #33312e;
-  --muted: #6f6a63;
-  --accent: #4f7a4a;
-  --border: #e6e2da;
+  --bg: #faf8f4;
+  --fg: #35322d;
+  --muted: #6a655e;
+
+  /* A greyed sage rather than a garden green. Muted is the point: the accent is
+     the only colour on a page that is otherwise paper and ink, so it should read
+     as a considered choice rather than a highlighter. */
+  --accent: #5f7259;
+
+  --border: #e4dfd6;
   --code-bg: #f2efe9;
-  --max-width: 44rem;
-  --radius: 0.5rem;
-  font-size: 18px;
+
+  /* The reading measure, held at about 75 characters, which is the top of the
+     comfortable range. Widening it is the obvious way to fill a large screen and
+     the wrong one: at 44rem a line runs to 83 characters and at 52rem to 99.
+     The type grows with the window instead.
+
+     Everything lives inside it, code and images included. Letting those reach
+     past the column fills more of a large screen and breaks the reading line:
+     the eye returns to a left edge that is no longer where it was. */
+  --max-width: 40rem;
+
+  /* Barely there. Fully square edges belong to birch; this keeps a hint of
+     softness without the rounded-card look. */
+  --radius: 2px;
+
+  /* Grows with the window instead of the column growing: 18px on a phone, 21px
+     past about 1920, and always the same number of characters to a line. Sized
+     in rem rather than px because on the root element rem resolves against the
+     browser's own default, so a reader who has raised their font size keeps it.
+   */
+  font-size: clamp(1.125rem, 1.0125rem + 0.25vw, 1.3125rem);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -17,7 +40,7 @@
     --bg: #2a2724;
     --fg: #e7e4dd;
     --muted: #a49f96;
-    --accent: #9ccb8f;
+    --accent: #a9bda0;
     --border: #423e39;
     --code-bg: #34302a;
   }
@@ -42,7 +65,7 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", serif;
-  line-height: 1.65;
+  line-height: 1.8;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -69,7 +92,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding-block: 1.5rem;
+  padding-block: 1.75rem;
   border-bottom: 1px solid var(--border);
 }
 
@@ -140,54 +163,46 @@ body {
   text-align: center;
 }
 
-/* Both highlights are drawn on one layer behind the type, never on the panel
-   itself: a filter or an opacity set on .hero would take the title down with
-   the artwork. */
-.hero-logo::before,
-.hero-wash::before {
+/* Fine vertical lines across the panel, like the ribs of a paper screen.
+
+   Each is its own gradient, one pixel wide, fading out on its own before it
+   reaches the floor. No mask and no image: a layer that dissolves downward is
+   what a mask would have been for, and doing it in the gradient costs nothing
+   and cannot fail to load.
+
+   Nothing about them is regular. The gaps run from 4 to 14 percent of the
+   panel, and each line has its own weight and its own point of disappearing,
+   because a set of evenly spaced identical lines is a pattern and this should
+   read as a screen somebody stood there. The weights run from about 1.15:1 to
+   1.42:1 against the paper.
+
+   Its own layer, never .hero itself: an opacity set on the panel would take the
+   site's name down with the artwork. */
+.hero::before {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
+  background-repeat: no-repeat;
+  background-size: 1px 100%;
+  background-position:
+    4% 0, 9% 0, 15% 0, 23% 0, 27% 0, 36% 0, 44% 0, 57% 0, 63% 0, 74% 0, 88% 0;
+  background-image:
+    linear-gradient(to bottom, color-mix(in srgb, var(--muted) 14%, transparent), transparent 52%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--muted) 22%, transparent), transparent 74%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--muted) 12%, transparent), transparent 47%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--muted) 26%, transparent), transparent 83%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--muted) 16%, transparent), transparent 58%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--muted) 11%, transparent), transparent 45%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--muted) 19%, transparent), transparent 68%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--muted) 25%, transparent), transparent 80%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--muted) 13%, transparent), transparent 50%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--muted) 20%, transparent), transparent 64%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--muted) 24%, transparent), transparent 79%);
 }
 
-/* The site's own logo, oversized and running off the right edge so it reads as
-   texture rather than as a second copy of the one in the header.
-
-   brightness(0) flattens it to a silhouette, which is what makes this work for
-   a logo the theme has never seen: the color is discarded and only the shape
-   is kept, so a black wordmark and a bright green icon both land at the same
-   weight against the page. Desaturating alone would leave a dark logo invisible
-   on the dark scheme and a pale one invisible on the light. */
-.hero-logo::before {
-  /* The offset pushes the mark past the right edge, so what shows is a slice of
-     it rather than the whole thing sitting in the corner. It is a length rather
-     than a percentage on purpose: a percentage offset resolves against the
-     difference between the panel and the image, which is negative for an image
-     this size and makes the result read backwards. */
-  background: var(--site-logo) no-repeat right -3.5rem center / auto 130%;
-  filter: grayscale(1) brightness(0);
-  opacity: 0.045;
-}
-
-@media (prefers-color-scheme: dark) {
-  .hero-logo::before {
-    filter: grayscale(1) brightness(0) invert(1);
-    opacity: 0.07;
-  }
-}
-
-/* The fallback, for a site that sets no logo. Mixed from the accent rather than
-   stored as a color of its own, so it follows a custom accent instead of
-   drifting out of step with one. */
-.hero-wash::before {
-  background: radial-gradient(
-    60% 55% at 72% 45%,
-    color-mix(in srgb, var(--accent) 16%, transparent),
-    transparent 70%
-  );
-}
-
+/* Positioned so the name sits above the lines. Without this the panel's type is
+   static content and the layer below would paint over it. */
 .hero-inner {
   position: relative;
   width: 100%;
@@ -199,15 +214,15 @@ body {
    own H1 belongs to its content. */
 .hero-title {
   margin: 0;
-  font-size: clamp(2.5rem, 9vw, 5rem);
-  font-weight: 700;
-  line-height: 1.1;
+  font-size: clamp(2.25rem, 7vw, 3.75rem);
+  font-weight: 400;
+  line-height: 1.2;
 }
 
 .hero-lede {
-  margin: 1.25rem auto 0;
-  max-width: 34rem;
-  font-size: 1.15rem;
+  margin: 2rem auto 0;
+  max-width: 30rem;
+  font-size: 1.1rem;
   color: var(--muted);
 }
 
@@ -256,13 +271,8 @@ body {
 
 .page {
   flex: 1;
-  padding-block: 2.5rem;
+  padding-block: 3.5rem 5rem;
   word-wrap: break-word;
-}
-
-.page-title {
-  margin-top: 0;
-  line-height: 1.2;
 }
 
 /* The page's lead image, above everything the author wrote. It is a figure like
@@ -284,11 +294,36 @@ body {
   text-underline-offset: 2px;
 }
 
+/* Hierarchy from size and the room around a heading, not from weight. A serif
+   set at 400 and given space reads as considered; the same serif in bold reads
+   as a web page shouting a section title. The space is what makes it work, so it
+   is generous rather than tidy. */
 .page h1,
 .page h2,
+.page h3,
+.page h4 {
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.page h1 {
+  margin-top: 0;
+  font-size: 2.4rem;
+}
+
+.page h2 {
+  margin-top: 3.75rem;
+  font-size: 1.75rem;
+}
+
 .page h3 {
-  line-height: 1.25;
-  margin-top: 2rem;
+  margin-top: 2.75rem;
+  font-size: 1.3rem;
+}
+
+.page h4 {
+  margin-top: 2.25rem;
+  font-size: 1.1rem;
 }
 
 .page img {
@@ -312,16 +347,22 @@ body {
   color: var(--muted);
 }
 
+/* The one thing on the page that is deliberately off-centre. A short rule set
+   against the left edge rather than a line drawn wall to wall: a section break
+   that does not need to divide the whole page to be read as one. */
 .page hr {
+  width: 4rem;
+  margin: 4rem 0;
   border: none;
   border-top: 1px solid var(--border);
-  margin: 2.5rem 0;
 }
 
+/* A hairline and a wide indent rather than a thick accent bar. The quote is set
+   apart by where it sits on the page, which is quieter than colouring it. */
 .page blockquote {
-  margin-inline: 0;
-  padding: 0.25rem 1.25rem;
-  border-left: 3px solid var(--accent);
+  margin: 2.5rem 0;
+  padding: 0.25rem 0 0.25rem 2rem;
+  border-left: 1px solid var(--border);
   color: var(--muted);
 }
 
@@ -333,10 +374,15 @@ body {
   border-radius: 0.3rem;
 }
 
+/* No fill. Everything else on the page is paper, so a code block is marked out
+   by a hairline and the room around it rather than by a panel of its own. The
+   token colours were checked against the paper before the fill came off; every
+   one of them gained contrast by the move. */
 .page pre {
-  background: var(--code-bg);
-  padding: 1rem 1.25rem;
+  border: 1px solid var(--border);
   border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin-block: 2rem;
   overflow-x: auto;
 }
 

@@ -1,7 +1,7 @@
 #:schema https://raw.githubusercontent.com/cozybadgerde/cress/trunk/schema/theme.schema.json
 
 name = "Cress"
-description = "The default theme: a serif body face, warm paper, a green accent."
+description = "The default theme: warm paper, a serif body, a muted sage accent, a lot of air."
 author = "Cozy Badger"
 license = "MIT"
 homepage = "https://github.com/cozybadgerde/cress"

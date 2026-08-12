@@ -7,9 +7,7 @@
 
   The link down to the prose is a link rather than an ornament so it can be
   tabbed to, and it is skipped for a page with no body, where it would point at
-  nothing. The panel is marked with the site's logo when there is one and washed
-  with the accent when there is not, so it has something behind the type either
-  way.
+  nothing.
 */}}
 <!DOCTYPE html>
 <html lang="{{ .Page.Language }}">
@@ -18,8 +16,7 @@
     <div class="landing-top">
       {{ template "site-header" . }}
 
-      <section class="hero {{ if .Site.Logo }}hero-logo{{ else }}hero-wash{{ end }}"
-        {{- with .Site.Logo }} style="--site-logo: url('{{ . }}')"{{ end }}>
+      <section class="hero">
         <div class="hero-inner">
           <p class="hero-title">{{ .Site.Title }}</p>
           {{ with .Page.Description }}<p class="hero-lede">{{ . }}</p>{{ end }}

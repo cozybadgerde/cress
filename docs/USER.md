@@ -479,8 +479,9 @@ rejected as an unknown key rather than silently rendering nothing.
 A theme owns the templates and the styling. Three are built into the binary and
 need no setup, so switching is one line of config and nothing to download:
 
-- **`cress`**, the default. A serif body face, warm paper, a green accent. Cozy
-  and restrained, for a small personal site.
+- **`cress`**, the default. Warm paper, a serif body, a muted sage accent, and
+  a lot of air: headings take their weight from size and space rather than
+  bold. Quiet, for a small personal site.
 - **`birch`**. A developer-tool look: crisp and sans-serif, blue links, ruled
   headings, striped tables, and syntax colors a developer already reads code
   in. For a page about technical work, where the code is what you want read.
@@ -604,11 +605,8 @@ header and footer are the site's usual ones, so navigation works exactly as it
 does everywhere else. The site `cress init` creates uses it on the home page,
 so you can see the difference immediately.
 
-Behind the panel's text sits your `logo`, enlarged, flattened to a single
-shade and faded almost into the background, running off the right edge. It
-takes only the shape of your logo and none of its color, so it works whatever
-your logo looks like and in both the light and dark schemes. Set no `logo` and
-the panel is washed with your `accent` color instead.
+What sits behind the name is the theme's own: `cress` draws fine vertical
+lines, `birch` a faint grid, `poppy` the flower it is named after.
 
 Write the page as you would any other. The panel takes the site's name from
 `title` in `cress.toml` and its line of text from the page's `description`,

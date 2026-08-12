@@ -58,7 +58,6 @@ body {
   outline-offset: 2px;
 }
 
-.site-header,
 .page,
 .site-footer {
   width: 100%;
@@ -67,13 +66,24 @@ body {
   padding-inline: 1.5rem;
 }
 
+/* A bar across the whole window, with its contents still lining up with the
+   prose below. The padding is what centres them: half the leftover width either
+   side, plus the gutter the page uses, which lands the brand on exactly the
+   same left edge as the first paragraph. max() keeps the gutter from collapsing
+   once the window is narrower than the column.
+
+   Done with padding rather than an inner wrapper because the header markup is
+   one partial shared with the other themes, and a wrapper here would have to
+   exist in all of them. */
 .site-header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding-block: 1.25rem;
+  padding-block: 1rem;
+  padding-inline: max(1.5rem, calc((100% - var(--max-width)) / 2 + 1.5rem));
+  background: var(--panel);
   border-bottom: 1px solid var(--border);
 }
 
@@ -128,12 +138,14 @@ body {
 /* The landing layout opens with the header and a panel that together fill the
    first screen. Sizing the pair rather than the panel keeps that exact: the
    hero takes whatever height the header leaves. */
+/* No tint of its own: the masthead is a panel-coloured bar now, and a panel
+   behind the hero as well would swallow it on the one page everybody sees
+   first. The grid below is what gives this screen its texture instead. */
 .landing-top {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   min-height: 100svh;
-  background: var(--panel);
 }
 
 .hero {
