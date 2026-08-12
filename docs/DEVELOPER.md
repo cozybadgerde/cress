@@ -37,7 +37,7 @@ the pinned lint and security tools once with `task tools`.
 cmd/cress/            CLI: build, clean, init, serve, theme, version (urfave/cli v3)
 internal/config/      load and validate cress.toml
 internal/content/     discover Markdown, parse front matter into pages
-internal/render/      Markdown to HTML (goldmark)
+internal/render/      Markdown to HTML (goldmark, and chroma when highlighting)
 internal/theme/       resolve, load and validate themes; the built-in one is embedded
 internal/build/       orchestration: content + theme + config -> public/
 internal/clean/       `cress clean`; the only package that deletes
@@ -87,9 +87,19 @@ question and nothing else; the guards stay hard errors with or without it.
 
 **The theme is the only styling surface.** The core emits plain semantic HTML.
 Code fences carry `class="language-..."` and no styling, and the same goes for
-every other element. Baking CSS or syntax highlighting into the core would put
-it in conflict with every custom theme, which is why config values that could
-inject markup are escaped rather than rendered.
+every other element. Baking CSS or a color scheme into the core would put it in
+conflict with every custom theme, which is why config values that could inject
+markup are escaped rather than rendered.
+
+**Highlighting emits classes, never colors.** `[markdown] highlight` looks like
+an exception to the rule above and is not: chroma runs in classes-only mode, so
+the core hands a theme more structure to style and still none of the styling. It
+is off by default, and a site with no `[markdown]` table produces the HTML it
+produced before the table existed. The colors sit in the theme's own
+`highlight.css`, self-contained so that a site's `static/highlight.css` replaces
+the scheme outright, and linked unconditionally because a template cannot see
+`[markdown]` and making it conditional would widen the contract to save a
+request.
 
 **URLs are root-relative, not relative.** Every emitted URL is prefixed with the
 path component of `base_url`, so one build serves from a subdirectory or a

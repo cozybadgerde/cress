@@ -39,9 +39,9 @@ func TestBuild_integration(t *testing.T) {
 	}
 
 	out := filepath.Join(root, config.OutputDir)
-	// style.css comes from the theme; favicon.png and logo.svg from the site's
-	// static/ tree that `cress init` scaffolds.
-	for _, name := range []string{"index.html", "about.html", "style.css", "favicon.png", "logo.svg"} {
+	// style.css and highlight.css come from the theme; favicon.png and logo.svg
+	// from the site's static/ tree that `cress init` scaffolds.
+	for _, name := range []string{"index.html", "about.html", "style.css", "highlight.css", "favicon.png", "logo.svg"} {
 		if _, err := os.Stat(filepath.Join(out, name)); err != nil {
 			t.Errorf("missing output %s: %v", name, err)
 		}
@@ -136,6 +136,75 @@ func TestBuild_logoVariants_integration(t *testing.T) {
 
 			buildSite(t, root)
 			assertDoc(t, readFile(t, filepath.Join(root, config.OutputDir, "index.html")), tc.want, tc.omit)
+		})
+	}
+}
+
+// The [markdown] table is the whole of this feature's surface. A site that does
+// not set it builds the HTML cress has always built, which is what makes the
+// key safe to add to a release that moves no default.
+func TestBuild_highlight_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	const fence = `<code class="language-go">`
+	for _, tc := range []struct {
+		name       string
+		markdown   string
+		want, omit []string
+	}{
+		{
+			name: "unset",
+			want: []string{"<pre>" + fence},
+			omit: []string{"chroma", `<span class="nf">`},
+		},
+		{
+			name:     "off",
+			markdown: "\n[markdown]\nhighlight = false\n",
+			want:     []string{"<pre>" + fence},
+			omit:     []string{"chroma", `<span class="nf">`},
+		},
+		{
+			name:     "on",
+			markdown: "\n[markdown]\nhighlight = true\n",
+			want:     []string{`<pre class="chroma">` + fence, `<span class="nf">Println</span>`},
+			// Classes carry the tokens; the colors stay the theme's to choose.
+			omit: []string{"style="},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			root := scaffoldSite(t)
+			writeSiteFile(t, filepath.Join(root, "cress.toml"), "[site]\ntitle = \"S\"\n"+tc.markdown)
+
+			buildSite(t, root)
+			assertDoc(t, readFile(t, filepath.Join(root, config.OutputDir, "about.html")), tc.want, tc.omit)
+		})
+	}
+}
+
+// The theme links its token stylesheet whether or not highlighting is on. A
+// template cannot see the [markdown] table, so this is the shape to hold still:
+// making it conditional would mean widening the template contract.
+func TestBuild_highlightStylesheetIsAlwaysLinked_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	for _, tc := range []struct {
+		name     string
+		markdown string
+	}{
+		{name: "unset"},
+		{name: "on", markdown: "\n[markdown]\nhighlight = true\n"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			root := scaffoldSite(t)
+			writeSiteFile(t, filepath.Join(root, "cress.toml"), "[site]\ntitle = \"S\"\n"+tc.markdown)
+
+			buildSite(t, root)
+			assertDoc(t, readFile(t, filepath.Join(root, config.OutputDir, "about.html")),
+				[]string{`<link rel="stylesheet" href="/highlight.css" />`}, nil)
 		})
 	}
 }

@@ -28,7 +28,8 @@ type Option func(*settings)
 
 // settings collects the optional configuration New applies.
 type settings struct {
-	basePath string
+	basePath  string
+	highlight bool
 }
 
 // WithBasePath roots the site's own links under basePath, for a site served
@@ -39,11 +40,24 @@ func WithBasePath(basePath string) Option {
 	return func(s *settings) { s.basePath = basePath }
 }
 
+// WithHighlighting tokenizes fenced code blocks, wrapping each token in a span
+// carrying a class and no color. Without it a code block is emitted as it
+// always was: the language class, and nothing inside it.
+//
+// It is an option rather than the default because turning it on rewrites the
+// HTML of every code block on the site, which is a rendering decision that
+// belongs to the author. A theme that ships no token stylesheet renders the
+// spans exactly as it rendered the text they wrap.
+func WithHighlighting() Option {
+	return func(s *settings) { s.highlight = true }
+}
+
 // New builds a Renderer. Fenced code blocks are emitted as plain
 // <pre><code class="language-...">, leaving syntax styling entirely to the
-// theme's CSS. Raw HTML in the source is passed through so authors can drop
-// markup into their Markdown. An image that is the whole of its paragraph is
-// wrapped in a <figure>, with its title as the caption.
+// theme's CSS; WithHighlighting adds the tokens for that CSS to reach, and
+// still supplies no colors. Raw HTML in the source is passed through so authors
+// can drop markup into their Markdown. An image that is the whole of its
+// paragraph is wrapped in a <figure>, with its title as the caption.
 func New(opts ...Option) *Renderer {
 	var s settings
 	for _, opt := range opts {
@@ -59,8 +73,13 @@ func New(opts ...Option) *Renderer {
 	}
 	transformers = append(transformers, util.Prioritized(figureWrapper{}, 200))
 
+	extensions := []goldmark.Extender{extension.GFM}
+	if s.highlight {
+		extensions = append(extensions, highlightExtension())
+	}
+
 	return &Renderer{md: goldmark.New(
-		goldmark.WithExtensions(extension.GFM),
+		goldmark.WithExtensions(extensions...),
 		goldmark.WithParserOptions(parser.WithASTTransformers(transformers...)),
 		goldmark.WithRendererOptions(
 			ghtml.WithUnsafe(),

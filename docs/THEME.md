@@ -314,9 +314,80 @@ before you write CSS:
   `<figcaption>` when the author wrote one. The wrapper is there with or without
   a caption, so you style one shape rather than two. A theme that styles
   `p img` and not `figure img` misses every standalone image on the site.
-- **Code fences carry a language class and nothing else.** A fenced block
-  renders as `<pre><code class="language-go">`, with no styling and no tokens
-  inside it. The class is there so a theme can target it.
+- **Code fences carry a language class.** A fenced block renders as
+  `<pre><code class="language-go">`, with no styling and, by default, no tokens
+  inside it. The class is there so a theme can target it. A site can ask for the
+  tokens; see [Coloring code](#coloring-code) below.
+
+### Coloring code
+
+A site that sets `highlight = true` in the `[markdown]` table of its
+`cress.toml` gets each code block read in the language its fence names. The
+wrapper is the markup you already style, with one addition:
+
+```html
+<pre class="chroma"><code class="language-go">
+```
+
+Inside it, every keyword, string, and comment is wrapped in a span of its own,
+and each line in `<span class="line"><span class="cl">`. A line of Go comes out
+like this:
+
+```html
+<span class="kd">func</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span>
+```
+
+The spans carry a class and never a color, so the colors are yours. A fence
+naming no language, or one Cress cannot read, is emitted unchanged and carries
+none of this.
+
+Style the classes, not the languages. They come from
+[chroma](https://github.com/alecthomas/chroma), the tokenizer Cress uses, and
+these are the ones worth covering:
+
+| Class            | Token                                   |
+|------------------|-----------------------------------------|
+| `c` `c1` `cm`    | comments                                |
+| `k` `kd` `kn`    | keywords                                |
+| `kt` `nc` `nn`   | types, classes, namespaces              |
+| `nf` `nb` `nt`   | functions, builtins, tags               |
+| `s` `s1` `s2`    | strings                                 |
+| `m` `mi` `mf`    | numbers                                 |
+| `o` `p`          | operators and punctuation               |
+| `gd` `gi`        | removed and added lines in a diff       |
+| `err`            | text the tokenizer could not classify   |
+
+Scope the rules under `.chroma` rather than under your own wrapper class. That
+is chroma's own convention, so a stylesheet chroma generates applies to a Cress
+site unchanged.
+
+Put them in their own `static/highlight.css` rather than in `style.css`, and
+link it from your head partial:
+
+```html
+<link rel="stylesheet" href="{{ .Site.BasePath }}/style.css" />
+<link rel="stylesheet" href="{{ .Site.BasePath }}/highlight.css" />
+```
+
+That is what the built-in `cress` theme does. A separate file is a color scheme
+somebody can replace with one file and no edits to your theme, which is the
+whole reason to keep it out of `style.css`. Make it self-contained for the same
+reason: declare the colors it needs in the file itself, because a token
+stylesheet that reads variables from `style.css` breaks the moment it is
+swapped for one that does not set them.
+
+Link it unconditionally. A template cannot read the `[markdown]` table, so there
+is nothing to branch on, and there is nothing to gain either: with the key off
+no token spans are emitted, so the file matches nothing.
+
+Two things are worth getting right. Check every token color against your code
+background for a contrast ratio of at least 4.5:1, because a token is code
+rather than decoration and a comment nobody can read is worse than a comment
+with no color at all. Give the dark scheme its own set: a palette legible on
+paper rarely survives being put on a dark panel.
+
+Shipping no token styles at all is a valid choice. The spans are inert without
+CSS, so the code renders as it does with highlighting off.
 
 ## The 404 page
 

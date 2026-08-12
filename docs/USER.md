@@ -193,6 +193,46 @@ so `footer = "<b>bold</b>"` shows the angle brackets. That is deliberate: the
 theme is the only place styling lives, and a config value that could inject
 HTML into every page on the site would be a hole in that rule.
 
+### Colored code blocks
+
+Cress writes a fenced code block as `<pre><code class="language-go">` with the
+code inside it as plain text. There is nothing there for a stylesheet to color,
+so a theme can style the block as a whole and no further. Turn that on in the
+`[markdown]` table:
+
+```toml
+[markdown]
+highlight = true
+```
+
+Cress then reads each block in the language its fence names and wraps every
+keyword, string, and comment in its own `<span>`. The spans carry a class and no
+color, because the colors are the theme's to choose. The built-in `cress` theme
+ships a set for both the light and the dark scheme. A theme that ships none
+renders the code exactly as it did before, so turning this on can make a site
+look unchanged.
+
+A fence that names no language, or names one Cress does not know, is written as
+it always was. Nothing else on the page moves either way.
+
+The built-in theme keeps those colors in their own `highlight.css`, and a file
+in your `static/` wins over a file the theme ships under the same name. So you
+can replace the whole color scheme without writing a theme:
+
+```text
+static/
+  highlight.css      your colors, used instead of the theme's
+```
+
+The classes are [chroma](https://github.com/alecthomas/chroma)'s, so a
+stylesheet generated for chroma works as-is. The [theme
+guide](./THEME.md#coloring-code) lists the classes worth styling.
+
+The key defaults to off, and leaving it out is the same as writing `false`.
+Turning it on rewrites every code block on the site, which is a change to your
+published HTML rather than a display setting, so it is yours to make rather than
+one Cress makes for you.
+
 ## Content and front matter
 
 Every `.md` file under `content/` becomes a page. The path maps directly to the

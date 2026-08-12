@@ -10,6 +10,12 @@
   The accent reaches the stylesheet from here because only the template knows
   what the site configured. The stylesheet ships defaults for both schemes, so
   this overrides only what was actually set.
+
+  highlight.css is linked whether or not the site turns highlighting on: a
+  template cannot see the [markdown] table, and with the key off there are no
+  token spans for the file to match anyway. It is a file of its own so that
+  replacing the code colors is replacing one stylesheet, which a site can do
+  from its own static/ without writing a theme at all.
 */}}
 {{- define "head" -}}
   <head>
@@ -19,6 +25,7 @@
     {{ .Page.Head }}
     {{ with .Site.Favicon }}<link rel="icon" href="{{ . }}" />{{ end }}
     <link rel="stylesheet" href="{{ .Site.BasePath }}/style.css" />
+    <link rel="stylesheet" href="{{ .Site.BasePath }}/highlight.css" />
     {{ if or .Site.Accent .Site.AccentDark }}
     <style>
       {{ with .Site.Accent }}:root { --accent: {{ . }}; }{{ end }}

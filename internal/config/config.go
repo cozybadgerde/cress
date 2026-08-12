@@ -75,6 +75,20 @@ type Config struct {
 	Site Site
 	// Nav is the site navigation, built from the [nav] tables.
 	Nav Nav
+	// Markdown is how the site's Markdown is rendered, from the [markdown] table.
+	Markdown Markdown
+}
+
+// Markdown holds the rendering options that apply to every page's Markdown. It
+// is its own table rather than a few more keys under [site], because [site]
+// holds the site's identity and branding and how Markdown is turned into HTML
+// is neither.
+type Markdown struct {
+	// Highlight tokenizes fenced code blocks, so a theme's stylesheet has spans
+	// to color. It defaults to off: turning it on rewrites the HTML of every code
+	// block on the site, and cress supplies the tokens either way rather than any
+	// of the colors.
+	Highlight bool `toml:"highlight"`
 }
 
 // Nav is the site navigation, split into the menus a theme renders separately.
@@ -162,8 +176,9 @@ type NavItem struct {
 
 // document is the on-disk shape decoded from cress.toml.
 type document struct {
-	Site Site        `toml:"site"`
-	Nav  navDocument `toml:"nav"`
+	Site     Site        `toml:"site"`
+	Nav      navDocument `toml:"nav"`
+	Markdown Markdown    `toml:"markdown"`
 }
 
 // navDocument is the on-disk [nav] table: one sub-table per menu, each mapping
@@ -206,6 +221,7 @@ func Load(path string) (*Config, error) {
 			Main:   orderedNav(md, navMain, doc.Nav.Main),
 			Footer: orderedNav(md, navFooter, doc.Nav.Footer),
 		},
+		Markdown: doc.Markdown,
 	}
 	cfg.normalize()
 	if err := cfg.resolveBaseURL(path); err != nil {

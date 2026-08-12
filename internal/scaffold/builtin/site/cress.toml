@@ -34,6 +34,12 @@ favicon = "/favicon.png"
 # goes stale; write the year out yourself for a fixed one or a range.
 # copyright = "(c) {year} My cozy site"
 
+# How your Markdown is rendered.
+[markdown]
+# Color the code in fenced blocks. Cress writes the tokens and the theme picks
+# the colors, so a theme with no code styling renders exactly as it does now.
+# highlight = true
+
 # Navigation is explicit: one table of "label = content file" per menu, each
 # rendered in the order written. A label with spaces is quoted, as TOML requires.
 # The primary menu, rendered in the header.

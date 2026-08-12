@@ -164,6 +164,44 @@ func TestLoad_unknownKey_integration(t *testing.T) {
 	}
 }
 
+// Absence is the current behaviour rather than a missing setting: a site that
+// never heard of the table renders exactly as it did before the table existed.
+func TestLoad_markdown_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	tests := []struct {
+		name string
+		body string
+		want bool
+	}{
+		{"no table at all", "[site]\ntitle = \"Site\"\n", false},
+		{"an empty table", "[site]\ntitle = \"Site\"\n\n[markdown]\n", false},
+		{"turned off", "[site]\ntitle = \"Site\"\n\n[markdown]\nhighlight = false\n", false},
+		{"turned on", "[site]\ntitle = \"Site\"\n\n[markdown]\nhighlight = true\n", true},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := mustLoad(t, tc.body).Markdown.Highlight; got != tc.want {
+				t.Errorf("markdown.highlight = %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
+// The table's keys are as fixed as every other group's, so a mistyped one is
+// reported rather than dropped: silently ignored, it would read as a setting
+// that had no effect.
+func TestLoad_rejectsBadMarkdownKeys_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	assertRejected(t, "[site]\ntitle = \"Site\"\n\n[markdown]\nhighlite = true\n", "highlite")
+	assertRejected(t, "[site]\ntitle = \"Site\"\n\n[markdown]\nhighlight = \"yes\"\n", "highlight")
+}
+
 func TestLoad_accents_integration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")

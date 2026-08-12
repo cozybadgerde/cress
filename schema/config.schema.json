@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/cozybadgerde/cress/trunk/schema/config.schema.json",
   "title": "cress configuration",
-  "description": "Schema for a cress site config file (cress.toml): the site metadata and the grouped navigation tables.",
+  "description": "Schema for a cress site config file (cress.toml): the site metadata, how Markdown is rendered, and the grouped navigation tables.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -62,6 +62,17 @@
         "copyright": {
           "description": "Copyright notice for the footer, e.g. \"(c) {year} Cozy Badger\". A \"{year}\" token expands to the year the site was built. Empty omits the notice.",
           "type": "string"
+        }
+      }
+    },
+    "markdown": {
+      "description": "How the site's Markdown is rendered. Every key is optional, and an absent table renders exactly as cress rendered before the table existed.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "highlight": {
+          "description": "Tokenize fenced code blocks, wrapping each token in a span carrying a class and no color, so a theme's stylesheet has something to color. Defaults to false. The theme supplies the colors: with no token stylesheet, code renders as it does with this off.",
+          "type": "boolean"
         }
       }
     },

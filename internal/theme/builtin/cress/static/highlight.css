@@ -1,0 +1,143 @@
+/* cress — syntax tokens, for a site that sets [markdown] highlight = true.
+ *
+ * Without that key the spans below are never emitted and every rule here
+ * matches nothing, which is why a site that wants none of this pays nothing
+ * for it but the request.
+ *
+ * It is its own file so it can be thrown away. Replacing the colors means
+ * replacing one stylesheet rather than editing around the theme's own rules,
+ * and the selectors are chroma's names rather than this theme's, so any
+ * stylesheet chroma generates is a drop-in replacement. Nothing in style.css
+ * refers to what is declared here, and nothing here refers back: a file that
+ * borrowed the theme's variables would break the moment it was swapped.
+ *
+ * Every color clears WCAG AA (4.5:1) against the code background in its own
+ * scheme. Tokens are code rather than decoration, and a comment nobody can
+ * read is worse than a comment with no color at all.
+ */
+
+:root {
+  --tok-comment: #6f6760;
+  --tok-keyword: #3f6b3a;
+  --tok-type: #6a4b8a;
+  --tok-name: #2f5d8a;
+  --tok-string: #8a4b2a;
+  --tok-number: #7a5230;
+  --tok-punct: #5c574f;
+  --tok-error: #a83232;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tok-comment: #a8a096;
+    --tok-keyword: #9ccb8f;
+    --tok-type: #c0a5d9;
+    --tok-name: #8fb8d9;
+    --tok-string: #d9a26a;
+    --tok-number: #d9a26a;
+    --tok-punct: #b3aca2;
+    --tok-error: #e08585;
+  }
+}
+
+/* Plain identifiers are deliberately absent: .nx and .n keep the body color,
+   so a block reads as code with its structure marked rather than as a bag of
+   colors. */
+.chroma .c,
+.chroma .ch,
+.chroma .cm,
+.chroma .c1,
+.chroma .cs,
+.chroma .cp,
+.chroma .cpf {
+  color: var(--tok-comment);
+  font-style: italic;
+}
+
+.chroma .k,
+.chroma .kc,
+.chroma .kd,
+.chroma .kn,
+.chroma .kp,
+.chroma .kr,
+.chroma .ow {
+  color: var(--tok-keyword);
+}
+
+.chroma .kt,
+.chroma .nc,
+.chroma .nn,
+.chroma .no,
+.chroma .ne {
+  color: var(--tok-type);
+}
+
+.chroma .na,
+.chroma .nb,
+.chroma .nd,
+.chroma .nf,
+.chroma .nt {
+  color: var(--tok-name);
+}
+
+.chroma .s,
+.chroma .sa,
+.chroma .sb,
+.chroma .sc,
+.chroma .sd,
+.chroma .se,
+.chroma .sh,
+.chroma .si,
+.chroma .sr,
+.chroma .ss,
+.chroma .sx,
+.chroma .s1,
+.chroma .s2,
+.chroma .dl {
+  color: var(--tok-string);
+}
+
+.chroma .m,
+.chroma .mb,
+.chroma .mf,
+.chroma .mh,
+.chroma .mi,
+.chroma .mo {
+  color: var(--tok-number);
+}
+
+.chroma .o,
+.chroma .p {
+  color: var(--tok-punct);
+}
+
+.chroma .err {
+  color: var(--tok-error);
+}
+
+/* A diff is the one language whose colors carry the meaning rather than
+   decorate it, so the added and removed lines are tinted as well as colored. */
+.chroma .gd {
+  color: var(--tok-error);
+  background: color-mix(in srgb, var(--tok-error) 12%, transparent);
+}
+
+.chroma .gi {
+  color: var(--tok-keyword);
+  background: color-mix(in srgb, var(--tok-keyword) 14%, transparent);
+}
+
+.chroma .gh,
+.chroma .gu,
+.chroma .gp {
+  color: var(--tok-name);
+  font-weight: 600;
+}
+
+.chroma .ge {
+  font-style: italic;
+}
+
+.chroma .gs {
+  font-weight: 600;
+}

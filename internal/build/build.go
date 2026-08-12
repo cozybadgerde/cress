@@ -68,7 +68,7 @@ func Build(opts Options) (*Result, error) {
 	writer := &pageWriter{
 		outPath:  outPath,
 		thm:      in.thm,
-		renderer: render.New(render.WithBasePath(base)),
+		renderer: render.New(renderOptions(in.cfg, base)...),
 		site:     siteData(in.cfg.Site, base),
 		nav:      nav,
 		basePath: base,
@@ -118,6 +118,20 @@ func resolvePaths(opts Options) (root, outPath string, err error) {
 		return "", "", err
 	}
 	return root, outPath, nil
+}
+
+// renderOptions turns the site's config into the renderer's options, rooting
+// the author's links under base.
+//
+// An option left off is what leaves the renderer as it was, so a site that
+// configures nothing gets the goldmark cress has always built rather than one
+// assembled from defaults that happen to agree with it.
+func renderOptions(cfg *config.Config, base string) []render.Option {
+	opts := []render.Option{render.WithBasePath(base)}
+	if cfg.Markdown.Highlight {
+		opts = append(opts, render.WithHighlighting())
+	}
+	return opts
 }
 
 // inputs is the three sources a build reads. They are loaded together, before
