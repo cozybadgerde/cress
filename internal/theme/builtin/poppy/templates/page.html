@@ -5,11 +5,10 @@
     {{ template "site-header" . }}
 
     <main class="page">
-      {{/*
-        The page's lead image, from front matter or the site-wide fallback. This
-        theme makes it the photograph taped to the top of the page, which is why
-        the caption matters here more than anywhere else: a recipe book is
-        mostly pictures with something written under them.
+{{/*
+        The page's lead image, from front matter or the site-wide fallback. A
+        figure either way, so there is one shape to style, and the caption is
+        where a credit or an AI disclosure goes.
       */}}
       {{ with .Page.Image }}
       <figure class="page-image">

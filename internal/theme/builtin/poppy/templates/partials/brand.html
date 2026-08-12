@@ -1,10 +1,6 @@
 {{/*
-  The site's name and logo, linking home.
-
-  $.Site.LogoDark rather than .Site.LogoDark: inside {{ with .Site.Logo }} the
-  dot is the logo's URL, so the dark variant has to be reached from the root.
-
-  Indented for its call site, like every partial here.
+  The site's name and logo, linking home. Inside {{ with .Site.Logo }} the dot is
+  the logo's URL, so the dark variant has to be reached from the root with $.
 */}}
 {{- define "brand" -}}
   <a class="site-title" href="{{ .Site.BasePath }}/">

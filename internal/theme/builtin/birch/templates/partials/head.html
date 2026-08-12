@@ -1,10 +1,6 @@
 {{/*
-  The document head both layouts share.
-
-  The accent reaches the stylesheet from here because only the template knows
-  what the site configured. Birch's own accent is its foreground color, so a
-  site that sets none is monochrome and a site that sets one gets the only color
-  on the page.
+  The head both layouts share. The accent is set here because only the template
+  knows what the site configured, and it overrides only what was actually set.
 
   highlight.css is linked whether or not the site turns highlighting on: a
   template cannot see the [markdown] table, and with the key off there are no

@@ -9,8 +9,8 @@ description = "A fresh little site made with Cress."
 # published site points one level too high.
 base_url = "https://example.com"
 
-# "cress" and "birch" ship in the binary. Drop your own under themes/<name> and
-# name it here to swap.
+# "cress", "birch" and "poppy" ship in the binary. Drop your own under
+# themes/<name> and name it here to swap.
 theme = "cress"
 
 # Branding. The shipped files are placeholders: replace static/logo.svg and

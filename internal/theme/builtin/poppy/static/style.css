@@ -8,11 +8,8 @@
   --border: #e8dccb;
   --code-bg: #f6eddd;
 
-  /* The flower the theme is named after. Every other cress theme honors
-     `accent`, and one this opinionated has more use for it than the others: it
-     colors the links, the rule between sections and the drawn touches, so a
-     site setting its own gets a book in its own color rather than a red one
-     with a few exceptions. */
+  /* The flower the theme is named after. Used on links, the first heading and
+     the cover's watermark, so a site setting `accent` changes all of them. */
   --accent: #c0392b;
 
   /* How strongly the cover's flower shows through. It is an opacity rather than
@@ -20,30 +17,24 @@
      part of it a scheme needs to restate. */
   --watermark: 8%;
 
-  /* An old-style serif for anything that announces itself: the masthead, the
-     headings, a table's header row. Palatino and Iowan lead because they are
-     the warmest of the widely installed faces and read as a book rather than a
-     newspaper; Georgia is the one almost everybody actually has. */
+  /* An old-style serif for anything that announces itself. Palatino and Iowan
+     read as a book rather than a newspaper; Georgia is the one everybody has. */
   /* The tint every dropped shadow uses. A warm brown reads on paper and
      vanishes on a dark page, so lamplight restates it as plain black. */
   --shade: rgb(59 49 41 / 12%);
 
-  /* What lifts the torn scrap off the page: a tight contact shadow under the
-     edge and a broader ambient one beneath it. One shadow alone reads as a
-     sticker; the pair is what makes paper look like it is resting on paper,
-     which matters here because the scrap and the page are nearly the same
-     colour and the shadow is doing all the separating. */
+  /* Lifts the torn scrap: a tight contact shadow plus a broader ambient one.
+     One alone reads as a sticker, and the scrap and the page are nearly the
+     same colour, so the shadow does all the separating. */
   --lift: drop-shadow(0 1px 1px rgb(59 49 41 / 11%))
     drop-shadow(0 7px 13px rgb(59 49 41 / 17%));
 
   --display: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino,
     "Book Antiqua", Georgia, serif;
 
-  /* The hand, kept for the line under a photograph and nothing else. A caption
-     is a handful of words somebody wrote on the picture, which is short enough
-     that a script face stays readable and is the whole recipe-book idiom. Where
-     no script face is installed, and Linux often has none, this falls through
-     to the body face and the layout carries the charm alone. */
+  /* Kept for captions and nothing else: a script face is charming for a line
+     and tiring by the third, and a caption is short. Linux often has none, so
+     this falls through to the body face and the layout carries it. */
   --hand: "Bradley Hand", "Segoe Script", "Brush Script MT", "Comic Sans MS",
     cursive;
 
@@ -81,9 +72,7 @@ html {
   scrollbar-gutter: stable;
 }
 
-/* The rounded face is the body voice: friendly without being a script. A script
-   face is charming for one line and tiring by the third, so it is spent only on
-   captions, and the headings take a serif that can carry a whole page. */
+/* Rounded for the body voice, friendly without being a script. */
 body {
   margin: 0;
   background: var(--bg);
@@ -192,23 +181,17 @@ body {
   overflow: hidden;
 }
 
-/* The flower the theme is named for, sitting in the paper of the cover.
+/* The flower the theme is named for, watermarked into the cover.
 
-   Five petals and a heart, drawn entirely in CSS: each petal is one radial
-   gradient placed around a circle, and the whole set is used as a mask so the
-   colour comes from `background`. That is what lets the mark follow `accent`
-   instead of being fixed, which an image or an SVG could not do without one
-   file per colour.
+   Five petals and a heart, all CSS: each petal is one radial gradient placed
+   around a circle, used as a mask so the colour comes from `background` and the
+   mark follows `accent`. An image could not do that without a file per colour.
 
-   The percentages are a regular pentagon: the petal centres sit at 90 degree
-   steps of 72 around the middle, and 25.476% is where the heart meets them.
+   -webkit-mask carries browsers that never unprefixed it. With no mask support
+   the layer falls back to a filled square, which is why it is kept faint.
 
-   -webkit-mask carries browsers that never unprefixed the property. Without any
-   mask support at all the layer would fall back to a filled square, which is
-   why it is kept faint and why nothing on the page depends on it.
-
-   It sits on its own layer behind the type, never on .hero itself: an opacity
-   set on the panel would take the site's name down with the artwork. */
+   Its own layer, never .hero itself: an opacity on the panel would take the
+   site's name down with the artwork. */
 .hero::before {
   content: "";
   position: absolute;
@@ -322,13 +305,10 @@ body {
   font-size: 1.25rem;
 }
 
-/* Photographs taped into the book. The rotation is small and alternates, so a
-   run of pictures reads as placed by hand rather than by a rule.
-
-   It is a static transform rather than an animation, so prefers-reduced-motion
-   does not apply: nothing here moves, and straightening the pictures would
-   remove the theme rather than the motion. The tilt stays under two degrees,
-   which is what keeps a rotated figure from overflowing its column. */
+/* Photographs taped into the book, tilted alternately so a run of them reads as
+   placed by hand. A static transform, not an animation, so reduced-motion does
+   not apply; under two degrees, which keeps a rotated figure inside its column.
+ */
 .page figure {
   margin: 2.25rem auto;
   padding: 0.7rem 0.7rem 0;
@@ -370,8 +350,8 @@ body {
   border-radius: 2px;
 }
 
-/* The line under a photograph, which is the recipe-book idiom this whole theme
-   is built around, and the place a credit or an AI disclosure goes. */
+/* The line under a photograph: the recipe-book idiom, and where a credit or an
+   AI disclosure goes. */
 .page figcaption {
   font-family: var(--hand);
   padding-block: 0.5rem 0.6rem;
@@ -381,12 +361,10 @@ body {
   color: var(--muted);
 }
 
-/* The lead image is the photograph on the front of the page, so it sits
-   straight while the ones taped in beside the prose are tilted.
-
-   Selected as figure.page-image rather than .page-image alone: `.page figure`
-   above is the more specific of the two, so a bare class would lose to it and
-   the front photograph would come out crooked. */
+/* The lead image sits straight while the ones beside the prose are tilted.
+   Selected as figure.page-image, not .page-image: `.page figure` above is more
+   specific, so a bare class would lose to it and the front photograph would come
+   out crooked. */
 .page figure.page-image {
   margin-top: 0;
   rotate: none;
@@ -404,25 +382,17 @@ body {
   border-top: 1px solid var(--border);
 }
 
-/* A scrap torn out of another page and tucked in.
+/* A scrap torn out of another page.
 
-   The torn shape sits on a pseudo-element and the shadow on the blockquote
-   itself, which is not a style choice: clipping is applied after filtering, so
-   an element carrying both its own clip-path and its own drop-shadow generates
-   the shadow and then clips it away. Putting the clip one level down leaves the
-   filter an ancestor, and the shadow follows the torn silhouette as intended.
+   The torn shape is on a pseudo-element and the shadow on the blockquote, and
+   that is not a style choice: clipping is applied after filtering, so an element
+   carrying both its own clip-path and its own drop-shadow generates the shadow
+   and then clips it away. One level down leaves the filter an ancestor.
 
-   The text is opaque and sits inside the scrap, so it adds nothing to that
-   silhouette and picks up no shadow of its own.
-
-   The edge is a clip-path rather than a border, because a border follows the
-   box and would be sliced flat where the tear is. Two patterns alternate by
-   :nth-of-type so consecutive quotes are not the same scrap twice, and the
-   coordinates mix units on purpose: x in percent so the tear spans whatever
-   width the column has, y in pixels so its coarseness does not stretch as the
-   quote grows taller.
-
-   Padding clears the deepest tear, so no descender is ever cut. */
+   The edge is a clip-path, not a border, which would be sliced flat where the
+   tear is. Two patterns alternate so consecutive quotes are not the same scrap.
+   x is percent so the tear spans any width, y is pixels so its coarseness does
+   not stretch as the quote grows. Padding clears the deepest tear. */
 .page blockquote {
   position: relative;
   margin: 2.25rem 0;
@@ -467,16 +437,12 @@ body {
   border-radius: 0.4rem;
 }
 
-/* A slip of code mounted in the book. Same paper as a photograph's mat, the
-   same hairline and the same shadow, so a listing and a snapshot read as things
-   added to the page in the same way.
+/* A slip of code mounted in the book: the same paper, hairline and shadow as a
+   photograph's mat, so both read as things added to the page the same way.
+   Lying flat, because code is read line by line and a tilt makes that harder.
 
-   Lying flat, unlike the photographs. Code is read line by line and along the
-   left edge, and the tilt that suits a snapshot makes it harder to follow.
-
-   No strip of tape, though the figures have one: overflow-x makes this a scroll
-   container, which clips absolutely positioned children, so tape straddling the
-   top edge would be cut off exactly where it crosses. */
+   No tape, unlike the figures: overflow-x makes this a scroll container, which
+   clips absolutely positioned children, so tape straddling the edge is cut. */
 .page pre {
   margin-block: 2.25rem;
   padding: 1.1rem 1.3rem;
@@ -494,17 +460,10 @@ body {
   font-size: 0.8rem;
 }
 
-/* Ruled on the page rather than mounted on it. The photographs, the torn quotes
-   and the code slips are all things laid on top of the paper; a table is the
-   one element that reads better drawn straight onto it, and it keeps a page of
-   them from looking like a stack of cards.
-
-   No background is set at all, which is what puts the table on the paper: the
-   default is already transparent, so the page shows through untouched.
-
-   Horizontal rules only, and the first column starts at zero padding, so the
-   table lines up with the left edge of the prose and reads as part of the page
-   instead of an object inset into it. */
+/* Ruled on the page rather than mounted on it, which keeps a page of tables from
+   looking like a stack of cards. No background at all, so the paper shows
+   through, and no left padding on the first column, so the table lines up with
+   the prose instead of sitting inset from it. */
 .page table {
   border-collapse: collapse;
   width: 100%;
@@ -518,9 +477,8 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
-/* The header is underscored in the accent, the same hand that colours an h1.
-   It marks the row without the heavier grey rule that makes a table look like a
-   spreadsheet. */
+/* Underscored in the accent, the same hand that colours an h1, which marks the
+   row without the grey rule that makes a table look like a spreadsheet. */
 .page th {
   font-family: var(--display);
   font-size: 1.05rem;

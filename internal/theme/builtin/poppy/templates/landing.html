@@ -1,20 +1,13 @@
 {{/*
-  An alternative layout, reached by a page whose front matter says
-  `layout: landing`. It opens with a panel filling the first screen, so the site
-  says its name before it says anything else, and the prose follows below.
+  Reached by a page whose front matter says `layout: landing`. It is the cover
+  of the book: the name in the middle of the paper, with the flower watermarked
+  behind it.
 
-  The site title in the panel is not a heading. The page's own H1 comes from its
-  Markdown, as it does in page.html, and a second one here would leave the page
-  with two.
+  The site title in it is a <p>, not a heading: the page's own H1 comes from its
+  Markdown, and a second one here would leave the page with two.
 
-  This is the cover of the book: the name in a hand, centered on the paper, with
-  the flora showing through a little more strongly than it does on a page of
-  prose. No artwork behind it beyond that, because the paper is the artwork.
-
-  The panel ends in a link down to the prose, which is what tells a reader the
-  first screen is not the whole page. It is a link rather than an ornament so
-  that it can be tabbed to and followed, and it is skipped for a page whose body
-  is empty, where it would point at nothing.
+  The link down to the prose is a link rather than an ornament so it can be
+  tabbed to, and it is skipped for a page with no body.
 */}}
 <!DOCTYPE html>
 <html lang="{{ .Page.Language }}">

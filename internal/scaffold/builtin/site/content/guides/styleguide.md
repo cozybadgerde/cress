@@ -116,4 +116,27 @@ Three dashes on their own line make a horizontal rule:
 
 ---
 
+## The theme decides how this looks
+
+Everything above is plain, semantic HTML. What it _looks_ like is the theme's
+call, and Cress ships three:
+
+| Theme   | Feels like                                              |
+|---------|---------------------------------------------------------|
+| `cress` | the default: warm paper, a serif body, a green accent    |
+| `birch` | a developer tool: crisp, sans-serif, built around code   |
+| `poppy` | a hand-made book: photos taped in, quotes on torn scraps |
+
+Change one line in `cress.toml` and reload this page:
+
+```toml
+[site]
+theme = "poppy"
+```
+
+Every heading, quote, table and code block on this page is drawn differently by
+each of them, and none of your Markdown changes. That is the whole idea: you
+write the words, the theme decides the look. Write your own with
+`cress theme init`.
+
 That is the whole toolbox. Happy writing.

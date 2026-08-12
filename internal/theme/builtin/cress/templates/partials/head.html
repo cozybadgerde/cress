@@ -1,21 +1,10 @@
 {{/*
-  The document head every layout in this theme shares. It lives here so that
-  adding a layout cannot leave the site with two different heads: page.html and
-  landing.html both call this rather than repeat it.
-
-  Like every partial, it receives the whole PageData, and its body is indented
-  for where a layout calls it: Go templates emit a partial verbatim rather than
-  re-indenting it to the call site.
-
-  The accent reaches the stylesheet from here because only the template knows
-  what the site configured. The stylesheet ships defaults for both schemes, so
-  this overrides only what was actually set.
+  The head both layouts share. The accent is set here because only the template
+  knows what the site configured, and it overrides only what was actually set.
 
   highlight.css is linked whether or not the site turns highlighting on: a
   template cannot see the [markdown] table, and with the key off there are no
-  token spans for the file to match anyway. It is a file of its own so that
-  replacing the code colors is replacing one stylesheet, which a site can do
-  from its own static/ without writing a theme at all.
+  token spans for the file to match.
 */}}
 {{- define "head" -}}
   <head>
