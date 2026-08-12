@@ -1,5 +1,8 @@
 ---
 title: Writing well
+image: /example_minimal.webp
+image_alt: A pot of cress on a sunny windowsill
+image_caption: AI-generated illustration.
 ---
 
 # Writing well
@@ -85,6 +88,36 @@ and their captions say so.
 
 Leave the title off and you get no caption, just the picture. Cress wraps a
 standalone image either way, so a theme has one shape to style.
+
+## Give the page a lead image
+
+The picture at the top of this page is not in its Markdown at all. It is named
+in the front matter:
+
+```markdown
+---
+title: Writing well
+image: /example_minimal.webp
+image_alt: A pot of cress on a sunny windowsill
+image_caption: AI-generated illustration.
+---
+```
+
+A lead image is the theme's to place: where it goes and how large it is are the
+theme's decisions, not yours. What it says is still yours, which is why the
+other two keys are there. `image_alt` is the description somebody gets instead
+of the picture, and `image_caption` is the line under it that everybody reads.
+
+Use the caption for anything the image is obliged to say out loud: who took it,
+what license it carries, or that a machine made it. The rules about that vary by
+where you are and Cress knows none of them, so it gives you the place to put the
+statement and leaves the wording to you. Leave the key out and no caption is
+rendered.
+
+Set `image` under `[site]` in `cress.toml` to give every page the same one, with
+its own `image_alt` and `image_caption`. A page that names its own `image` takes
+its own alt and caption too, and never the site's: a credit belongs to the
+picture it was written for.
 
 ## Publish when it is ready
 

@@ -147,6 +147,25 @@ type Site struct {
 	// rendered, unless the theme supplies its own fallback. Typically a file in
 	// static/, e.g. "/favicon.png".
 	Favicon string `toml:"favicon"`
+	// Image is a path or URL to the site's lead image, used for a page that names
+	// none of its own. It sits between Logo and Favicon, which are chrome, and
+	// the images an author writes into a page body, which are content: a theme
+	// decides whether to render it, where, and cropped how. Empty means pages
+	// have no lead image unless they name one. Typically a file in static/, e.g.
+	// "/social.webp".
+	Image string `toml:"image"`
+	// ImageAlt describes Image for a reader who cannot see it. Empty makes the
+	// image decorative, which is a real choice and the wrong one for artwork
+	// carrying meaning.
+	ImageAlt string `toml:"image_alt"`
+	// ImageCaption is the line rendered under Image, for the text an image has to
+	// show everyone: an attribution its licence demands, or a disclosure the law
+	// does. Empty renders no caption.
+	//
+	// It travels with Image rather than resolving on its own. A page that names
+	// its own image never inherits this, because a credit attached to a different
+	// picture is a false claim rather than a missing one.
+	ImageCaption string `toml:"image_caption"`
 	// Accent is the CSS accent color (a hex value like "#4f7a4a") the theme uses
 	// as a highlight. Empty means the theme's own accent applies, including any
 	// per-scheme variant it defines; cress supplies no default of its own.

@@ -45,6 +45,18 @@
           "description": "Path or URL to a favicon. Empty means no icon link is rendered, unless the theme supplies its own fallback. Typically a file in static/, e.g. \"/favicon.png\".",
           "type": "string"
         },
+        "image": {
+          "description": "Path or URL to the site's lead image, used for any page that names no image of its own in front matter. Neither chrome like logo nor content like an image in a page body: the theme decides whether to render it. Typically a file in static/, e.g. \"/social.webp\".",
+          "type": "string"
+        },
+        "image_alt": {
+          "description": "Describes image for a reader who cannot see it. Empty leaves the image decorative, which is a real choice and the wrong one for artwork that carries meaning.",
+          "type": "string"
+        },
+        "image_caption": {
+          "description": "Line rendered under image, for text the picture has to show everyone: an attribution its licence demands, or a disclosure the law does. Empty renders no caption. It belongs to image, so a page naming its own image never inherits it.",
+          "type": "string"
+        },
         "accent": {
           "description": "Accent color used as a highlight (e.g. on links). A CSS hex value. Leave it unset and the theme's own accent applies, including any per-scheme variant it defines.",
           "type": "string",

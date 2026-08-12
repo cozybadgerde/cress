@@ -3,53 +3,54 @@
 [site]
 title = "My cozy site"
 description = "A fresh little site made with Cress."
-# The address the site is published at. Include the path if it is not the root
-# of the domain: a GitHub or GitLab project page lives at
-# "https://user.github.io/my-site", and every link Cress writes is rooted under
-# that path. Get it wrong and the published pages load with their styling,
-# navigation and images all pointing one level too high.
+
+# Where the site is published, path included: a project page lives at
+# "https://user.github.io/my-site". Get this wrong and every link in the
+# published site points one level too high.
 base_url = "https://example.com"
-# The built-in theme. Drop a theme under themes/<name> and name it here to swap.
+
+# "cress" and "birch" ship in the binary. Drop your own under themes/<name> and
+# name it here to swap.
 theme = "cress"
 
-# White-label branding. The shipped logo and favicon are placeholders: replace
-# static/logo.svg and static/favicon.png with your own, or point these at other
-# files you drop in static/.
+# Branding. The shipped files are placeholders: replace static/logo.svg and
+# static/favicon.png, or point these at your own.
 logo = "/logo.svg"
-favicon = "/favicon.png"
-# A second logo for readers who prefer a dark scheme, used instead of the one
-# above. Only needed for artwork that suits one background: a raster logo, or a
-# wordmark in near-black or near-white. The placeholder is a mid-green that
-# holds up on both, so it needs no variant.
+# A second logo for readers who prefer a dark scheme. Only needed for artwork
+# that suits one background; the placeholder holds up on both.
 # logo_dark = "/logo-dark.svg"
-# Accent color (hex), used as a highlight on links and more. Left unset, the
-# theme picks its own, including a variant for dark mode. Set accent_dark too if
-# your color is only legible against one of the two backgrounds.
+favicon = "/favicon.png"
+
+# The lead image a theme shows on any page that names none of its own. The
+# caption is where a credit or an AI disclosure goes.
+# image = "/social.webp"
+# image_alt = "Cress growing in a wooden tray"
+# image_caption = "AI-generated illustration."
+
+# Accent color (hex). Left unset, the theme picks one per color scheme. Set both
+# if yours only reads against one background.
 # accent = "#4f7a4a"
 # accent_dark = "#9ccb8f"
 
-# Footer message, replacing the "Made with Cress" credit. Plain text only.
+# Replaces the "Made with Cress" credit. Plain text only.
 # footer = "A small corner of the internet."
-# Copyright notice. "{year}" becomes the year the site is built, so it never
-# goes stale; write the year out yourself for a fixed one or a range.
+# "{year}" becomes the year of the build; write one out for a fixed year.
 # copyright = "(c) {year} My cozy site"
 
-# How your Markdown is rendered.
 [markdown]
 # Color the code in fenced blocks. Cress writes the tokens and the theme picks
 # the colors, so a theme with no code styling renders exactly as it does now.
 # highlight = true
 
-# Navigation is explicit: one table of "label = content file" per menu, each
-# rendered in the order written. A label with spaces is quoted, as TOML requires.
-# The primary menu, rendered in the header.
+# One table of "label = content file" per menu, in the order written. A label
+# with spaces needs quoting, as TOML requires.
 [nav.main]
 Home = "index.md"
 About = "about.md"
-# A nested section: the value is the content path of its index.md, not the URL.
+# A nested section: the content path of its index.md, not the URL.
 Guides = "guides/index.md"
 
-# The secondary menu, rendered in the footer. Both groups are optional.
+# Rendered in the footer. Both menus are optional.
 [nav.footer]
 Imprint = "imprint.md"
 Privacy = "privacy.md"

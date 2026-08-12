@@ -205,6 +205,7 @@ func siteData(site config.Site, base string) config.Site {
 	site.Logo = prefixURL(base, site.Logo)
 	site.LogoDark = prefixURL(base, site.LogoDark)
 	site.Favicon = prefixURL(base, site.Favicon)
+	site.Image = prefixURL(base, site.Image)
 	return site
 }
 

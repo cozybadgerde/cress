@@ -5,6 +5,23 @@
     {{ template "site-header" . }}
 
     <main class="page">
+      {{/*
+        The page's lead image, from front matter or the site-wide fallback.
+
+        A figure either way, with or without a caption, which is the same shape
+        a standalone image in the body arrives in: one thing to style rather
+        than two. The caption is where an attribution or an AI disclosure goes,
+        so a theme that rendered the image and dropped this would leave a site
+        no way to say what it is obliged to say.
+      */}}
+      {{ with .Page.Image }}
+      <figure class="page-image">
+        <img src="{{ . }}" alt="{{ $.Page.ImageAlt }}" />
+        {{- with $.Page.ImageCaption }}
+        <figcaption>{{ . }}</figcaption>
+        {{- end }}
+      </figure>
+      {{ end }}
       {{ .Page.HTML }}
     </main>
 

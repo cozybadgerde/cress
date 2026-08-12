@@ -244,6 +244,19 @@ body {
   word-wrap: break-word;
 }
 
+/* The page's lead image, above everything the author wrote. It is a figure like
+   a standalone image in the body, so it already picks up this theme's bordered
+   frame and caption styling; all that is left is the room it takes at the top
+   of the page. */
+.page-image {
+  margin-block: 0 2rem;
+}
+
+.page-image img {
+  display: block;
+  width: 100%;
+}
+
 /* Underlined rather than color alone. The dark scheme's link blue sits at
    2.6:1 against body text, short of the 3:1 that lets color carry the
    distinction on its own, so the underline is what actually marks a link. */

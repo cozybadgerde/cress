@@ -58,6 +58,21 @@ type Page struct {
 	// Language is the front-matter "language" tag, empty when the page sets none.
 	// It overrides the site's language for this page, which the builder resolves.
 	Language string
+	// Image is the front-matter "image": this page's lead image, empty when the
+	// page names none. It is a field of its own rather than a key left in Meta
+	// because cress resolves it against the site-wide value, which a theme
+	// reading Meta could not do. The fallback is the builder's to apply: this
+	// package knows the file and nothing else.
+	Image string
+	// ImageAlt is the front-matter "image_alt", describing Image for a reader who
+	// cannot see it. Empty leaves the image decorative.
+	ImageAlt string
+	// ImageCaption is the front-matter "image_caption", the line shown under
+	// Image: an attribution, a licence, or a disclosure. Empty renders none.
+	//
+	// Both belong to whichever image is used, so the builder resolves the three
+	// together rather than one key at a time.
+	ImageCaption string
 	// Layout is the front-matter "layout" name, empty when the page sets none.
 	// It names a template the theme may define; whether one does is the
 	// builder's question, since this package knows the file and not the theme.
@@ -123,16 +138,19 @@ func parseFile(absPath, relSlash string) (*Page, error) {
 
 	out := strings.TrimSuffix(relSlash, mdExt) + htmlExt
 	page := &Page{
-		SourcePath:  relSlash,
-		OutputPath:  out,
-		URL:         urlFor(out),
-		Title:       titleFor(meta, body, relSlash),
-		Description: stringField(meta, "description"),
-		Language:    stringField(meta, "language"),
-		Layout:      stringField(meta, "layout"),
-		Draft:       draftFor(meta),
-		Meta:        meta,
-		Body:        body,
+		SourcePath:   relSlash,
+		OutputPath:   out,
+		URL:          urlFor(out),
+		Title:        titleFor(meta, body, relSlash),
+		Description:  stringField(meta, "description"),
+		Language:     stringField(meta, "language"),
+		Image:        stringField(meta, "image"),
+		ImageAlt:     stringField(meta, "image_alt"),
+		ImageCaption: stringField(meta, "image_caption"),
+		Layout:       stringField(meta, "layout"),
+		Draft:        draftFor(meta),
+		Meta:         meta,
+		Body:         body,
 	}
 	return page, nil
 }

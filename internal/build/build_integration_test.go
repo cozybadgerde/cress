@@ -260,6 +260,122 @@ func TestBuild_unknownThemeNamesTheBuiltins_integration(t *testing.T) {
 	}
 }
 
+// A page's lead image is its own front-matter value, else the site's, and the
+// resolved value is rooted under the base path exactly once however it was
+// reached.
+func TestBuild_image_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	const lead = `<figure class="page-image">` + "\n" + `        <img src=`
+	for _, tc := range []struct {
+		name       string
+		site, page string
+		want, omit []string
+	}{
+		{name: "neither", omit: []string{lead}},
+		{
+			name: "site only",
+			site: "image = \"/site.webp\"\n",
+			want: []string{lead + `"/site.webp"`},
+		},
+		{
+			name: "page only",
+			page: "image: /page.webp\n",
+			want: []string{lead + `"/page.webp"`},
+		},
+		{
+			name: "the page wins",
+			site: "image = \"/site.webp\"\n",
+			page: "image: /page.webp\n",
+			want: []string{lead + `"/page.webp"`},
+			omit: []string{"/site.webp"},
+		},
+		{
+			// The credit belongs to the picture it was written for. A page naming
+			// its own image inheriting the site's caption would put an attribution,
+			// or an AI disclosure, on artwork it was never about: a false statement
+			// rather than a missing one, and the reason the three resolve together.
+			name: "a page's own image never inherits the site's credit",
+			site: "image = \"/site.webp\"\nimage_alt = \"Site alt\"\nimage_caption = \"Photo: Site Author\"\n",
+			page: "image: /page.webp\n",
+			want: []string{lead + `"/page.webp"`, `alt=""`},
+			omit: []string{"Photo: Site Author", "Site alt", "<figcaption>"},
+		},
+		{
+			name: "alt and caption travel with the site's image",
+			site: "image = \"/site.webp\"\nimage_alt = \"Site alt\"\nimage_caption = \"Photo: Site Author\"\n",
+			want: []string{`alt="Site alt"`, "<figcaption>Photo: Site Author</figcaption>"},
+		},
+		{
+			name: "alt and caption travel with the page's image",
+			page: "image: /page.webp\nimage_alt: Page alt\nimage_caption: \"Photo: Page Author\"\n",
+			want: []string{`alt="Page alt"`, "<figcaption>Photo: Page Author</figcaption>"},
+		},
+		{
+			// A caption is the author's text landing in markup, so it is escaped
+			// like every other config value rather than rendered.
+			name: "a caption is text, not markup",
+			page: "image: /page.webp\nimage_caption: \"<b>Jane</b> & Co\"\n",
+			want: []string{"&lt;b&gt;Jane&lt;/b&gt; &amp; Co"},
+			omit: []string{"<b>Jane</b>"},
+		},
+		{
+			// Both routes are prefixed once. The site-wide value is rooted when the
+			// build resolves it, and the page's own is rooted here, so a doubled
+			// "/sub/sub" is what a mistake in either would look like.
+			name: "under a base path",
+			site: "base_url = \"https://example.com/sub\"\nimage = \"/site.webp\"\n",
+			want: []string{lead + `"/sub/site.webp"`},
+			omit: []string{"/sub/sub/"},
+		},
+		{
+			name: "the page's own, under a base path",
+			site: "base_url = \"https://example.com/sub\"\nimage = \"/site.webp\"\n",
+			page: "image: /page.webp\n",
+			want: []string{lead + `"/sub/page.webp"`},
+			omit: []string{"/sub/sub/"},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			root := scaffoldSite(t)
+			writeSiteFile(t, filepath.Join(root, "cress.toml"), "[site]\ntitle = \"S\"\n"+tc.site)
+			writeSiteFile(t, filepath.Join(root, config.ContentDir, "about.md"),
+				"---\ntitle: About\n"+tc.page+"---\n# About\n")
+
+			buildSite(t, root)
+			assertDoc(t, readFile(t, filepath.Join(root, config.OutputDir, "about.html")), tc.want, tc.omit)
+		})
+	}
+}
+
+// Every theme cress ships renders the caption along with the image. A theme
+// that showed the picture and dropped the credit would leave a site obliged to
+// make an attribution or an AI disclosure with nowhere to make it, so this is
+// checked for all of them rather than for whichever one a test picked.
+func TestBuild_imageCaptionInEveryBuiltin_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	for _, name := range theme.Builtins() {
+		t.Run(name, func(t *testing.T) {
+			root := scaffoldSite(t)
+			writeSiteFile(t, filepath.Join(root, "cress.toml"),
+				"[site]\ntitle = \"S\"\ntheme = \""+name+"\"\nimage = \"/site.webp\"\n"+
+					"image_alt = \"A tray of cress\"\nimage_caption = \"AI-generated illustration.\"\n")
+
+			buildSite(t, root)
+			assertDoc(t, readFile(t, filepath.Join(root, config.OutputDir, "about.html")), []string{
+				`<figure class="page-image">`,
+				`src="/site.webp" alt="A tray of cress"`,
+				"<figcaption>AI-generated illustration.</figcaption>",
+			}, nil)
+		})
+	}
+}
+
 func TestBuild_draftsAndStatic_integration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")

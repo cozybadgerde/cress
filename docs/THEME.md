@@ -261,12 +261,15 @@ The page being rendered:
 | `.Page.Head` | Metadata elements for the document head. Already markup. |
 | `.Page.Description` | The page description, falling back to the site's. |
 | `.Page.Language` | The language tag. Never empty. |
+| `.Page.Image` | The page's lead image, falling back to the site's. Empty when neither is set. |
+| `.Page.ImageAlt` | Describes that image. Empty means the author left it decorative. |
+| `.Page.ImageCaption` | The line to render under that image. Empty when there is none. |
 | `.Page.URL` | This page's root-relative URL. |
 | `.Page.AbsoluteURL` | The full URL, empty when the site sets no `base_url`. |
 | `.Page.IsHome` | True only for the page at the site root. |
 | `.Page.Meta` | The raw front matter, including keys Cress does not define. |
 
-Four of those are easy to get wrong:
+Five of those are easy to get wrong:
 
 - **`.Page.HTML` is markup, not text.** Emit it with `{{ .Page.HTML }}` and do
   not escape it again. Escaping it a second time shows readers their own page
@@ -280,6 +283,31 @@ Four of those are easy to get wrong:
   `.Page.Head` cannot carry it: `<html lang="{{ .Page.Language }}">`.
 - **`.Page.IsHome`** is for what reads differently on a front page, such as
   dropping the site name from a title that already is the site name.
+- **`.Page.Image` is yours to place, and it does not travel alone.** Cress
+  resolves which image a page gets and roots the path; where it goes and how big
+  it is are the theme's. The alt text and the caption belong to it:
+
+  ```html
+  {{ with .Page.Image }}
+  <figure>
+    <img src="{{ . }}" alt="{{ $.Page.ImageAlt }}" />
+    {{- with $.Page.ImageCaption }}
+    <figcaption>{{ . }}</figcaption>
+    {{- end }}
+  </figure>
+  {{ end }}
+  ```
+
+  Guard the image with `with`: it is empty whenever neither the page nor the
+  site names one. Reach the other two through `$`, since `with` has moved the
+  dot to the URL. Emit `alt` even when `ImageAlt` is empty, because an empty
+  `alt` marks an image as decorative while a missing one leaves a screen reader
+  reading out the file name.
+
+  **Render the caption if you render the image.** It is where an attribution, a
+  license, or an AI disclosure goes, and those are things a site may be legally
+  obliged to show. A theme that displays the picture and drops the caption
+  leaves its users no way to comply.
 
 `.Page.Meta` is the escape hatch. Any front-matter key Cress does not define
 reaches the template through it, so a theme can invent its own without asking

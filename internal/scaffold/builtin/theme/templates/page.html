@@ -26,6 +26,29 @@
 
     <main>
       {{/*
+        The page's lead image: its front-matter `image`, or the site's `image`
+        when the page names none. It is empty when neither is set, which is why
+        it is wrapped in `with` rather than emitted directly.
+
+        Where it goes and how big it is are yours. Two things travel with it:
+        .Page.ImageAlt describes it for somebody who cannot see it, and
+        .Page.ImageCaption is the line under it, which is where an attribution
+        or an AI disclosure goes. Render the caption if you render the image, or
+        a site that has to make such a statement has nowhere to put it.
+
+        Reach them with $ rather than . here, since `with` has moved the dot to
+        the image's own URL.
+      */ -}}
+      {{ with .Page.Image }}
+      <figure>
+        <img src="{{ . }}" alt="{{ $.Page.ImageAlt }}" />
+        {{- with $.Page.ImageCaption }}
+        <figcaption>{{ . }}</figcaption>
+        {{- end }}
+      </figure>
+      {{ end }}
+
+      {{/*
         The rendered Markdown body. It is already-escaped markup, so it is
         emitted as-is: escaping it again would show readers their own page
         source.

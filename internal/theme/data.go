@@ -84,6 +84,33 @@ type PageView struct {
 	//
 	// Head cannot carry it, since it is an attribute rather than an element.
 	Language string
+	// Image is the page's lead image: front-matter "image", else Site.Image,
+	// already rooted under Site.BasePath. Empty when neither is set, so a
+	// template guards it:
+	//
+	//	{{ with .Page.Image }}
+	//	<figure><img src="{{ . }}" alt="{{ $.Page.ImageAlt }}" />
+	//	{{ with $.Page.ImageCaption }}<figcaption>{{ . }}</figcaption>{{ end }}
+	//	</figure>
+	//	{{ end }}
+	//
+	// It is the theme's to place, size and crop, or to ignore.
+	Image string
+	// ImageAlt describes Image for a reader who cannot see it, and is empty when
+	// the author left the image decorative. Emit it either way: an empty alt
+	// attribute is what marks an image as decoration, while no alt attribute at
+	// all leaves a screen reader reading out the file name.
+	ImageAlt string
+	// ImageCaption is the line to render under Image, and is empty when there is
+	// none. It carries the text an image has to show everyone rather than only
+	// the people who cannot see it: an attribution its licence demands, or a
+	// disclosure the law does. A theme that renders Image should render this too,
+	// or a site that depends on it has no way to comply.
+	//
+	// Both belong to whichever image Image resolved to. A page naming its own
+	// image never inherits the site's caption, so what a template renders is
+	// always about the picture beside it.
+	ImageCaption string
 	// AbsoluteURL is the page's full URL, Site.BaseURL joined with URL. Empty
 	// when the site sets no base_url, because there is no host to build it from;
 	// a template that renders it must guard it.

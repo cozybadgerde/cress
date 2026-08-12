@@ -69,6 +69,46 @@ func TestCollect_integration(t *testing.T) {
 	}
 }
 
+// A page's image is read verbatim, like its layout: rooting it under the base
+// path and falling back to the site-wide one are the builder's job, so this
+// package reports what the author wrote and nothing more.
+func TestCollect_image_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, "named.md"),
+		"---\nimage: /img/lead.webp\nimage_alt: A lead image\nimage_caption: \"Photo: Jane\"\n---\n# Named\n")
+	writeFile(t, filepath.Join(root, "blank.md"), "---\nimage: \"  \"\n---\n# Blank\n")
+	writeFile(t, filepath.Join(root, "none.md"), "# None\n")
+
+	pages, err := content.Collect(root)
+	if err != nil {
+		t.Fatalf("Collect: %v", err)
+	}
+
+	want := map[string]string{
+		"named.md": "/img/lead.webp",
+		// A blank value is the same as saying nothing, so the site-wide fallback
+		// still applies rather than being beaten by whitespace.
+		"blank.md": "",
+		"none.md":  "",
+	}
+	for _, page := range pages {
+		if got := page.Image; got != want[page.SourcePath] {
+			t.Errorf("%s: Image = %q, want %q", page.SourcePath, got, want[page.SourcePath])
+		}
+		if page.SourcePath != "named.md" {
+			continue
+		}
+		if page.ImageAlt != "A lead image" || page.ImageCaption != "Photo: Jane" {
+			t.Errorf("named.md: alt/caption = %q/%q, want them read verbatim",
+				page.ImageAlt, page.ImageCaption)
+		}
+	}
+}
+
 // A page's layout is read verbatim and never checked here: whether a theme
 // defines one is the builder's question, so this package reports what the
 // author wrote and nothing more.

@@ -58,6 +58,25 @@ func fallback(value, siteWide string) string {
 	return siteWide
 }
 
+// leadImage resolves the page's lead image with the alt text and caption that
+// belong to it, rooted under the base path.
+//
+// The three are chosen together rather than one key at a time, which is what
+// separates this from description and language above. Resolving them
+// separately would let a page that named its own image inherit the site
+// image's caption, attaching an attribution or an AI disclosure to a picture it
+// was never written about. A missing credit is a gap; a credit on the wrong
+// image is a false claim, and the second is the one worth designing out.
+//
+// The page's own path is rooted here while the site-wide one arrives rooted
+// already, since siteData prefixed it once for the whole build.
+func (w *pageWriter) leadImage(page *content.Page) (url, alt, caption string) {
+	if page.Image != "" {
+		return prefixURL(w.basePath, page.Image), page.ImageAlt, page.ImageCaption
+	}
+	return w.site.Image, w.site.ImageAlt, w.site.ImageCaption
+}
+
 // pageWriter holds what every page render shares: the theme, the renderer, and
 // the site-wide values resolved once at the start of the build. Only the page
 // itself changes between calls.
@@ -128,6 +147,7 @@ func (w *pageWriter) writePage(page *content.Page) error {
 	pageURL := prefixURL(w.basePath, page.URL)
 	absoluteURL := w.absoluteURL(pageURL)
 	description := fallback(page.Description, w.site.Description)
+	image, imageAlt, imageCaption := w.leadImage(page)
 
 	head, err := renderHead(headData{Description: description, Canonical: absoluteURL})
 	if err != nil {
@@ -138,15 +158,18 @@ func (w *pageWriter) writePage(page *content.Page) error {
 		Site: w.site,
 		Nav:  activeNav(w.nav, pageURL),
 		Page: theme.PageView{
-			Title:       page.Title,
-			Description: description,
-			Language:    fallback(page.Language, w.site.Language),
-			URL:         pageURL,
-			AbsoluteURL: absoluteURL,
-			IsHome:      page.URL == homeURL,
-			Meta:        page.Meta,
-			HTML:        body,
-			Head:        head,
+			Title:        page.Title,
+			Description:  description,
+			Language:     fallback(page.Language, w.site.Language),
+			Image:        image,
+			ImageAlt:     imageAlt,
+			ImageCaption: imageCaption,
+			URL:          pageURL,
+			AbsoluteURL:  absoluteURL,
+			IsHome:       page.URL == homeURL,
+			Meta:         page.Meta,
+			HTML:         body,
+			Head:         head,
 		},
 	}
 
