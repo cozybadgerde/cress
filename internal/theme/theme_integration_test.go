@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -69,13 +70,116 @@ func TestResolveDiskOverride_integration(t *testing.T) {
 	}
 }
 
+// The binary carrying a theme and that theme being the default are two
+// different facts. Conflating them is what would leave every built-in but one
+// unreachable, so the inventory is asserted rather than assumed.
+func TestBuiltins_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	names := theme.Builtins()
+	if len(names) < 2 {
+		t.Fatalf("Builtins() = %v, want more than the default alone", names)
+	}
+	if !slices.Contains(names, config.DefaultTheme) {
+		t.Errorf("Builtins() = %v, want it to include the default %q", names, config.DefaultTheme)
+	}
+}
+
+// Every embedded theme is reachable by name with nothing under themes/.
+func TestResolveEveryBuiltin_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	for _, name := range theme.Builtins() {
+		t.Run(name, func(t *testing.T) {
+			thm, err := theme.Resolve(t.TempDir(), "themes", name)
+			if err != nil {
+				t.Fatalf("Resolve(%q): %v", name, err)
+			}
+			assertRendersAPage(t, thm, name)
+		})
+	}
+}
+
+// assertRendersAPage checks that a resolved theme is the one asked for and can
+// render a whole document.
+func assertRendersAPage(t *testing.T, thm *theme.Theme, name string) {
+	t.Helper()
+	if thm.Name() != name {
+		t.Errorf("Name() = %q, want %q", thm.Name(), name)
+	}
+	if thm.StaticFS() == nil {
+		t.Errorf("theme %q ships no static assets", name)
+	}
+
+	var buf bytes.Buffer
+	if err := thm.Render(&buf, theme.PageData{Site: config.Site{Title: "T"}}); err != nil {
+		t.Fatalf("Render: %v", err)
+	}
+	if !strings.Contains(buf.String(), "<!DOCTYPE html>") {
+		t.Errorf("theme %q output missing doctype:\n%s", name, buf.String())
+	}
+}
+
 func TestResolveUnknown_integration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
 
-	if _, err := theme.Resolve(t.TempDir(), "themes", "does-not-exist"); err == nil {
+	_, err := theme.Resolve(t.TempDir(), "themes", "does-not-exist")
+	if err == nil {
 		t.Fatal("expected an error for an unknown theme with no directory")
+	}
+	// A typo'd name is the common case, so the error names what it could have
+	// been rather than only what it was not.
+	for _, name := range theme.Builtins() {
+		if !strings.Contains(err.Error(), name) {
+			t.Errorf("error %q does not name the built-in theme %q", err, name)
+		}
+	}
+}
+
+// A directory under themes/ wins over a built-in of the same name, and that is
+// worth reporting: nothing in the rendered page says which of the two ran.
+func TestShadowsBuiltin_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := t.TempDir()
+	if theme.ShadowsBuiltin(root, "themes", config.DefaultTheme) {
+		t.Error("nothing on disk cannot shadow anything")
+	}
+
+	dir := filepath.Join(root, "themes", config.DefaultTheme, "templates")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "page.html"), []byte(`CUSTOM`), 0o644); err != nil {
+		t.Fatalf("write template: %v", err)
+	}
+
+	if !theme.ShadowsBuiltin(root, "themes", config.DefaultTheme) {
+		t.Errorf("themes/%s should shadow the built-in theme", config.DefaultTheme)
+	}
+	if theme.ShadowsBuiltin(root, "themes", "mine") {
+		t.Error("a name no built-in uses cannot shadow one")
+	}
+
+	// The directory still wins; the warning is a report, not a change of rule.
+	thm, err := theme.Resolve(root, "themes", config.DefaultTheme)
+	if err != nil {
+		t.Fatalf("Resolve: %v", err)
+	}
+	var buf bytes.Buffer
+	if err := thm.Render(&buf, theme.PageData{}); err != nil {
+		t.Fatalf("Render: %v", err)
+	}
+	if buf.String() != "CUSTOM" {
+		t.Errorf("Render = %q, want the on-disk theme to win", buf.String())
 	}
 }
 
@@ -174,17 +278,24 @@ func TestValidateBuiltin_integration(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	report, err := theme.Validate(theme.ValidateOptions{
-		SiteRoot:     t.TempDir(),
-		ThemesDir:    config.ThemesDir,
-		Name:         config.DefaultTheme,
-		CressVersion: version.Version,
-	})
-	if err != nil {
-		t.Fatalf("Validate: %v", err)
-	}
-	if !report.OK() {
-		t.Errorf("the built-in theme does not satisfy its own contract: %v", report.Findings)
+	// Every theme cress ships, not only the default: a shipped theme that failed
+	// the check cress tells theme authors to run would be the worst example in
+	// the project.
+	for _, name := range theme.Builtins() {
+		t.Run(name, func(t *testing.T) {
+			report, err := theme.Validate(theme.ValidateOptions{
+				SiteRoot:     t.TempDir(),
+				ThemesDir:    config.ThemesDir,
+				Name:         name,
+				CressVersion: version.Version,
+			})
+			if err != nil {
+				t.Fatalf("Validate: %v", err)
+			}
+			if !report.OK() {
+				t.Errorf("built-in theme %q does not satisfy its own contract: %v", name, report.Findings)
+			}
+		})
 	}
 }
 

@@ -209,6 +209,57 @@ func TestBuild_highlightStylesheetIsAlwaysLinked_integration(t *testing.T) {
 	}
 }
 
+// Shadowing a built-in theme is allowed and reported. The likeliest way in is
+// `cress theme init <builtin>`, which drops the starter theme over a design the
+// author picked, and nothing in the rendered page would say so.
+func TestBuild_shadowedBuiltinTheme_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := scaffoldSite(t)
+	res := buildSite(t, root)
+	for _, w := range res.Warnings {
+		if strings.Contains(w, "shadows") {
+			t.Fatalf("a site with no themes/ should not warn about shadowing: %q", w)
+		}
+	}
+
+	dir := filepath.Join(root, config.ThemesDir, config.DefaultTheme, "templates")
+	if err := os.MkdirAll(dir, 0o750); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+	writeSiteFile(t, filepath.Join(dir, "page.html"), "SHADOW:{{ .Site.Title }}")
+
+	res = buildSite(t, root)
+	assertWarns(t, res.Warnings, "shadows the built-in theme", config.DefaultTheme)
+	// The rule does not change: the directory still wins.
+	if got := readFile(t, filepath.Join(root, config.OutputDir, "about.html")); !strings.HasPrefix(got, "SHADOW:") {
+		t.Errorf("on-disk theme should still win, got: %s", got)
+	}
+}
+
+// Naming a theme that is neither on disk nor in the binary fails, and says what
+// the binary does carry, because the usual cause is a typo.
+func TestBuild_unknownThemeNamesTheBuiltins_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := scaffoldSite(t)
+	writeSiteFile(t, filepath.Join(root, "cress.toml"), "[site]\ntitle = \"S\"\ntheme = \"brich\"\n")
+
+	_, err := build.Build(build.Options{Root: root})
+	if err == nil {
+		t.Fatal("expected an error for a theme that is neither on disk nor built in")
+	}
+	for _, name := range theme.Builtins() {
+		if !strings.Contains(err.Error(), name) {
+			t.Errorf("error %q does not name the built-in theme %q", err, name)
+		}
+	}
+}
+
 func TestBuild_draftsAndStatic_integration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")

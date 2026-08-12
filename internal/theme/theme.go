@@ -1,7 +1,7 @@
 // Package theme resolves and loads a cress theme: the html/template set that
-// wraps rendered page HTML, plus the static assets shipped alongside it. The
-// default theme ("cress") is embedded in the binary; sites may override it with
-// a directory under themes/.
+// wraps rendered page HTML, plus the static assets shipped alongside it.
+// Several themes are embedded in the binary and reachable by name; sites may
+// add their own, or replace an embedded one, with a directory under themes/.
 //
 // It also checks a theme against the contract, which lives here rather than
 // beside the command that asks for it. What counts as a layout, what counts as
@@ -19,9 +19,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
-
-	"github.com/cozybadgerde/cress/internal/config"
 )
 
 //go:embed all:builtin
@@ -73,9 +72,8 @@ func (t *Theme) Name() string { return t.name }
 func (t *Theme) Meta() *Meta { return t.meta }
 
 // Resolve loads the theme named name for the site rooted at siteRoot. A theme
-// directory at siteRoot/themesDir/name takes precedence; otherwise the built-in
-// default theme (config.DefaultTheme) is used. Any other name with no matching
-// directory is an error.
+// directory at siteRoot/themesDir/name takes precedence; otherwise a built-in
+// theme of that name is used. A name that is neither is an error.
 func Resolve(siteRoot, themesDir, name string) (*Theme, error) {
 	fsys, _, err := locate(siteRoot, themesDir, name)
 	if err != nil {
@@ -96,17 +94,73 @@ func locate(siteRoot, themesDir, name string) (fs.FS, string, error) {
 	if info, err := os.Stat(diskPath); err == nil && info.IsDir() {
 		return os.DirFS(diskPath), diskPath, nil
 	}
-	if name == config.DefaultTheme {
-		// path.Join rather than filepath.Join: an fs.FS is addressed with slashes
-		// on every platform, so building this with the OS separator would fail to
-		// find the built-in theme on Windows.
-		sub, err := fs.Sub(builtinFS, path.Join(builtinRoot, config.DefaultTheme))
-		if err != nil {
-			return nil, "", fmt.Errorf("loading built-in theme: %w", err)
-		}
+	if sub, ok := builtin(name); ok {
 		return sub, name + " (built-in)", nil
 	}
-	return nil, "", fmt.Errorf("theme %q not found under %s", name, filepath.Join(siteRoot, themesDir))
+	return nil, "", fmt.Errorf("theme %q not found under %s, and is not built in (%s)",
+		name, filepath.Join(siteRoot, themesDir), strings.Join(Builtins(), ", "))
+}
+
+// builtin returns the embedded theme named name, and whether there is one.
+//
+// The question is whether the binary carries this theme, which is not the same
+// question as whether it is the default: config.DefaultTheme names what an unset
+// theme key falls back to, and every built-in theme but that one would be
+// unreachable if the two were conflated.
+//
+// Existence is decided by the Stat rather than by fs.Sub, which returns a
+// working FS for a directory that is not there and only fails at the first read.
+// A name that is not a plain directory name fails here rather than escaping the
+// embedded root: callers validate with config.ValidThemeName, and fs.ValidPath
+// refuses the traversal underneath in any case.
+func builtin(name string) (fs.FS, bool) {
+	// path.Join rather than filepath.Join: an fs.FS is addressed with slashes on
+	// every platform, so building this with the OS separator would fail to find
+	// the built-in themes on Windows.
+	dir := path.Join(builtinRoot, name)
+	info, err := fs.Stat(builtinFS, dir)
+	if err != nil || !info.IsDir() {
+		return nil, false
+	}
+	sub, err := fs.Sub(builtinFS, dir)
+	if err != nil {
+		return nil, false
+	}
+	return sub, true
+}
+
+// Builtins lists the themes embedded in the binary, in sorted order. A site can
+// name any of them without putting anything under themes/.
+func Builtins() []string {
+	entries, err := fs.ReadDir(builtinFS, builtinRoot)
+	if err != nil {
+		return nil
+	}
+	names := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		if entry.IsDir() {
+			names = append(names, entry.Name())
+		}
+	}
+	sort.Strings(names)
+	return names
+}
+
+// ShadowsBuiltin reports whether the theme named name was loaded from
+// themesDir while a built-in theme of the same name exists.
+//
+// A directory under themes/ deliberately wins, so this is not an error. It is
+// worth saying out loud all the same: the two themes are told apart by nothing
+// but where they live, so a site can end up rendering with one while its author
+// is reading the other, and nothing about the built page would say so.
+func ShadowsBuiltin(siteRoot, themesDir, name string) bool {
+	diskPath := filepath.Join(siteRoot, themesDir, name)
+	info, err := os.Stat(diskPath)
+	if err != nil || !info.IsDir() {
+		return false
+	}
+	_, ok := builtin(name)
+	return ok
 }
 
 // load parses a theme from fsys, which must contain a templates/ directory (with

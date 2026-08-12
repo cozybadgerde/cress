@@ -64,6 +64,7 @@ func Build(opts Options) (*Result, error) {
 
 	base := in.cfg.Site.BasePath
 	nav, warnings := resolveNav(in.cfg.Nav, in.pages, base)
+	warnings = append(warnings, shadowWarnings(root, in.cfg.Site.Theme)...)
 	warnings = append(warnings, themeWarnings(in.thm)...)
 	writer := &pageWriter{
 		outPath:  outPath,
@@ -175,6 +176,23 @@ func themeWarnings(thm *theme.Theme) []string {
 		warnings = append(warnings, fmt.Sprintf("theme %q: %s", thm.Name(), w))
 	}
 	return warnings
+}
+
+// shadowWarnings reports a themes/ directory that has taken a built-in theme's
+// name. The directory wins, which is the documented rule and stays the rule;
+// what is worth saying is that it happened at all.
+//
+// Nothing in a built page reveals which of the two rendered it, so the silent
+// version of this is a site whose author reads one theme and publishes another.
+// The likeliest way in is `cress theme init <name>` with a name already in use,
+// which scaffolds the starter theme over a design somebody chose.
+func shadowWarnings(root, name string) []string {
+	if !theme.ShadowsBuiltin(root, config.ThemesDir, name) {
+		return nil
+	}
+	return []string{fmt.Sprintf(
+		"theme %q was loaded from %s, which shadows the built-in theme of the same name; rename the directory to use the built-in one",
+		name, filepath.Join(config.ThemesDir, name))}
 }
 
 // siteData prepares the site metadata every page is rendered with: the branding

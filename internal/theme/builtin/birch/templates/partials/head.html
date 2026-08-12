@@ -1,0 +1,29 @@
+{{/*
+  The document head both layouts share.
+
+  The accent reaches the stylesheet from here because only the template knows
+  what the site configured. Birch's own accent is its foreground color, so a
+  site that sets none is monochrome and a site that sets one gets the only color
+  on the page.
+
+  highlight.css is linked whether or not the site turns highlighting on: a
+  template cannot see the [markdown] table, and with the key off there are no
+  token spans for the file to match.
+*/}}
+{{- define "head" -}}
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ if not .Page.IsHome }}{{ .Page.Title }} · {{ end }}{{ .Site.Title }}</title>
+    {{ .Page.Head }}
+    {{ with .Site.Favicon }}<link rel="icon" href="{{ . }}" />{{ end }}
+    <link rel="stylesheet" href="{{ .Site.BasePath }}/style.css" />
+    <link rel="stylesheet" href="{{ .Site.BasePath }}/highlight.css" />
+    {{ if or .Site.Accent .Site.AccentDark }}
+    <style>
+      {{ with .Site.Accent }}:root { --accent: {{ . }}; }{{ end }}
+      {{ with .Site.AccentDark }}@media (prefers-color-scheme: dark) { :root { --accent: {{ . }}; } }{{ end }}
+    </style>
+    {{ end }}
+  </head>
+{{- end -}}

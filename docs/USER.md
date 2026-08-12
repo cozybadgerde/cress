@@ -44,7 +44,7 @@ my-site/
   public/           build output (created by `cress build`)
 ```
 
-Only `cress.toml` and `content/` are required. The built-in theme is used when
+Only `cress.toml` and `content/` are required. A built-in theme is used when
 `themes/` is absent.
 
 ## Configuration
@@ -70,7 +70,8 @@ The `[site]` fields:
 - `base_url`: the full address the site is published at, including any path.
   Set it to where the site really lives; see [Publishing to a
   subdirectory](#publishing-to-a-subdirectory) below.
-- `theme`: the theme name. Empty resolves to the built-in `cress` theme.
+- `theme`: the theme name. Empty resolves to `cress`, the default. `birch` is
+  built in too; any other name must match a directory under `themes/`.
 - `language`: the site's language tag, such as `en`, `de`, or `en-GB`. It
   becomes the document's `lang` attribute, which is what tells a screen reader
   how to pronounce the page and a browser whether to offer a translation.
@@ -156,13 +157,13 @@ two backgrounds. Setting both adds a dark-scheme `<source>` to the logo, so the
 right one is chosen before anything is fetched, with no flash of the wrong
 image and no JavaScript.
 
-A theme decides whether to honor this. The built-in theme does. A custom theme
+A theme decides whether to honor this. Both built-in themes do. A custom theme
 that never reads `logo_dark` shows the light logo to everyone, and cress does
 not warn.
 
 **Leaving the accents out is a real choice, not a shortcut.** cress has no
-default accent of its own; unset, the theme picks one, and the built-in theme
-picks a different value per color scheme. That matters more than it sounds: no
+default accent of its own; unset, the theme picks one, and the built-in themes
+pick a different value per color scheme. That matters more than it sounds: no
 single color reaches the WCAG AA contrast ratio of 4.5:1 against both a light
 and a dark background, so a brand color that reads beautifully in one scheme
 can be close to invisible in the other. Set `accent` alone only if your color
@@ -207,17 +208,17 @@ highlight = true
 
 Cress then reads each block in the language its fence names and wraps every
 keyword, string, and comment in its own `<span>`. The spans carry a class and no
-color, because the colors are the theme's to choose. The built-in `cress` theme
-ships a set for both the light and the dark scheme. A theme that ships none
+color, because the colors are the theme's to choose. Both built-in themes ship a
+set for the light and the dark scheme. A theme that ships none
 renders the code exactly as it did before, so turning this on can make a site
 look unchanged.
 
 A fence that names no language, or names one Cress does not know, is written as
 it always was. Nothing else on the page moves either way.
 
-The built-in theme keeps those colors in their own `highlight.css`, and a file
-in your `static/` wins over a file the theme ships under the same name. So you
-can replace the whole color scheme without writing a theme:
+They keep those colors in their own `highlight.css`, and a file in your
+`static/` wins over a file the theme ships under the same name. So you can
+replace the whole color scheme without writing a theme:
 
 ```text
 static/
@@ -414,8 +415,25 @@ rejected as an unknown key rather than silently rendering nothing.
 
 ## Themes
 
-A theme owns the templates and the styling. The built-in `cress` theme needs no
-setup. To start your own, scaffold one:
+A theme owns the templates and the styling. Two are built into the binary and
+need no setup, so switching is one line of config and nothing to download:
+
+- **`cress`**, the default. A serif body face, warm paper, a green accent. Cozy
+  and restrained, for a small personal site.
+- **`birch`**. A developer-tool look: crisp and sans-serif, blue links, ruled
+  headings, striped tables, and syntax colors a developer already reads code
+  in. For a page about technical work, where the code is what you want read.
+
+```toml
+[site]
+theme = "birch"
+```
+
+Both honor `accent` and `accent_dark`, and both are light- and dark-scheme
+aware. Birch's accent is its link blue, so setting `accent` takes over its
+links, the current nav entry and every focus ring at once.
+
+To start your own, scaffold one:
 
 ```bash
 cress theme init mine
@@ -447,9 +465,23 @@ themes/
 ```
 
 A theme somebody sent you goes in the same place. Drop the directory under
-`themes/`, name it in `theme =`, and it renders your site. A name with no
-matching directory is an error, so a typo fails the build rather than quietly
-falling back to the default.
+`themes/`, name it in `theme =`, and it renders your site. A name that is
+neither a directory nor a built-in theme is an error naming the ones that are
+built in, so a typo fails the build rather than quietly falling back to the
+default.
+
+A directory under `themes/` wins over a built-in theme of the same name, so
+`themes/birch/` replaces the built-in `birch` rather than clashing with it. The
+build says when that happens, because nothing in the finished page would:
+
+```console
+$ cress build
+warning: theme "birch" was loaded from themes/birch, which shadows the built-in
+theme of the same name; rename the directory to use the built-in one
+```
+
+Rename the directory and pick the name up in `theme =` if you meant to write
+your own. Keep it if you meant to replace the shipped one.
 
 Open its `theme.toml`, if it has one, to see who wrote the theme and under what
 license. It may also name the version of Cress the theme was built for, and if
@@ -497,10 +529,10 @@ layout: landing
 # Welcome
 ```
 
-That page renders through `templates/landing.html`. The built-in `cress` theme
-ships one alternative layout, `landing`, which opens the page with a panel
-filling the first screen, the site's name set large and centered in it, and the
-page's own content following below. An arrow at the foot of the panel links
+That page renders through `templates/landing.html`. Both built-in themes ship
+one alternative layout, `landing`, which opens the page with a panel filling the
+first screen, the site's name set large in it, and the page's own content
+following below. An arrow at the foot of the panel links
 down to that content, so the first screen does not read as the whole page. The
 header and footer are the site's usual ones, so navigation works exactly as it
 does everywhere else. The site `cress init` creates uses it on the home page,
@@ -676,8 +708,8 @@ own server, along with what `base_url` has to say for each.
   `--source` pointing at the directory that holds `cress.toml`.
 - **`unknown key(s)`**: a key in `cress.toml` is misspelled or unsupported. The
   message names the offending keys.
-- **`theme ... not found`**: the `theme` name has no matching directory under
-  `themes/`. Use `cress` for the built-in theme, or add the theme directory.
+- **`theme ... not found`**: the `theme` name is neither a built-in theme nor a
+  directory under `themes/`. The message names the built-in ones.
 - **A nav entry is missing**: a warning like `nav.main entry ... points at
   missing content` names the group and means the path does not match a file
   under `content/`.

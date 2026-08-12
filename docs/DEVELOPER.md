@@ -38,7 +38,7 @@ cmd/cress/            CLI: build, clean, init, serve, theme, version (urfave/cli
 internal/config/      load and validate cress.toml
 internal/content/     discover Markdown, parse front matter into pages
 internal/render/      Markdown to HTML (goldmark, and chroma when highlighting)
-internal/theme/       resolve, load and validate themes; the built-in one is embedded
+internal/theme/       resolve, load and validate themes; the built-in ones are embedded
 internal/build/       orchestration: content + theme + config -> public/
 internal/clean/       `cress clean`; the only package that deletes
 internal/serve/       preview server: build, watch, rebuild, serve
@@ -109,8 +109,8 @@ host that does not redirect `/guide` to `/guide/`. Three places carry the
 prefix: the builder, `render` for the links an author wrote, and the theme for
 its own asset links, which are the URLs cress does not emit.
 
-**Embedded assets ship verbatim.** The default theme
-(`internal/theme/builtin/cress`), the starter site
+**Embedded assets ship verbatim.** The built-in themes
+(`internal/theme/builtin/`), the starter site
 (`internal/scaffold/builtin/site`) and the starter theme
 (`internal/scaffold/builtin/theme`) are embedded with `go:embed` and copied
 without transformation, so an edit to any of them changes what every user gets.
@@ -145,19 +145,26 @@ and neither stops a build. The strict-key rule `cress.toml` uses is wrong here,
 because an unknown key is also what a published theme looks like to an older
 Cress once a later one adds a field, and nothing in the file decides how a page
 renders. Only a `theme.toml` that is not TOML at all is an error, since there is
-nothing in it to read. The built-in theme deliberately declares no `cress`
+nothing in it to read. The built-in themes deliberately declare no `cress`
 version: it ships inside the binary, so the contract it was written against is
 always the one rendering it, and a declaration there could never catch a
 mismatch and could only ever be wrong.
 
-## The built-in theme
+## The built-in themes
 
-The default theme lives at `internal/theme/builtin/cress/` and is embedded into
-the binary with `go:embed`. `templates/page.html` renders one page,
-`templates/landing.html` renders a page that names `layout: landing`,
-`templates/partials/` holds what those two share, and `static/style.css`
-styles the result. Editing these files changes the theme every site gets by
-default.
+Each directory under `internal/theme/builtin/` is a theme embedded into the
+binary with `go:embed` and reachable by that directory's name: `cress`, the
+cozy default, and `birch`, a crisp developer-tool look built around code.
+`templates/page.html` renders one page, `templates/landing.html` renders a page
+that names `layout: landing`, `templates/partials/` holds what those two share,
+and `static/` styles the result. Editing these files changes what every user
+gets.
+
+Adding a third is adding a directory: the embed pattern takes the whole tree and
+`theme.Builtins` reads it back, so nothing lists the names a second time. The
+one thing that is not automatic is `config.DefaultTheme`, which names the
+fallback for an unset `theme` key and is deliberately not the same question as
+which themes exist.
 
 `page.html` is the only template a theme must define. A theme may add
 `templates/404.html` to render the 404 page itself; without one, `build`
@@ -194,11 +201,12 @@ each one has a change that looks like a simplification:
   something to detect. Detecting it instead would mean comparing template sets,
   which cannot see a redefinition: replacing a name adds nothing to compare.
 
-Cress promises no layout vocabulary, so the built-in theme's `landing` is an
-offer rather than a standard. Its two layouts call the shared partials in
-`templates/partials/` for the head, the header, and the footer rather than
-repeating them, so adding a third layout cannot leave the site with two
-different headers.
+Cress promises no layout vocabulary, so the built-in themes' `landing` is an
+offer rather than a standard. Both ship one, because the scaffolded site's home
+page names it and a built-in that warned on the scaffold would be a poor
+advertisement. Their layouts call the shared partials in `templates/partials/`
+for the head, the header, and the footer rather than repeating them, so adding a
+third layout cannot leave a theme with two different headers.
 
 `landing` differs from `page` below the header rather than in place of it: it
 adds a panel sized to the first screen and keeps the site's usual navigation.

@@ -1,0 +1,156 @@
+/* birch — syntax tokens, for a site that sets [markdown] highlight = true.
+ *
+ * The palette follows the one a developer already reads code in all day: red
+ * keywords, purple functions, deep blue strings, gray comments, and a diff
+ * bedded in red and green. Recognition is the point. Somebody landing on a
+ * page of Go should not have to learn a new color language to skim it.
+ *
+ * Replace this file to disagree: a site's own static/highlight.css wins over
+ * the one a theme ships, and these are chroma's class names, so any stylesheet
+ * chroma generates is a drop-in. Nothing here reads style.css, so a swap cannot
+ * leave dangling variables behind.
+ *
+ * Every color clears WCAG AA (4.5:1) against the surface it sits on, the diff
+ * beds included. Operators and punctuation are left at the body color rather
+ * than tinted, which is what keeps a dense line from turning into confetti.
+ */
+
+:root {
+  --tok-comment: #59636e;
+  --tok-keyword: #cf222e;
+  --tok-function: #8250df;
+  --tok-entity: #953800;
+  --tok-tag: #116329;
+  --tok-constant: #0550ae;
+  --tok-string: #0a3069;
+  --tok-plain: #1f2328;
+
+  --tok-del: #82071e;
+  --tok-del-bg: #ffebe9;
+  --tok-add: #116329;
+  --tok-add-bg: #dafbe1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tok-comment: #9198a1;
+    --tok-keyword: #ff7b72;
+    --tok-function: #d2a8ff;
+    --tok-entity: #ffa657;
+    --tok-tag: #7ee787;
+    --tok-constant: #79c0ff;
+    --tok-string: #a5d6ff;
+    --tok-plain: #e6edf3;
+
+    --tok-del: #ffdcd7;
+    --tok-del-bg: #67060c;
+    --tok-add: #aff5b4;
+    --tok-add-bg: #033a16;
+  }
+}
+
+.chroma .c,
+.chroma .ch,
+.chroma .cm,
+.chroma .c1,
+.chroma .cs,
+.chroma .cp,
+.chroma .cpf {
+  color: var(--tok-comment);
+}
+
+.chroma .k,
+.chroma .kc,
+.chroma .kd,
+.chroma .kn,
+.chroma .kp,
+.chroma .kr,
+.chroma .kt,
+.chroma .ow {
+  color: var(--tok-keyword);
+}
+
+.chroma .nf,
+.chroma .nd {
+  color: var(--tok-function);
+}
+
+.chroma .nc,
+.chroma .nn,
+.chroma .ne,
+.chroma .no,
+.chroma .na,
+.chroma .nv {
+  color: var(--tok-entity);
+}
+
+/* Markup tags and their attributes, which is where a green earns its place:
+   an HTML or XML block is mostly tags, and leaving them at the body color
+   would make the one language nobody wants to read the hardest to skim. */
+.chroma .nt {
+  color: var(--tok-tag);
+}
+
+.chroma .nb,
+.chroma .m,
+.chroma .mb,
+.chroma .mf,
+.chroma .mh,
+.chroma .mi,
+.chroma .mo {
+  color: var(--tok-constant);
+}
+
+.chroma .s,
+.chroma .sa,
+.chroma .sb,
+.chroma .sc,
+.chroma .sd,
+.chroma .se,
+.chroma .sh,
+.chroma .si,
+.chroma .sr,
+.chroma .ss,
+.chroma .sx,
+.chroma .s1,
+.chroma .s2,
+.chroma .dl {
+  color: var(--tok-string);
+}
+
+.chroma .o,
+.chroma .p {
+  color: var(--tok-plain);
+}
+
+/* Understated on purpose. The tokenizer marks a character it could not place
+   as an error, and it is wrong often enough on ordinary content that a loud
+   treatment would be noise on a page that is perfectly fine. */
+.chroma .err {
+  color: var(--tok-del);
+}
+
+.chroma .gd {
+  color: var(--tok-del);
+  background: var(--tok-del-bg);
+}
+
+.chroma .gi {
+  color: var(--tok-add);
+  background: var(--tok-add-bg);
+}
+
+.chroma .gh,
+.chroma .gu,
+.chroma .gp {
+  color: var(--tok-constant);
+  font-weight: 600;
+}
+
+.chroma .ge {
+  font-style: italic;
+}
+
+.chroma .gs {
+  font-weight: 600;
+}

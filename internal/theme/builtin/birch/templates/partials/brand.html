@@ -1,0 +1,22 @@
+{{/*
+  The site's name and logo, linking home. It sits in its own partial rather than
+  in site-header so the header reads as one shape.
+
+  $.Site.LogoDark rather than .Site.LogoDark: inside {{ with .Site.Logo }} the
+  dot is the logo's URL, so the dark variant has to be reached from the root.
+
+  Indented for its call site, like every partial here.
+*/}}
+{{- define "brand" -}}
+  <a class="site-title" href="{{ .Site.BasePath }}/">
+        {{- with .Site.Logo }}
+        <picture>
+          {{- with $.Site.LogoDark }}
+          <source media="(prefers-color-scheme: dark)" srcset="{{ . }}" />
+          {{- end }}
+          <img class="site-logo" src="{{ . }}" alt="" />
+        </picture>
+        {{- end }}
+        <span>{{ .Site.Title }}</span>
+      </a>
+{{- end -}}

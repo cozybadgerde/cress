@@ -1,0 +1,23 @@
+{{/*
+  The footer both layouts share: the secondary navigation, the site's footer
+  line, and its copyright. A site that sets no footer text gets cress's own.
+
+  Indented for its call site, like every partial here.
+*/}}
+{{- define "site-footer" -}}
+  <footer class="site-footer">
+      {{- with .Nav.Footer }}
+      <nav class="footer-nav" aria-label="Secondary">
+        {{ range . }}<a href="{{ .URL }}"{{ if .Active }} aria-current="page"{{ end }}>{{ .Title }}</a>{{ end }}
+      </nav>
+      {{- end }}
+      <p class="footer-text">
+        {{ with .Site.Footer }}{{ . }}{{ else }}Made with
+        <a href="https://github.com/cozybadgerde/cress">Cress</a>.
+        Fresh little sites, fast.{{ end }}
+      </p>
+      {{- with .Site.Copyright }}
+      <p class="footer-copyright">{{ . }}</p>
+      {{- end }}
+    </footer>
+{{- end -}}

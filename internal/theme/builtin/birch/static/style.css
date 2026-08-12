@@ -1,0 +1,410 @@
+/* birch — a developer-tool look: crisp, light-first, blue-accented. */
+
+:root {
+  --bg: #ffffff;
+  --fg: #1f2328;
+  --muted: #59636e;
+  --border: #d1d9e0;
+  --panel: #f6f8fa;
+  --panel-alt: #eef1f4;
+
+  /* The accent is the link blue, and it carries the theme's one hue. A site
+     that sets `accent` replaces it from the head partial and takes over links,
+     the active nav entry and every focus ring at once. */
+  --accent: #0969da;
+
+  --max-width: 48rem;
+  --radius: 6px;
+  font-size: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117;
+    --fg: #e6edf3;
+    --muted: #9198a1;
+    --border: #3d444d;
+    --panel: #151b23;
+    --panel-alt: #1c232b;
+    --accent: #4493f8;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Reserve the scrollbar's width on every page, so moving between a short page
+   and a long one does not shift everything centered by half a scrollbar. */
+html {
+  -webkit-text-size-adjust: 100%;
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
+    Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.site-header,
+.page,
+.site-footer {
+  width: 100%;
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-block: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.site-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--fg);
+  text-decoration: none;
+}
+
+/* The logo always sits in a <picture>, which carries the dark-scheme <source>
+   when there is one. Taking the wrapper out of the layout keeps the img itself
+   the flex item. */
+.site-title picture {
+  display: contents;
+}
+
+.site-logo {
+  height: 1.5rem;
+  width: auto;
+  border-radius: var(--radius);
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+.site-nav a {
+  color: var(--muted);
+  text-decoration: none;
+  padding-block: 0.25rem;
+}
+
+.site-nav a:hover {
+  color: var(--fg);
+}
+
+/* The current entry is marked with a rule as well as a color, so it is still
+   marked for a reader who cannot tell the two colors apart. */
+.site-nav a[aria-current="page"] {
+  color: var(--fg);
+  font-weight: 600;
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+/* The landing layout opens with the header and a panel that together fill the
+   first screen. Sizing the pair rather than the panel keeps that exact: the
+   hero takes whatever height the header leaves. */
+.landing-top {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+  background: var(--panel);
+}
+
+.hero {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: 4rem 5rem;
+  padding-inline: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Graph paper behind the type: a 1px grid in the theme's own border color, so
+   it follows both schemes without a value of its own and never introduces a
+   hue the site's author did not choose.
+
+   It is drawn on a layer of its own rather than on .hero, because a mask or an
+   opacity set on the panel would take the title down with the artwork.
+
+   The mask fades it out toward the bottom right, which does two things: it
+   keeps the grid off the "Read on" link, and it leaves the panel resolving
+   into flat color exactly where the content begins. A browser without mask
+   support gets the grid at an even weight across the panel, which is the same
+   idea with less of a composition. */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  background-image:
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  background-size: 2.25rem 2.25rem;
+  mask-image: radial-gradient(125% 105% at 0% 0%, #000 25%, transparent 78%);
+}
+
+/* Positioned so it sits above the grid. Without this the panel's own type is
+   static content and the layer above would paint straight over it. */
+.hero-inner {
+  position: relative;
+  width: 100%;
+  max-width: var(--max-width);
+  margin-inline: auto;
+}
+
+/* The site's name, set as display type. It is a <p>, not a heading: the page's
+   own H1 belongs to its content. */
+.hero-title {
+  margin: 0;
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+/* A short rule under the name, and the one piece of color on the panel. It is
+   drawn from the accent so it is the site author's color rather than the
+   theme's, and it is a pseudo-element so that a theme's flourish stays out of
+   the markup: there is nothing here for a template to render or a page to
+   carry. It sits under the name with or without a tagline below it. */
+.hero-title::after {
+  content: "";
+  display: block;
+  width: 3.5rem;
+  height: 3px;
+  margin-top: 1.5rem;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.hero-lede {
+  margin: 1.5rem 0 0;
+  max-width: 36rem;
+  font-size: 1.125rem;
+  color: var(--muted);
+}
+
+.hero-more {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  translate: -50% 0;
+  width: 100%;
+  max-width: var(--max-width);
+  padding-inline: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+
+.hero-more:hover {
+  color: var(--accent);
+}
+
+.hero-chevron {
+  width: 1rem;
+  height: 1rem;
+}
+
+.page {
+  flex: 1;
+  padding-block: 2.5rem 3.5rem;
+  word-wrap: break-word;
+}
+
+/* Underlined rather than color alone. The dark scheme's link blue sits at
+   2.6:1 against body text, short of the 3:1 that lets color carry the
+   distinction on its own, so the underline is what actually marks a link. */
+.page a {
+  color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.page h1,
+.page h2,
+.page h3,
+.page h4 {
+  line-height: 1.25;
+  font-weight: 600;
+  margin-top: 1.5em;
+}
+
+/* A rule under the top two levels, which is what makes a long technical page
+   scannable: the sections announce themselves without any extra markup. */
+.page h1,
+.page h2 {
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--border);
+}
+
+.page h1 {
+  margin-top: 0;
+  font-size: 2rem;
+}
+
+.page h2 {
+  font-size: 1.5rem;
+}
+
+.page h3 {
+  font-size: 1.25rem;
+}
+
+.page img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* An image alone in its paragraph always arrives wrapped in a figure, with or
+   without a caption. The browser's default figure margin would indent it away
+   from the left edge every other block shares. */
+.page figure {
+  margin-inline: 0;
+  margin-block: 1.5rem;
+}
+
+.page figure img {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.page figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* A band rather than a line, which is the one piece of markdown furniture that
+   reads as a section break instead of as an underline gone astray. */
+.page hr {
+  height: 0.25em;
+  padding: 0;
+  margin: 1.5rem 0;
+  background: var(--border);
+  border: 0;
+}
+
+.page blockquote {
+  margin-inline: 0;
+  padding: 0 1em;
+  border-left: 0.25em solid var(--border);
+  color: var(--muted);
+}
+
+.page code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+  font-size: 0.85em;
+  background: var(--panel-alt);
+  padding: 0.2em 0.4em;
+  border-radius: var(--radius);
+}
+
+.page pre {
+  background: var(--panel);
+  padding: 1rem;
+  border-radius: var(--radius);
+  margin-block: 1rem;
+  overflow-x: auto;
+  line-height: 1.45;
+}
+
+.page pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.85rem;
+}
+
+/* Bordered and striped. A ruled table is quieter, and this is the shape a
+   reader coming from a repository already knows how to scan. */
+.page table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  margin-block: 1rem;
+  font-size: 0.9rem;
+}
+
+.page th,
+.page td {
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.page th {
+  font-weight: 600;
+}
+
+.page tr:nth-child(2n) {
+  background: var(--panel);
+}
+
+.site-footer {
+  padding-block: 1.5rem 2rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.site-footer a {
+  color: var(--accent);
+}
+
+.footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.footer-nav a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.footer-nav a:hover,
+.footer-nav a[aria-current="page"] {
+  color: var(--fg);
+}
+
+.footer-text,
+.footer-copyright {
+  margin-block: 0.25rem;
+}

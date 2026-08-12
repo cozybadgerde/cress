@@ -70,9 +70,10 @@ Everything in `static/` is copied to the root of the built site, unchanged. A
 file at `themes/mine/static/style.css` is served at `/style.css`. Cress converts
 nothing and imposes no formats on what you put there.
 
-A directory under `themes/` wins over the built-in theme of the same name. Any
-other name with no matching directory is an error, so a typo in `theme =` fails
-the build rather than silently falling back.
+A directory under `themes/` wins over a built-in theme of the same name, and the
+build warns when that happens, since nothing in the finished page says which of
+the two rendered it. A name that is neither is an error naming the built-in
+ones, so a typo in `theme =` fails the build rather than silently falling back.
 
 ## What a theme says about itself
 
@@ -81,11 +82,11 @@ optional and so is every field in it, so a theme without one works exactly the
 same. Write it before you give the theme to anybody else:
 
 ```toml
-name = "Birch"
-description = "Clean black on white, for sites that are mostly code."
+name = "Mine"
+description = "One line on what the theme is for."
 author = "You"
 license = "MIT"
-homepage = "https://github.com/you/birch"
+homepage = "https://github.com/you/mine"
 
 cress = "1.1"
 ```
@@ -369,7 +370,7 @@ link it from your head partial:
 <link rel="stylesheet" href="{{ .Site.BasePath }}/highlight.css" />
 ```
 
-That is what the built-in `cress` theme does. A separate file is a color scheme
+That is what both built-in themes do. A separate file is a color scheme
 somebody can replace with one file and no edits to your theme, which is the
 whole reason to keep it out of `style.css`. Make it self-contained for the same
 reason: declare the colors it needs in the file itself, because a token

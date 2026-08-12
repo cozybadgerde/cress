@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="{{ .Page.Language }}">
+  {{ template "head" . }}
+  <body>
+    {{ template "site-header" . }}
+
+    <main class="page">
+      {{ .Page.HTML }}
+    </main>
+
+    {{ template "site-footer" . }}
+  </body>
+</html>
