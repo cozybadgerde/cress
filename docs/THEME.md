@@ -398,7 +398,7 @@ link it from your head partial:
 <link rel="stylesheet" href="{{ .Site.BasePath }}/highlight.css" />
 ```
 
-That is what both built-in themes do. A separate file is a color scheme
+That is what all three built-in themes do. A separate file is a color scheme
 somebody can replace with one file and no edits to your theme, which is the
 whole reason to keep it out of `style.css`. Make it self-contained for the same
 reason: declare the colors it needs in the file itself, because a token

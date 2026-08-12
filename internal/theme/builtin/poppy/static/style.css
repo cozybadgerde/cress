@@ -1,0 +1,562 @@
+/* poppy — a hand-made recipe book: warm paper, taped-in photographs. */
+
+:root {
+  --bg: #fdf7ec;
+  --card: #fffdf8;
+  --fg: #3b3129;
+  --muted: #75655a;
+  --border: #e8dccb;
+  --code-bg: #f6eddd;
+
+  /* The flower the theme is named after. Every other cress theme honors
+     `accent`, and one this opinionated has more use for it than the others: it
+     colors the links, the rule between sections and the drawn touches, so a
+     site setting its own gets a book in its own color rather than a red one
+     with a few exceptions. */
+  --accent: #c0392b;
+
+  /* How strongly the cover's flower shows through. It is an opacity rather than
+     a colour because the flower is drawn in the accent, so this is the only
+     part of it a scheme needs to restate. */
+  --watermark: 8%;
+
+  /* An old-style serif for anything that announces itself: the masthead, the
+     headings, a table's header row. Palatino and Iowan lead because they are
+     the warmest of the widely installed faces and read as a book rather than a
+     newspaper; Georgia is the one almost everybody actually has. */
+  /* The tint every dropped shadow uses. A warm brown reads on paper and
+     vanishes on a dark page, so lamplight restates it as plain black. */
+  --shade: rgb(59 49 41 / 12%);
+
+  /* What lifts the torn scrap off the page: a tight contact shadow under the
+     edge and a broader ambient one beneath it. One shadow alone reads as a
+     sticker; the pair is what makes paper look like it is resting on paper,
+     which matters here because the scrap and the page are nearly the same
+     colour and the shadow is doing all the separating. */
+  --lift: drop-shadow(0 1px 1px rgb(59 49 41 / 11%))
+    drop-shadow(0 7px 13px rgb(59 49 41 / 17%));
+
+  --display: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino,
+    "Book Antiqua", Georgia, serif;
+
+  /* The hand, kept for the line under a photograph and nothing else. A caption
+     is a handful of words somebody wrote on the picture, which is short enough
+     that a script face stays readable and is the whole recipe-book idiom. Where
+     no script face is installed, and Linux often has none, this falls through
+     to the body face and the layout carries the charm alone. */
+  --hand: "Bradley Hand", "Segoe Script", "Brush Script MT", "Comic Sans MS",
+    cursive;
+
+  --max-width: 42rem;
+  font-size: 18px;
+}
+
+/* The same book, read by lamplight. The paper goes to a warm near-black rather
+   than a neutral one, so the two schemes are one theme rather than a light
+   design with a dark fallback. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #241f1a;
+    --card: #2f2822;
+    --fg: #efe5d7;
+    --muted: #b0a091;
+    --border: #3e352c;
+    --code-bg: #2b241e;
+    --accent: #f0897c;
+    --shade: rgb(0 0 0 / 45%);
+    --lift: drop-shadow(0 1px 1px rgb(0 0 0 / 38%))
+      drop-shadow(0 7px 13px rgb(0 0 0 / 50%));
+    --watermark: 10%;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Reserve the scrollbar's width on every page, so moving between a short page
+   and a long one does not shift everything centered by half a scrollbar. */
+html {
+  -webkit-text-size-adjust: 100%;
+  scrollbar-gutter: stable;
+}
+
+/* The rounded face is the body voice: friendly without being a script. A script
+   face is charming for one line and tiring by the third, so it is spent only on
+   captions, and the headings take a serif that can carry a whole page. */
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN",
+    "Varela Round", Verdana, sans-serif;
+  line-height: 1.75;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.site-header,
+.page,
+.site-footer {
+  width: 100%;
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-block: 1.75rem 1.25rem;
+}
+
+.site-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: var(--fg);
+  text-decoration: none;
+}
+
+/* The logo always sits in a <picture>, which carries the dark-scheme <source>
+   when there is one. Taking the wrapper out of the layout keeps the img itself
+   the flex item. */
+.site-title picture {
+  display: contents;
+}
+
+.site-logo {
+  height: 1.9rem;
+  width: auto;
+  border-radius: 0.4rem;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.1rem;
+  font-size: 0.95rem;
+}
+
+.site-nav a {
+  color: var(--muted);
+  text-decoration: none;
+  padding-bottom: 2px;
+}
+
+.site-nav a:hover {
+  color: var(--accent);
+}
+
+/* Underlined as well as colored, so the current page is still marked for a
+   reader who cannot tell the two colors apart. */
+.site-nav a[aria-current="page"] {
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+}
+
+/* The landing layout opens with the header and a panel that together fill the
+   first screen. Sizing the pair rather than the panel keeps that exact: the
+   hero takes whatever height the header leaves. */
+.landing-top {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.hero {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: 3rem 5.5rem;
+  padding-inline: 1.5rem;
+  text-align: center;
+  /* The watermark hangs off the corner on purpose, so only part of the flower
+     is ever on the page. Without this it would widen the document and give
+     every landing page a horizontal scrollbar. */
+  overflow: hidden;
+}
+
+/* The flower the theme is named for, sitting in the paper of the cover.
+
+   Five petals and a heart, drawn entirely in CSS: each petal is one radial
+   gradient placed around a circle, and the whole set is used as a mask so the
+   colour comes from `background`. That is what lets the mark follow `accent`
+   instead of being fixed, which an image or an SVG could not do without one
+   file per colour.
+
+   The percentages are a regular pentagon: the petal centres sit at 90 degree
+   steps of 72 around the middle, and 25.476% is where the heart meets them.
+
+   -webkit-mask carries browsers that never unprefixed the property. Without any
+   mask support at all the layer would fall back to a filled square, which is
+   why it is kept faint and why nothing on the page depends on it.
+
+   It sits on its own layer behind the type, never on .hero itself: an opacity
+   set on the panel would take the site's name down with the artwork. */
+.hero::before {
+  content: "";
+  position: absolute;
+  right: -12%;
+  bottom: -14%;
+  width: clamp(26rem, 58vw, 44rem);
+  aspect-ratio: 1;
+  rotate: -12deg;
+  background: var(--accent);
+  opacity: var(--watermark);
+  pointer-events: none;
+  --petal: /37.02% 37.02% radial-gradient(#000 calc(71% - 1px), #0000 71%)
+    no-repeat;
+  -webkit-mask:
+    100% 50% var(--petal), 65.451% 97.553% var(--petal),
+    9.549% 79.389% var(--petal), 9.549% 20.611% var(--petal),
+    65.451% 2.447% var(--petal),
+    radial-gradient(100% 100%, #000 25.476%, #0000 calc(25.476% + 1px));
+  mask:
+    100% 50% var(--petal), 65.451% 97.553% var(--petal),
+    9.549% 79.389% var(--petal), 9.549% 20.611% var(--petal),
+    65.451% 2.447% var(--petal),
+    radial-gradient(100% 100%, #000 25.476%, #0000 calc(25.476% + 1px));
+}
+
+/* Positioned so the name sits above the watermark. Without this the panel's type is
+   static content and the layer above it would paint straight over it. */
+.hero-inner {
+  position: relative;
+  width: 100%;
+  max-width: var(--max-width);
+  margin-inline: auto;
+}
+
+/* The name on the cover. It is a <p>, not a heading: the page's own H1 belongs
+   to its content. */
+.hero-title {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(2.5rem, 9vw, 5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--accent);
+}
+
+.hero-lede {
+  margin: 1.5rem auto 0;
+  max-width: 32rem;
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+
+.hero-more {
+  position: absolute;
+  bottom: 1.75rem;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  padding: 0.5rem;
+  border-radius: 50%;
+  color: var(--muted);
+}
+
+.hero-more:hover,
+.hero-more:focus-visible {
+  color: var(--accent);
+}
+
+.hero-chevron {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.page {
+  flex: 1;
+  padding-block: 2rem 3rem;
+  word-wrap: break-word;
+}
+
+.page a {
+  color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.page h1,
+.page h2,
+.page h3,
+.page h4 {
+  font-family: var(--display);
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: 2.25rem;
+}
+
+.page h1 {
+  margin-top: 0;
+  font-size: 2.15rem;
+  /* Headings in red is the oldest trick in the book, literally: rubrication is
+     where the word rubric comes from. It is drawn from the accent, so a site
+     that set its own colour gets its own rubric. */
+  color: var(--accent);
+}
+
+.page h2 {
+  font-size: 1.6rem;
+}
+
+.page h3 {
+  font-size: 1.25rem;
+}
+
+/* Photographs taped into the book. The rotation is small and alternates, so a
+   run of pictures reads as placed by hand rather than by a rule.
+
+   It is a static transform rather than an animation, so prefers-reduced-motion
+   does not apply: nothing here moves, and straightening the pictures would
+   remove the theme rather than the motion. The tilt stays under two degrees,
+   which is what keeps a rotated figure from overflowing its column. */
+.page figure {
+  margin: 2.25rem auto;
+  padding: 0.7rem 0.7rem 0;
+  max-width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  box-shadow: 0 6px 18px var(--shade);
+  rotate: -1.2deg;
+  position: relative;
+}
+
+.page figure:nth-of-type(even) {
+  rotate: 1deg;
+}
+
+/* The strip of tape holding it down. */
+.page figure::before {
+  content: "";
+  position: absolute;
+  top: -0.6rem;
+  left: 50%;
+  width: 4.5rem;
+  height: 1.1rem;
+  translate: -50% 0;
+  rotate: -2deg;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-inline: 1px solid color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.page img {
+  max-width: 100%;
+  height: auto;
+}
+
+.page figure img {
+  display: block;
+  width: 100%;
+  border-radius: 2px;
+}
+
+/* The line under a photograph, which is the recipe-book idiom this whole theme
+   is built around, and the place a credit or an AI disclosure goes. */
+.page figcaption {
+  font-family: var(--hand);
+  padding-block: 0.5rem 0.6rem;
+  text-align: center;
+  font-size: 1.05rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* The lead image is the photograph on the front of the page, so it sits
+   straight while the ones taped in beside the prose are tilted.
+
+   Selected as figure.page-image rather than .page-image alone: `.page figure`
+   above is the more specific of the two, so a bare class would lose to it and
+   the front photograph would come out crooked. */
+.page figure.page-image {
+  margin-top: 0;
+  rotate: none;
+}
+
+.page figure.page-image::before {
+  rotate: 1.5deg;
+}
+
+/* A hairline between sections. */
+.page hr {
+  height: 0;
+  margin: 2.75rem 0;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+/* A scrap torn out of another page and tucked in.
+
+   The torn shape sits on a pseudo-element and the shadow on the blockquote
+   itself, which is not a style choice: clipping is applied after filtering, so
+   an element carrying both its own clip-path and its own drop-shadow generates
+   the shadow and then clips it away. Putting the clip one level down leaves the
+   filter an ancestor, and the shadow follows the torn silhouette as intended.
+
+   The text is opaque and sits inside the scrap, so it adds nothing to that
+   silhouette and picks up no shadow of its own.
+
+   The edge is a clip-path rather than a border, because a border follows the
+   box and would be sliced flat where the tear is. Two patterns alternate by
+   :nth-of-type so consecutive quotes are not the same scrap twice, and the
+   coordinates mix units on purpose: x in percent so the tear spans whatever
+   width the column has, y in pixels so its coarseness does not stretch as the
+   quote grows taller.
+
+   Padding clears the deepest tear, so no descender is ever cut. */
+.page blockquote {
+  position: relative;
+  margin: 2.25rem 0;
+  padding: 1.5rem 1.4rem;
+  color: var(--fg);
+  font-family: var(--display);
+  font-style: italic;
+  filter: var(--lift);
+  rotate: -0.5deg;
+}
+
+.page blockquote::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--card);
+  clip-path: polygon(0.0% 3.2px, 7.1% 3.9px, 14.3% 6.5px, 21.4% 3.3px, 28.6% 3.6px, 35.7% 4.1px, 42.9% 1.3px, 50.0% 3.6px, 57.1% 4.4px, 64.3% 5.6px, 71.4% 0.7px, 78.6% 2.1px, 85.7% 0.6px, 92.9% 5.7px, 100.0% 4.9px, 100.0% calc(100% - 0.3px), 92.9% calc(100% - 6.9px), 85.7% calc(100% - 6.8px), 78.6% calc(100% - 4.6px), 71.4% calc(100% - 4.3px), 64.3% calc(100% - 1.1px), 57.1% calc(100% - 0.1px), 50.0% calc(100% - 3.7px), 42.9% calc(100% - 0.4px), 35.7% calc(100% - 1.3px), 28.6% calc(100% - 1.7px), 21.4% calc(100% - 0.2px), 14.3% calc(100% - 3.2px), 7.1% calc(100% - 3.1px), 0.0% calc(100% - 5.9px));
+}
+
+.page blockquote:nth-of-type(even) {
+  rotate: 0.6deg;
+}
+
+.page blockquote:nth-of-type(even)::before {
+  clip-path: polygon(0.0% 3.8px, 7.1% 2.4px, 14.3% 5.9px, 21.4% 2.0px, 28.6% 3.6px, 35.7% 2.4px, 42.9% 2.9px, 50.0% 6.8px, 57.1% 0.7px, 64.3% 3.1px, 71.4% 1.6px, 78.6% 2.4px, 85.7% 7.0px, 92.9% 2.3px, 100.0% 4.3px, 100.0% calc(100% - 2.9px), 92.9% calc(100% - 5.1px), 85.7% calc(100% - 3.1px), 78.6% calc(100% - 1.2px), 71.4% calc(100% - 3.0px), 64.3% calc(100% - 2.9px), 57.1% calc(100% - 5.5px), 50.0% calc(100% - 3.9px), 42.9% calc(100% - 1.4px), 35.7% calc(100% - 4.7px), 28.6% calc(100% - 2.1px), 21.4% calc(100% - 3.6px), 14.3% calc(100% - 1.5px), 7.1% calc(100% - 2.9px), 0.0% calc(100% - 5.5px));
+}
+
+.page blockquote :first-child {
+  margin-top: 0;
+}
+
+.page blockquote :last-child {
+  margin-bottom: 0;
+}
+
+.page code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  background: var(--code-bg);
+  padding: 0.15em 0.4em;
+  border-radius: 0.4rem;
+}
+
+/* A slip of code mounted in the book. Same paper as a photograph's mat, the
+   same hairline and the same shadow, so a listing and a snapshot read as things
+   added to the page in the same way.
+
+   Lying flat, unlike the photographs. Code is read line by line and along the
+   left edge, and the tilt that suits a snapshot makes it harder to follow.
+
+   No strip of tape, though the figures have one: overflow-x makes this a scroll
+   container, which clips absolutely positioned children, so tape straddling the
+   top edge would be cut off exactly where it crosses. */
+.page pre {
+  margin-block: 2.25rem;
+  padding: 1.1rem 1.3rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  box-shadow: 0 6px 18px var(--shade);
+  overflow-x: auto;
+  line-height: 1.6;
+}
+
+.page pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.8rem;
+}
+
+/* Ruled on the page rather than mounted on it. The photographs, the torn quotes
+   and the code slips are all things laid on top of the paper; a table is the
+   one element that reads better drawn straight onto it, and it keeps a page of
+   them from looking like a stack of cards.
+
+   No background is set at all, which is what puts the table on the paper: the
+   default is already transparent, so the page shows through untouched.
+
+   Horizontal rules only, and the first column starts at zero padding, so the
+   table lines up with the left edge of the prose and reads as part of the page
+   instead of an object inset into it. */
+.page table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-block: 2rem;
+}
+
+.page th,
+.page td {
+  padding: 0.55rem 1rem 0.55rem 0;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+/* The header is underscored in the accent, the same hand that colours an h1.
+   It marks the row without the heavier grey rule that makes a table look like a
+   spreadsheet. */
+.page th {
+  font-family: var(--display);
+  font-size: 1.05rem;
+  border-bottom: 2px solid var(--accent);
+}
+
+.site-footer {
+  padding-block: 1.5rem 2.5rem;
+  margin-top: 2rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.site-footer a {
+  color: var(--accent);
+}
+
+.footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.footer-nav a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.footer-nav a:hover,
+.footer-nav a[aria-current="page"] {
+  color: var(--accent);
+}
+
+.footer-text,
+.footer-copyright {
+  margin-block: 0.25rem;
+}

@@ -1,0 +1,140 @@
+/* poppy — syntax tokens, for a site that sets [markdown] highlight = true.
+ *
+ * Warm and low-key. A recipe book or a craft log is not a code listing, and
+ * the occasional snippet in one should sit on the paper rather than shout from
+ * it, so these are muted earths and berries rather than an editor's palette.
+ *
+ * Replace this file to disagree: a site's own static/highlight.css wins over
+ * the one a theme ships, and these are chroma's class names, so any stylesheet
+ * chroma generates is a drop-in. Nothing here reads style.css, so a swap cannot
+ * leave dangling variables behind.
+ *
+ * Every color clears WCAG AA (4.5:1) against the code panel in its own scheme.
+ * Muted is not the same as faint, and the words still have to be readable.
+ */
+
+:root {
+  --tok-comment: #736244;
+  --tok-keyword: #a03a63;
+  --tok-type: #8a5a2b;
+  --tok-name: #2f6b52;
+  --tok-string: #7a5230;
+  --tok-number: #7a5230;
+  --tok-punct: #6f6156;
+  --tok-error: #b23a2e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tok-comment: #a2907a;
+    --tok-keyword: #e79ac0;
+    --tok-type: #e0ab73;
+    --tok-name: #8fcfad;
+    --tok-string: #dfb083;
+    --tok-number: #dfb083;
+    --tok-punct: #b3a292;
+    --tok-error: #f0897c;
+  }
+}
+
+.chroma .c,
+.chroma .ch,
+.chroma .cm,
+.chroma .c1,
+.chroma .cs,
+.chroma .cp,
+.chroma .cpf {
+  color: var(--tok-comment);
+  font-style: italic;
+}
+
+.chroma .k,
+.chroma .kc,
+.chroma .kd,
+.chroma .kn,
+.chroma .kp,
+.chroma .kr,
+.chroma .ow {
+  color: var(--tok-keyword);
+}
+
+.chroma .kt,
+.chroma .nc,
+.chroma .nn,
+.chroma .no,
+.chroma .ne {
+  color: var(--tok-type);
+}
+
+.chroma .na,
+.chroma .nb,
+.chroma .nd,
+.chroma .nf,
+.chroma .nt {
+  color: var(--tok-name);
+}
+
+.chroma .s,
+.chroma .sa,
+.chroma .sb,
+.chroma .sc,
+.chroma .sd,
+.chroma .se,
+.chroma .sh,
+.chroma .si,
+.chroma .sr,
+.chroma .ss,
+.chroma .sx,
+.chroma .s1,
+.chroma .s2,
+.chroma .dl {
+  color: var(--tok-string);
+}
+
+.chroma .m,
+.chroma .mb,
+.chroma .mf,
+.chroma .mh,
+.chroma .mi,
+.chroma .mo {
+  color: var(--tok-number);
+}
+
+.chroma .o,
+.chroma .p {
+  color: var(--tok-punct);
+}
+
+/* Understated on purpose. The tokenizer marks a character it could not place as
+   an error, and it is wrong often enough on ordinary content that a loud
+   treatment would be noise on a page that is perfectly fine. */
+.chroma .err {
+  color: var(--tok-error);
+}
+
+/* A diff is the one language whose colors carry meaning rather than decorate
+   it, so the changed lines are tinted as well as colored. */
+.chroma .gd {
+  color: var(--tok-error);
+  background: color-mix(in srgb, var(--tok-error) 12%, transparent);
+}
+
+.chroma .gi {
+  color: var(--tok-name);
+  background: color-mix(in srgb, var(--tok-name) 14%, transparent);
+}
+
+.chroma .gh,
+.chroma .gu,
+.chroma .gp {
+  color: var(--tok-keyword);
+  font-weight: 600;
+}
+
+.chroma .ge {
+  font-style: italic;
+}
+
+.chroma .gs {
+  font-weight: 600;
+}

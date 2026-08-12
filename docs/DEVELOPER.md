@@ -154,7 +154,8 @@ mismatch and could only ever be wrong.
 
 Each directory under `internal/theme/builtin/` is a theme embedded into the
 binary with `go:embed` and reachable by that directory's name: `cress`, the
-cozy default, and `birch`, a crisp developer-tool look built around code.
+cozy default, `birch`, a crisp developer-tool look built around code, and
+`poppy`, a hand-made recipe book.
 `templates/page.html` renders one page, `templates/landing.html` renders a page
 that names `layout: landing`, `templates/partials/` holds what those two share,
 and `static/` styles the result. Editing these files changes what every user

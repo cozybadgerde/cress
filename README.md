@@ -47,7 +47,7 @@ content/ (Markdown)  +  cress.toml (config)  +  theme  =  public/ (HTML)
 Every Markdown file under `content/` becomes a page: `content/about.md` renders
 to `public/about.html`, and `content/index.md` is the home page. Navigation is a
 short, explicit list in `cress.toml`. A theme supplies the templates and the
-CSS, so styling lives in exactly one place. Two themes are built in and work
+CSS, so styling lives in exactly one place. Three themes are built in and work
 with no setup; drop a directory under `themes/` when you want your own.
 
 ## Features
@@ -59,9 +59,10 @@ with no setup; drop a directory under `themes/` when you want your own.
 - **Explicit navigation.** Flat `[nav.main]` and `[nav.footer]` tables in
   `cress.toml`, mkdocs-style. What you list is what shows up, in the order you
   write it.
-- **One place for styling.** The theme owns every template and stylesheet. Two
-  themes ship in the binary, both light and dark aware: `cress`, cozy and warm,
-  and `birch`, a crisp developer-tool look built around code.
+- **One place for styling.** The theme owns every template and stylesheet.
+  Three themes ship in the binary, all light and dark aware: `cress`, cozy and
+  warm, `birch`, a crisp developer-tool look built around code, and `poppy`, a
+  hand-made recipe book.
 - **White-label ready.** Set a logo, favicon, accent color, footer message, and
   copyright line in `cress.toml`. `cress init` drops placeholder logo and
   favicon files in `static/` for you to replace, so a fresh site already looks

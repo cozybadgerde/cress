@@ -163,7 +163,7 @@ two backgrounds. Setting both adds a dark-scheme `<source>` to the logo, so the
 right one is chosen before anything is fetched, with no flash of the wrong
 image and no JavaScript.
 
-A theme decides whether to honor this. Both built-in themes do. A custom theme
+A theme decides whether to honor this. All three built-in themes do. A custom theme
 that never reads `logo_dark` shows the light logo to everyone, and cress does
 not warn.
 
@@ -214,7 +214,7 @@ highlight = true
 
 Cress then reads each block in the language its fence names and wraps every
 keyword, string, and comment in its own `<span>`. The spans carry a class and no
-color, because the colors are the theme's to choose. Both built-in themes ship a
+color, because the colors are the theme's to choose. All three built-in themes ship a
 set for the light and the dark scheme. A theme that ships none
 renders the code exactly as it did before, so turning this on can make a site
 look unchanged.
@@ -368,7 +368,9 @@ one written about a different picture. A credit on the wrong image is worse than
 no credit at all.
 
 With neither set, no lead image is rendered and nothing is missing. Both
-built-in themes render one, caption included. A theme that ignores the key shows
+built-in themes render one, caption included. Poppy makes it the photograph
+taped to the top of the page, which is the shape a lead image was made for. A
+theme that ignores the key shows
 nothing, which is a valid choice for it to make: check before you rely on one if
 you have a statement you must display.
 
@@ -474,7 +476,7 @@ rejected as an unknown key rather than silently rendering nothing.
 
 ## Themes
 
-A theme owns the templates and the styling. Two are built into the binary and
+A theme owns the templates and the styling. Three are built into the binary and
 need no setup, so switching is one line of config and nothing to download:
 
 - **`cress`**, the default. A serif body face, warm paper, a green accent. Cozy
@@ -482,15 +484,20 @@ need no setup, so switching is one line of config and nothing to download:
 - **`birch`**. A developer-tool look: crisp and sans-serif, blue links, ruled
   headings, striped tables, and syntax colors a developer already reads code
   in. For a page about technical work, where the code is what you want read.
+- **`poppy`**. A hand-made recipe book: warm paper, a bookish serif for the
+  headings, every picture taped in slightly crooked, and quotes on scraps torn
+  out of another page. For recipes, a craft log, a reading diary, notes to
+  friends.
 
 ```toml
 [site]
-theme = "birch"
+theme = "poppy"
 ```
 
-Both honor `accent` and `accent_dark`, and both are light- and dark-scheme
-aware. Birch's accent is its link blue, so setting `accent` takes over its
-links, the current nav entry and every focus ring at once.
+All three honor `accent` and `accent_dark`, and all three are light- and
+dark-scheme aware. Each picks a different default: cress a green, birch its link
+blue, poppy the red of the flower it is named after, which it uses on links, on
+its first heading and on the flower watermarked into its cover.
 
 To start your own, scaffold one:
 
@@ -588,7 +595,7 @@ layout: landing
 # Welcome
 ```
 
-That page renders through `templates/landing.html`. Both built-in themes ship
+That page renders through `templates/landing.html`. All three built-in themes ship
 one alternative layout, `landing`, which opens the page with a panel filling the
 first screen, the site's name set large in it, and the page's own content
 following below. An arrow at the foot of the panel links
