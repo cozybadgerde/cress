@@ -73,6 +73,13 @@ func TestCheckFieldsStaysSilent(t *testing.T) {
 			files: map[string]string{"templates/page.html": `{{ .Page.Meta.subtitle }}{{ .Page.Meta.a.b.c }}`},
 		},
 		{
+			// The site-wide counterpart of Page.Meta, and free for the same reason:
+			// the table exists for options cress does not define, so the checker
+			// has nothing to check a key against.
+			name:  "any key under Theme",
+			files: map[string]string{"templates/page.html": `{{ .Theme.show_toc }}{{ .Theme.hero.style }}`},
+		},
+		{
 			name:  "a function call result is not tracked",
 			files: map[string]string{"templates/page.html": `{{ (index .Nav.Main 0).Title }}{{ printf "%s" .Site.Title }}`},
 		},

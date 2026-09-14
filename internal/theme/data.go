@@ -35,6 +35,23 @@ type PageData struct {
 	Nav NavView
 	// Page is the page being rendered.
 	Page PageView
+	// Theme is the [theme] table of cress.toml, passed through verbatim so a
+	// theme can offer options cress itself does not define. Empty when the site
+	// declares none, which a template need not guard: reading a key of an empty
+	// map yields the zero value rather than an error, so {{ if .Theme.sticky_nav }}
+	// is false on a site that never heard of the option. Indexing is the one
+	// exception, since index refuses an untyped nil, so a theme reading an array
+	// option guards it with {{ with }}.
+	//
+	// It is the site-wide counterpart of PageView.Meta, and it is what keeps a
+	// theme-facing option from having to become a field here. A field is a
+	// permanent widening of this contract that only cress can add; a key in this
+	// table costs nothing and belongs to the theme that reads it.
+	//
+	// The values are whatever TOML decoded: bool, int64, float64, string, a
+	// slice, or a nested map reached as .Theme.hero.style. They are escaped like
+	// every other value a template renders, so an option cannot inject markup.
+	Theme map[string]any
 }
 
 // NavView is the resolved navigation as a template sees it: one slice per menu,

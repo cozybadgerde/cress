@@ -66,6 +66,21 @@ const (
 	navFooter = "footer"
 )
 
+// themeTable is the table holding a theme's own options, which cress passes to
+// the theme without reading.
+const themeTable = "theme"
+
+// reservedThemeKeys are the keys [theme] refuses, because each is one somebody
+// would plausibly write there to select a theme, which is not what the table
+// does. They are rejected rather than ignored, and the difference matters more
+// than the message: a table that takes any key by design cannot warn about a
+// key it does not know, so silence here is indistinguishable from a setting
+// that works. Refusing also keeps the name free. No site can be relying on it
+// to mean anything, so a later cress is free to give it a meaning, while a key
+// that had been quietly accepted and ignored could only be given one by
+// changing what existing sites already render.
+var reservedThemeKeys = []string{"name", "theme"}
+
 // ErrNotFound is returned by Load when the config file does not exist. Callers
 // distinguish it (with errors.Is) to point the user at `cress init`.
 var ErrNotFound = errors.New("config not found")
@@ -77,6 +92,15 @@ type Config struct {
 	Nav Nav
 	// Markdown is how the site's Markdown is rendered, from the [markdown] table.
 	Markdown Markdown
+	// ThemeOptions is the [theme] table, passed through verbatim for the theme
+	// to read. Nil when the site declares no table.
+	//
+	// It is named for what it holds rather than for its table, because Site.Theme
+	// is already the theme's name: cfg.Theme beside cfg.Site.Theme would read as
+	// two spellings of one value. The TOML key is still "theme" and templates
+	// still reach it as .Theme; only this field breaks the symmetry, and it is
+	// the one place where the two meanings sit next to each other.
+	ThemeOptions map[string]any
 }
 
 // Markdown holds the rendering options that apply to every page's Markdown. It
@@ -195,9 +219,10 @@ type NavItem struct {
 
 // document is the on-disk shape decoded from cress.toml.
 type document struct {
-	Site     Site        `toml:"site"`
-	Nav      navDocument `toml:"nav"`
-	Markdown Markdown    `toml:"markdown"`
+	Site     Site           `toml:"site"`
+	Nav      navDocument    `toml:"nav"`
+	Markdown Markdown       `toml:"markdown"`
+	Theme    map[string]any `toml:"theme"`
 }
 
 // navDocument is the on-disk [nav] table: one sub-table per menu, each mapping
@@ -226,11 +251,7 @@ func Load(path string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("parsing config %s: %w", path, err)
 	}
-	if undecoded := md.Undecoded(); len(undecoded) > 0 {
-		keys := make([]string, len(undecoded))
-		for i, k := range undecoded {
-			keys[i] = k.String()
-		}
+	if keys := unknownKeys(md); len(keys) > 0 {
 		return nil, fmt.Errorf("config %s: unknown key(s): %s", path, strings.Join(keys, ", "))
 	}
 
@@ -240,7 +261,8 @@ func Load(path string) (*Config, error) {
 			Main:   orderedNav(md, navMain, doc.Nav.Main),
 			Footer: orderedNav(md, navFooter, doc.Nav.Footer),
 		},
-		Markdown: doc.Markdown,
+		Markdown:     doc.Markdown,
+		ThemeOptions: doc.Theme,
 	}
 	cfg.normalize()
 	if err := cfg.resolveBaseURL(path); err != nil {
@@ -255,7 +277,29 @@ func Load(path string) (*Config, error) {
 	if err := validateTheme(path, cfg.Site); err != nil {
 		return nil, err
 	}
+	if err := validateThemeOptions(path, cfg.ThemeOptions); err != nil {
+		return nil, err
+	}
 	return cfg, nil
+}
+
+// unknownKeys is the undecoded keys worth reporting, as written in the file.
+//
+// Everything nested under [theme] is dropped. The table decodes into a map, and
+// a map absorbs any key by design, but the decoder still reports the leaves of a
+// nested sub-table as undecoded: a site writing [theme.hero] would fail the
+// unknown-key check over a key that arrived exactly as intended. Only keys
+// below the table are skipped, so a bare misspelled table at the top level is
+// still caught.
+func unknownKeys(md toml.MetaData) []string {
+	var keys []string
+	for _, k := range md.Undecoded() {
+		if len(k) > 1 && k[0] == themeTable {
+			continue
+		}
+		keys = append(keys, k.String())
+	}
+	return keys
 }
 
 // resolveBaseURL owns the whole base_url story: it decides whether the key was
@@ -343,6 +387,19 @@ func validateTheme(path string, site Site) error {
 func ValidThemeName(name string) bool {
 	return name != "" && name == filepath.Base(name) && name != "." && name != ".." &&
 		!strings.ContainsRune(name, '/') && !strings.ContainsRune(name, filepath.Separator)
+}
+
+// validateThemeOptions rejects the keys under [theme] that are reserved. The
+// table is otherwise free: every other key is the theme's to define and cress's
+// to pass on untouched.
+func validateThemeOptions(path string, options map[string]any) error {
+	for _, key := range reservedThemeKeys {
+		if _, ok := options[key]; ok {
+			return fmt.Errorf("config %s: [%s] %s is not how a theme is selected; set %s = %q under [site]",
+				path, themeTable, key, themeTable, DefaultTheme)
+		}
+	}
+	return nil
 }
 
 func validateAccents(path string, site Site) error {

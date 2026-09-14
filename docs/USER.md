@@ -580,6 +580,48 @@ Writing a theme, rather than dropping one in, is its own guide. The
 [theme guide](./THEME.md) covers the directory in full, the data a template
 receives, the rules a theme has to follow, and what `validate` checks.
 
+### Theme options
+
+Some themes offer settings of their own: a color to pick, a piece of chrome to
+switch off, a heading to word differently. A site states them in the `[theme]`
+table.
+
+Cress defines no keys here and reads none of them. It hands the table to the
+theme exactly as written, which is what lets a theme offer an option Cress has
+never heard of. So there is no list of them in this guide, and there cannot be
+one: **which options exist, what they are called, and what each does are the
+theme's, and its own documentation is where you will find them.** A theme that
+offers none needs no table at all, and most do not.
+
+Whatever the theme's documentation tells you to write, write it as ordinary
+TOML. Strings, numbers, booleans, arrays and nested tables all reach the theme
+intact, and values are escaped like every other, so an option cannot inject
+markup into your pages.
+
+Three things are Cress's to warn you about rather than the theme's.
+
+**A key the theme does not use does nothing, and Cress says nothing about it.**
+Every other table in `cress.toml` catches a typo for you, because Cress knows
+which keys are allowed there; this one accepts any key by design, so it cannot
+tell a real option from a misspelling of one. If a setting seems to have no
+effect, check it against the theme's documentation first.
+
+**A date written bare is not a string.** TOML reads `released = 2026-08-12` as a
+date, and a theme printing it gets `2026-08-12 00:00:00 +0000 UTC`. Quote it
+(`released = "2026-08-12"`) when you mean the text.
+
+**Selecting a theme is still `theme` under `[site]`.** Writing it inside this
+table instead is a natural mistake and an easy one to stare past, so Cress
+refuses `name` and `theme` here rather than accepting them and doing nothing:
+
+```toml
+[site]
+theme = "birch"    # which theme
+
+[theme]
+# birch's own options, if it offers any; see its documentation
+```
+
 ### Page layouts
 
 Most pages should look alike, and by default they do: every page is rendered

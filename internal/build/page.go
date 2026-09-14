@@ -85,13 +85,14 @@ func (w *pageWriter) leadImage(page *content.Page) (url, alt, caption string) {
 // failing over. Collecting it here rather than returning it per page keeps
 // writePage's signature about whether the write succeeded.
 type pageWriter struct {
-	outPath  string
-	thm      *theme.Theme
-	renderer *render.Renderer
-	site     config.Site
-	nav      theme.NavView
-	basePath string
-	warnings []string
+	outPath      string
+	thm          *theme.Theme
+	renderer     *render.Renderer
+	site         config.Site
+	nav          theme.NavView
+	basePath     string
+	themeOptions map[string]any
+	warnings     []string
 }
 
 // layoutTemplate maps a front-matter layout name to the template file a theme
@@ -155,8 +156,9 @@ func (w *pageWriter) writePage(page *content.Page) error {
 	}
 
 	data := theme.PageData{
-		Site: w.site,
-		Nav:  activeNav(w.nav, pageURL),
+		Site:  w.site,
+		Nav:   activeNav(w.nav, pageURL),
+		Theme: w.themeOptions,
 		Page: theme.PageView{
 			Title:        page.Title,
 			Description:  description,
@@ -208,8 +210,9 @@ func (w *pageWriter) writeNotFound() error {
 
 	pageURL := prefixURL(w.basePath, notFoundURL)
 	data := theme.PageData{
-		Site: w.site,
-		Nav:  activeNav(w.nav, pageURL),
+		Site:  w.site,
+		Nav:   activeNav(w.nav, pageURL),
+		Theme: w.themeOptions,
 		Page: theme.PageView{
 			Title:       notFoundTitle,
 			Description: w.site.Description,

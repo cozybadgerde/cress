@@ -88,6 +88,15 @@
         }
       }
     },
+    "theme": {
+      "description": "Options belonging to the theme, passed to it untouched. Which keys mean anything is the theme's to define and document; cress reads none of them. Values may be any TOML type, including nested tables and arrays, and reach a template as .Theme. The keys \"name\" and \"theme\" are refused, because a theme is selected with [site] theme and a table that accepts any key could not otherwise say so.",
+      "type": "object",
+      "propertyNames": {
+        "not": {
+          "enum": ["name", "theme"]
+        }
+      }
+    },
     "nav": {
       "description": "Explicit navigation, grouped into the menus a theme renders separately. Both groups are optional.",
       "type": "object",

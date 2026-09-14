@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -462,6 +463,136 @@ func TestLoad_rejectsAThemeThatIsAPath_integration(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			assertRejected(t, "[site]\ntheme = \""+tc.theme+"\"\n", "invalid theme")
+		})
+	}
+}
+
+// The table is passed through rather than interpreted, so what matters is that
+// every shape TOML can express survives the trip intact and reaches a theme as
+// the Go value it decoded to.
+func TestLoad_themeOptions_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	const body = `[site]
+title = "Site"
+
+[theme]
+show_toc = true
+columns = 3
+ratio = 1.5
+label = "Contents"
+links = ["a", "b"]
+
+[theme.hero]
+style = "compact"
+`
+	options := mustLoad(t, body).ThemeOptions
+
+	for _, tc := range []struct {
+		name string
+		key  string
+		want any
+	}{
+		{name: "a bool", key: "show_toc", want: true},
+		{name: "an integer", key: "columns", want: int64(3)},
+		{name: "a float", key: "ratio", want: 1.5},
+		{name: "a string", key: "label", want: "Contents"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := options[tc.key]; got != tc.want {
+				t.Errorf("theme.%s = %#v, want %#v", tc.key, got, tc.want)
+			}
+		})
+	}
+
+	t.Run("an array", func(t *testing.T) {
+		want := []any{"a", "b"}
+		if got := options["links"]; !reflect.DeepEqual(got, want) {
+			t.Errorf("theme.links = %#v, want %#v", got, want)
+		}
+	})
+
+	t.Run("a nested table", func(t *testing.T) {
+		hero, ok := options["hero"].(map[string]any)
+		if !ok {
+			t.Fatalf("theme.hero = %#v, want a map", options["hero"])
+		}
+		if got := hero["style"]; got != "compact" {
+			t.Errorf("theme.hero.style = %#v, want %q", got, "compact")
+		}
+	})
+}
+
+// A site that declares no table gets no map, and a theme reading an option from
+// it still renders: a missing key of an empty map is the zero value, not an
+// error. Absence is the ordinary case rather than a setting left out.
+func TestLoad_themeOptionsAreOptional_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	for _, tc := range []struct{ name, body string }{
+		{name: "no table at all", body: "[site]\ntitle = \"Site\"\n"},
+		{name: "an empty table", body: "[site]\ntitle = \"Site\"\n\n[theme]\n"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := mustLoad(t, tc.body).ThemeOptions; len(got) != 0 {
+				t.Errorf("ThemeOptions = %#v, want empty", got)
+			}
+		})
+	}
+}
+
+// The table takes any key by design, so the unknown-key check has to leave it
+// alone. The decoder reports the leaves of a nested sub-table as undecoded even
+// once the map has absorbed them, which would otherwise fail a build over a key
+// that arrived exactly as written.
+func TestLoad_themeOptionsEscapeTheUnknownKeyCheck_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	for _, tc := range []struct{ name, body string }{
+		{name: "a key cress does not define", body: "[theme]\nanything = true\n"},
+		{name: "a nested table", body: "[theme.hero]\nstyle = \"compact\"\n"},
+		{name: "a deeply nested table", body: "[theme.a.b.c]\nd = \"e\"\n"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			mustLoad(t, "[site]\ntitle = \"Site\"\n\n"+tc.body)
+		})
+	}
+}
+
+// Skipping the [theme] subtree must not blunt the check everywhere else: a
+// misspelled table at the top level is still a typo worth reporting, including
+// one close enough to [theme] to be mistaken for it.
+func TestLoad_stillRejectsUnknownKeysBesideThemeOptions_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	assertRejected(t, "[site]\ntitle = \"Site\"\n\n[themes]\nx = 1\n", "themes")
+	assertRejected(t, "[site]\ntitle = \"Site\"\n\n[theme]\nx = 1\n\n[nonsense]\ny = 2\n", "nonsense")
+	assertRejected(t, "[theme]\nx = 1\n\n[site]\ntitel = \"typo\"\n", "titel")
+}
+
+// Selecting a theme is [site] theme, and a reserved key is refused rather than
+// ignored so that writing it in the wrong place says so. The table absorbs any
+// key by design, which is exactly why it cannot report this one itself.
+func TestLoad_rejectsReservedThemeOptions_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	for _, tc := range []struct{ name, key string }{
+		{name: "name", key: "name"},
+		{name: "theme", key: "theme"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			body := "[site]\ntitle = \"Site\"\n\n[theme]\n" + tc.key + " = \"birch\"\n"
+			assertRejected(t, body, tc.key, "[site]")
 		})
 	}
 }

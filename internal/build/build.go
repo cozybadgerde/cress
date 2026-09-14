@@ -67,12 +67,13 @@ func Build(opts Options) (*Result, error) {
 	warnings = append(warnings, shadowWarnings(root, in.cfg.Site.Theme)...)
 	warnings = append(warnings, themeWarnings(in.thm)...)
 	writer := &pageWriter{
-		outPath:  outPath,
-		thm:      in.thm,
-		renderer: render.New(renderOptions(in.cfg, base)...),
-		site:     siteData(in.cfg.Site, base),
-		nav:      nav,
-		basePath: base,
+		outPath:      outPath,
+		thm:          in.thm,
+		renderer:     render.New(renderOptions(in.cfg, base)...),
+		site:         siteData(in.cfg.Site, base),
+		nav:          nav,
+		basePath:     base,
+		themeOptions: in.cfg.ThemeOptions,
 	}
 
 	if err := ensureDir(outPath); err != nil {

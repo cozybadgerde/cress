@@ -313,6 +313,81 @@ Five of those are easy to get wrong:
 reaches the template through it, so a theme can invent its own without asking
 for a config change.
 
+### `.Theme`
+
+The `[theme]` table from `cress.toml`, passed through untouched. It is the
+site-wide counterpart of `.Page.Meta`, and it is how a theme offers options of
+its own:
+
+```toml
+[theme]
+header_color = "forest"
+sticky_nav = true
+fonts = ["Inter", "Georgia"]
+
+[theme.hero]
+style = "compact"
+```
+
+```html
+<header class="site-header header-{{ .Theme.header_color }}">
+{{ if .Theme.sticky_nav }}<nav class="nav nav-sticky">{{ else }}<nav class="nav">{{ end }}
+<section class="hero hero-{{ .Theme.hero.style }}">
+```
+
+Those are the shapes worth offering. A choice among the looks your theme
+already ships (`header_color`), a piece of your own chrome the site can switch
+off (`sticky_nav`), a list you render (`fonts`), and a nested table when one
+option has parts. What they have in common is that each is a decision your
+design makes and Cress has no opinion about.
+
+Cress defines no keys here and never will. That is the point: an option in this
+table costs nothing and belongs to the theme that reads it, whereas a field on
+`PageData` is a permanent widening of a contract only Cress can add to. If you
+find yourself wanting a new `.Site` field for something only your theme cares
+about, this is where it goes.
+
+What does not belong here is anything Cress already owns. The footer credit is
+`[site] footer`, the accent is `[site] accent`, the logo is `[site] logo`. A
+theme adding `disable_brand` or `accent_color` of its own gives a site two
+places to set one thing, and the two will disagree. Read the `[site]` table
+first; this table is for what is left.
+
+Three things to know before you rely on it.
+
+**An unset option is safe to read, but not safe to index.** A missing key is the
+zero value, so `{{ .Theme.header_color }}` renders as nothing and
+`{{ if .Theme.sticky_nav }}` is false on a site that never set it. Reaching into
+a nested table is fine too: `{{ .Theme.hero.style }}` is empty rather than an
+error when there is no `[theme.hero]`. `index` is the exception, and it fails
+the build rather than rendering empty:
+
+```html
+{{ index .Theme.fonts 0 }}                       <!-- breaks when fonts is unset -->
+{{ with .Theme.fonts }}{{ index . 0 }}{{ end }}  <!-- correct -->
+```
+
+Guard every array option with `with`. A theme that does not is a theme that
+builds for you and fails for the first person who leaves the option out.
+
+**Ship a default for every option you read.** Nothing applies one for you, so a
+site that sets nothing gets the zero value: `false`, `0`, the empty string.
+Write the template so that zero value is the sensible default, or say what to
+set in your README. A theme that only looks right once five options are filled
+in is a theme nobody gets working.
+
+**Document your keys.** Cress cannot check them. The table accepts any key by
+design, so a site misspelling one gets silence rather than a warning, and
+`cress theme validate` skips `.Theme` for the same reason it skips `.Page.Meta`:
+it reports only what it is certain of. Your README is the only place a reader
+can learn what your theme accepts. Two keys are the exception and are refused
+outright, `name` and `theme`, because a site would reasonably expect either to
+select a theme and that is `[site] theme`.
+
+A date is worth one more line. TOML reads a bare `released = 2026-08-12` as a
+date, not a string, and printing it gives `2026-08-12 00:00:00 +0000 UTC`. If
+your theme takes a date, tell people to quote it.
+
 ## URLs, and the one thing you must root yourself
 
 Every URL in `PageData` is already correct. Navigation entries, page URLs, the
@@ -478,7 +553,9 @@ template and needs no content at all.
 It is deliberately quiet where it cannot be certain. A fragment reached with
 something other than the whole `PageData` is checked against whatever its
 callers pass it, and one reached with two different things is not checked at
-all. Anything it does report is something to fix.
+all. `.Page.Meta` and `.Theme` are skipped entirely, since both take any key by
+design and there is nothing to check a key against. Anything it does report is
+something to fix.
 
 ## Gotchas
 
@@ -497,6 +574,9 @@ all. Anything it does report is something to fix.
   `cress theme validate` is what finds one.
 - **Indentation inside a partial is emitted verbatim.** Go templates do not
   re-indent a fragment to its call site.
+- **`{{ index .Theme.fonts 0 }}` on an unset option fails the build.** Reading
+  an absent key is safe everywhere else in `.Theme`, but `index` refuses it
+  rather than rendering nothing. Wrap array options in `{{ with }}`.
 
 ## Before you publish a theme
 

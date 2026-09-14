@@ -1307,3 +1307,161 @@ func TestBuild_staticSkipsSymlinks_integration(t *testing.T) {
 		t.Errorf("a symlinked static file should not be published, got err=%v", err)
 	}
 }
+
+// themeOptionsSite scaffolds a site whose theme reads its options out of the
+// [theme] table, so a test states the table and the markup it expects back.
+// The theme prints each shape rather than styling anything: what is under test
+// is the trip from cress.toml to the template, not a design.
+func themeOptionsSite(t *testing.T, table string) string {
+	t.Helper()
+	const themeName = "opts"
+	const layout = `<html lang="{{ .Page.Language }}"><body>` +
+		`{{ if .Theme.show_toc }}TOC{{ else }}NOTOC{{ end }}` +
+		`|label:{{ .Theme.label }}` +
+		`|columns:{{ .Theme.columns }}` +
+		`|hero:{{ .Theme.hero.style }}` +
+		`|first:{{ with .Theme.links }}{{ index . 0 }}{{ end }}` +
+		`{{ .Page.HTML }}</body></html>`
+
+	root := scaffoldSite(t)
+	writeSiteFile(t, filepath.Join(root, config.ThemesDir, themeName, "templates", "page.html"), layout)
+	writeSiteFile(t, filepath.Join(root, config.FileName),
+		"[site]\ntitle = \"S\"\ntheme = \""+themeName+"\"\n\n"+table)
+	return root
+}
+
+// Every shape the table can hold has to arrive in the template as the value it
+// decoded to, including the nested table and the array, which are the two the
+// decoder does not hand over as plainly as it does a scalar.
+func TestBuild_themeOptions_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := themeOptionsSite(t, `[theme]
+show_toc = true
+label = "Contents"
+columns = 3
+links = ["first-link", "second-link"]
+
+[theme.hero]
+style = "compact"
+`)
+	buildSite(t, root)
+
+	doc := readFile(t, filepath.Join(root, config.OutputDir, "index.html"))
+	assertMarkers(t, "index.html", doc, []marker{
+		{"TOC", "a bool option read in an if"},
+		{"label:Contents", "a string option"},
+		{"columns:3", "an integer option"},
+		{"hero:compact", "a key of a nested table"},
+		{"first:first-link", "an element of an array option"},
+	})
+}
+
+// A theme that reads an option the site never set still renders. Reading a key
+// of an empty map yields the zero value rather than an error, so the absent
+// table needs no guard in a template and cannot break a site that upgrades into
+// a theme offering options it has not heard of.
+func TestBuild_themeOptionsAreOptional_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	for _, tc := range []struct{ name, table string }{
+		{name: "no table at all", table: ""},
+		{name: "an empty table", table: "[theme]\n"},
+		{name: "some options, not the ones read", table: "[theme]\nunrelated = 1\n"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			root := themeOptionsSite(t, tc.table)
+			buildSite(t, root)
+
+			doc := readFile(t, filepath.Join(root, config.OutputDir, "index.html"))
+			assertMarkers(t, "index.html", doc, []marker{
+				{"NOTOC", "the else branch of an unset bool"},
+				{"label:", "an unset string rendering as nothing"},
+			})
+		})
+	}
+}
+
+// The table is site configuration like any other, so a value in it is escaped
+// on the way out. Nothing in it is markup a theme asked for, and cress ships no
+// template function that could mark it safe.
+func TestBuild_themeOptionsAreEscaped_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := themeOptionsSite(t, "[theme]\nlabel = \"<script>alert(1)</script>\"\n")
+	buildSite(t, root)
+
+	doc := readFile(t, filepath.Join(root, config.OutputDir, "index.html"))
+	if strings.Contains(doc, "<script>") {
+		t.Errorf("a theme option reached the output as markup: %s", doc)
+	}
+	if !strings.Contains(doc, "&lt;script&gt;") {
+		t.Errorf("the escaped option is missing from: %s", doc)
+	}
+}
+
+// The options are site-wide, so the 404 gets them too. It renders through the
+// same theme and a reader arrives at it the same way, which makes a masthead
+// that loses its configuration there a bug nobody sees until it is live.
+func TestBuild_themeOptionsReachTheNotFoundPage_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	root := themeOptionsSite(t, "[theme]\nlabel = \"Contents\"\n")
+	buildSite(t, root)
+
+	doc := readFile(t, filepath.Join(root, config.OutputDir, build.NotFoundFile))
+	if !strings.Contains(doc, "label:Contents") {
+		t.Errorf("the 404 page did not get the theme options: %s", doc)
+	}
+}
+
+// Reading an option the site did not set is safe for a scalar and for a key of
+// a nested table: an absent key is the zero value and renders as nothing. It is
+// not safe for index, which refuses an untyped nil and fails the build. The
+// difference is Go's rather than cress's, and it is the one thing a theme
+// reading an array option has to know, so it is pinned here: a theme guarding
+// the array is correct today and has to stay correct.
+func TestBuild_themeOptionsUnsetArrayNeedsAGuard_integration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	const themeName = "opts"
+	for _, tc := range []struct {
+		name    string
+		body    string
+		wantErr bool
+	}{
+		{name: "an unset scalar", body: `{{ .Theme.label }}`},
+		{name: "a key of an unset table", body: `{{ .Theme.hero.style }}`},
+		{name: "an unset array behind with", body: `{{ with .Theme.links }}{{ index . 0 }}{{ end }}`},
+		{name: "an unset array indexed directly", body: `{{ index .Theme.links 0 }}`, wantErr: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			root := scaffoldSite(t)
+			writeSiteFile(t, filepath.Join(root, config.ThemesDir, themeName, "templates", "page.html"),
+				`<html lang="{{ .Page.Language }}">`+tc.body+`{{ .Page.HTML }}</html>`)
+			writeSiteFile(t, filepath.Join(root, config.FileName),
+				"[site]\ntitle = \"S\"\ntheme = \""+themeName+"\"\n")
+
+			_, err := build.Build(build.Options{Root: root})
+			if tc.wantErr {
+				if err == nil {
+					t.Fatal("expected indexing an unset option to fail the build")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("reading an unset option should render as nothing: %v", err)
+			}
+		})
+	}
+}
