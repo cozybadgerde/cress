@@ -13,7 +13,7 @@ first.
 
 ## Prerequisites
 
-- Go 1.26 or newer.
+- Go 1.27 or newer.
 - [Task](https://taskfile.dev) to run the project's commands.
 
 The Taskfile is the single source of truth for the build, lint, and test gate.
