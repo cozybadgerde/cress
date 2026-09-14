@@ -140,6 +140,20 @@ func TestServe_subpath_integration(t *testing.T) {
 	}
 }
 
+// closeBody finishes with a response whose body the test does not read.
+//
+// The read matters as much as the close, which is why this is not just a
+// deferred Close. A response abandoned before its body is drained leaves the
+// server still writing it, so that connection never goes idle, and Shutdown
+// waits for it until the shutdown timeout expires rather than returning at
+// once. The helpers that assert on a status code and nothing else are exactly
+// the ones that would otherwise hang up mid-delivery, and a browser navigating
+// away from a half-loaded page does the same thing.
+func closeBody(resp *http.Response) {
+	_, _ = io.Copy(io.Discard, resp.Body)
+	_ = resp.Body.Close()
+}
+
 // assertOK checks that url is served successfully.
 func assertOK(t *testing.T, url string) {
 	t.Helper()
@@ -148,7 +162,7 @@ func assertOK(t *testing.T, url string) {
 	if err != nil {
 		t.Fatalf("GET %s: %v", url, err)
 	}
-	_ = resp.Body.Close()
+	closeBody(resp)
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("GET %s = %d, want %d", url, resp.StatusCode, http.StatusOK)
 	}
@@ -165,7 +179,7 @@ func assertRedirect(t *testing.T, url, location string) {
 	if err != nil {
 		t.Fatalf("GET %s: %v", url, err)
 	}
-	_ = resp.Body.Close()
+	closeBody(resp)
 	if resp.StatusCode != http.StatusFound {
 		t.Errorf("GET %s = %d, want %d", url, resp.StatusCode, http.StatusFound)
 	}
