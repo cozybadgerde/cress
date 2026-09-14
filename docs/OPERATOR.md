@@ -71,8 +71,7 @@ To check a downloaded release by hand:
 
 ```bash
 cosign verify-blob checksums.txt \
-  --signature checksums.txt.sig \
-  --certificate checksums.txt.pem \
+  --bundle checksums.txt.bundle \
   --certificate-identity-regexp '^https://github.com/cozybadgerde/cress/\.github/workflows/release\.yml@refs/tags/' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
@@ -80,6 +79,22 @@ cosign verify-blob checksums.txt \
 That identity is the point of the check: it says the file was signed by cress's
 own release workflow running on a tag, not merely by someone with a valid
 certificate.
+
+The signature and the certificate travel together in `checksums.txt.bundle`.
+Releases up to v1.0.1 published them as a separate `checksums.txt.sig` and
+`checksums.txt.pem` instead, so verifying one of those takes the older form:
+
+```bash
+cosign verify-blob checksums.txt \
+  --signature checksums.txt.sig \
+  --certificate checksums.txt.pem \
+  --certificate-identity-regexp '^https://github.com/cozybadgerde/cress/\.github/workflows/release\.yml@refs/tags/' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
+Both are cosign's own formats and current cosign reads either, so this is a
+question of which release you are checking rather than which cosign you have.
+The install script picks the right one on its own.
 
 ## Pin a version
 

@@ -144,15 +144,40 @@ got=$(sum "${tmp}/${asset}")
 # would trade a real barrier for a threat most users are not facing. A mismatch
 # is fatal; a missing cosign is a note. Pass CRESS_REQUIRE_SIGNATURE=1 to make
 # the absence fatal too.
+#
+# Two signature shapes, because the release format changed: cosign 3 writes one
+# Sigstore bundle where cosign 2 wrote a .sig and a .pem side by side. Releases
+# up to v1.0.1 carry the old pair, so -t pins an older version into the second
+# branch. Which shape a release used is settled by which file it published, not
+# by a version comparison here, so a release that is missing both is still just
+# unsigned rather than a case to special-case.
+#
+# A signature that is present and does not verify is fatal in either branch. It
+# does not fall through to the other shape: the one thing worse than no check is
+# a failed check that the script shrugs off.
+#
+# Both probes discard stderr because a miss is the ordinary answer here, not a
+# fault: every install of a release older than the bundle format asks for a file
+# that was never published. The download helper reports a 404 loudly, which is
+# right when it is fetching the release itself and wrong when it is asking which
+# shape this one used.
 if command -v cosign >/dev/null 2>&1; then
 	log "verifying signature..."
-	if dlo "${sumurl}.sig" "${tmp}/checksums.txt.sig" &&
-		dlo "${sumurl}.pem" "${tmp}/checksums.txt.pem"; then
+	identity="^https://github.com/${OWNER}/${REPO}/\.github/workflows/release\.yml@refs/tags/"
+	issuer="https://token.actions.githubusercontent.com"
+	if dlo "${sumurl}.bundle" "${tmp}/checksums.txt.bundle" 2>/dev/null; then
+		cosign verify-blob "${tmp}/checksums.txt" \
+			--bundle "${tmp}/checksums.txt.bundle" \
+			--certificate-identity-regexp "$identity" \
+			--certificate-oidc-issuer "$issuer" \
+			>/dev/null 2>&1 || die "signature verification failed for checksums.txt"
+	elif dlo "${sumurl}.sig" "${tmp}/checksums.txt.sig" 2>/dev/null &&
+		dlo "${sumurl}.pem" "${tmp}/checksums.txt.pem" 2>/dev/null; then
 		cosign verify-blob "${tmp}/checksums.txt" \
 			--signature "${tmp}/checksums.txt.sig" \
 			--certificate "${tmp}/checksums.txt.pem" \
-			--certificate-identity-regexp "^https://github.com/${OWNER}/${REPO}/\.github/workflows/release\.yml@refs/tags/" \
-			--certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+			--certificate-identity-regexp "$identity" \
+			--certificate-oidc-issuer "$issuer" \
 			>/dev/null 2>&1 || die "signature verification failed for checksums.txt"
 	else
 		log "note: this release is not signed; checksum verified only"

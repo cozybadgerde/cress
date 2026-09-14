@@ -54,17 +54,20 @@ checksum:
 # Keyless: cosign exchanges the job's OIDC token for a short-lived certificate
 # and logs it to the Rekor transparency log, so there is no private key to store
 # or rotate. Verification needs no key either, only the identity to expect.
+#
+# One bundle rather than a .sig and a .pem beside each other: cosign 3 writes the
+# signature and the certificate into a single Sigstore bundle, and its sign-blob
+# no longer honours --output-signature or --output-certificate. Releases up to
+# v1.0.1 carry the two-file form, so anything verifying a published release has
+# to read both shapes; scripts/install.sh does.
 signs:
   - cmd: cosign
-    signature: "${artifact}.sig"
-    certificate: "${artifact}.pem"
+    signature: "${artifact}.bundle"
     args:
       - sign-blob
       - "--yes"
-      - "--output-signature"
+      - "--bundle"
       - "${signature}"
-      - "--output-certificate"
-      - "${certificate}"
       - "${artifact}"
     artifacts: checksum
     output: true
