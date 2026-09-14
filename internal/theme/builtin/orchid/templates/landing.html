@@ -1,0 +1,48 @@
+{{/*
+  Reached by a page whose front matter says `layout: landing`. It opens with a
+  panel filling the first screen; the prose follows below.
+
+  The site title in it is a <p>, not a heading: the page's own H1 comes from its
+  Markdown, and a second one here would leave the page with two.
+
+  Where birch sets the panel flat against the left edge and the default theme
+  centres it quietly, this one centres it and lights it: a bloom sits behind the
+  type and the title is filled with the theme's two hues. The bloom is a sibling
+  element rather than a background on the section, so it can be pushed behind the
+  text with z-index and cannot tint the type sitting on it.
+
+  The link down to the prose is a link rather than an ornament so it can be
+  tabbed to, and it is skipped for a page with no body.
+*/}}
+<!DOCTYPE html>
+<html lang="{{ .Page.Language }}">
+  {{ template "head" . }}
+  <body>
+    <div class="landing-top">
+      {{ template "site-header" . }}
+
+      <section class="hero">
+        <div class="hero-bloom" aria-hidden="true"></div>
+        <div class="hero-inner">
+          <p class="hero-title">{{ .Site.Title }}</p>
+          {{ with .Page.Description }}<p class="hero-lede">{{ . }}</p>{{ end }}
+        </div>
+        {{ if .Page.HTML }}
+        <a class="hero-more" href="#content">
+          Read on
+          <svg class="hero-chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+        {{ end }}
+      </section>
+    </div>
+
+    <main class="page" id="content">
+      {{ .Page.HTML }}
+    </main>
+
+    {{ template "site-footer" . }}
+  </body>
+</html>

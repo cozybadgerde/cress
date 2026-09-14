@@ -119,13 +119,14 @@ Three dashes on their own line make a horizontal rule:
 ## The theme decides how this looks
 
 Everything above is plain, semantic HTML. What it _looks_ like is the theme's
-call, and Cress ships three:
+call, and Cress ships four:
 
-| Theme   | Feels like                                              |
-|---------|---------------------------------------------------------|
-| `cress` | the default: warm paper, a serif body, quiet and roomy   |
-| `birch` | a developer tool: crisp, sans-serif, built around code   |
-| `poppy` | a hand-made book: photos taped in, quotes on torn scraps |
+| Theme    | Feels like                                               |
+|----------|----------------------------------------------------------|
+| `cress`  | the default: warm paper, a serif body, quiet and roomy   |
+| `birch`  | a developer tool: crisp, sans-serif, built around code   |
+| `poppy`  | a hand-made book: photos taped in, quotes on torn scraps |
+| `orchid` | dark first: a violet ground, magenta and teal, loud      |
 
 Change one line in `cress.toml` and reload this page:
 

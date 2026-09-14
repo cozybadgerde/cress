@@ -476,7 +476,7 @@ rejected as an unknown key rather than silently rendering nothing.
 
 ## Themes
 
-A theme owns the templates and the styling. Three are built into the binary and
+A theme owns the templates and the styling. Four are built into the binary and
 need no setup, so switching is one line of config and nothing to download:
 
 - **`cress`**, the default. Warm paper, a serif body, a muted sage accent, and
@@ -489,16 +489,29 @@ need no setup, so switching is one line of config and nothing to download:
   headings, every picture taped in slightly crooked, and quotes on scraps torn
   out of another page. For recipes, a craft log, a reading diary, notes to
   friends.
+- **`orchid`**. Vivid and dark-first: a deep violet ground, a magenta-to-teal
+  gradient through the masthead, the headings and the landing, and a site name
+  filled with both hues. For a tool with a following, a community project, a
+  hobby somebody is proud of - a site that is a personality rather than a
+  document.
 
 ```toml
 [site]
-theme = "poppy"
+theme = "orchid"
 ```
 
-All three honor `accent` and `accent_dark`, and all three are light- and
+All four honor `accent` and `accent_dark`, and all four are light- and
 dark-scheme aware. Each picks a different default: cress a green, birch its link
 blue, poppy the red of the flower it is named after, which it uses on links, on
-its first heading and on the flower watermarked into its cover.
+its first heading and on the flower watermarked into its cover, and orchid a
+magenta.
+
+Orchid is the one that is dark by default. The other three are light designs
+that follow your system into a dark scheme; orchid is a dark design that follows
+it into a light one. It also treats `accent` slightly differently, because it is
+the only theme built on two colors rather than one: your accent replaces the
+first of them and the theme keeps the second, since a pair chosen half by you
+and half by the theme is a pair nobody has looked at together.
 
 To start your own, scaffold one:
 

@@ -1,0 +1,17 @@
+{{/*
+  The site's name and logo, linking home. Inside {{ with .Site.Logo }} the dot is
+  the logo's URL, so the dark variant has to be reached from the root with $.
+*/}}
+{{- define "brand" -}}
+  <a class="site-title" href="{{ .Site.BasePath }}/">
+        {{- with .Site.Logo }}
+        <picture>
+          {{- with $.Site.LogoDark }}
+          <source media="(prefers-color-scheme: dark)" srcset="{{ . }}" />
+          {{- end }}
+          <img class="site-logo" src="{{ . }}" alt="" />
+        </picture>
+        {{- end }}
+        <span>{{ .Site.Title }}</span>
+      </a>
+{{- end -}}

@@ -1,0 +1,161 @@
+/* orchid — syntax tokens, for a site that sets [markdown] highlight = true.
+ *
+ * Dark first, like the rest of the theme: the palette below is the design and
+ * the light block is the variant. The hues follow the chrome rather than the
+ * other way round. A magenta keyword and a teal string are the theme's own two
+ * colors doing a second job, which is what keeps a code block looking like part
+ * of this page instead of a screenshot from an editor.
+ *
+ * Six colors and no more. Operators and punctuation stay at the body color
+ * rather than being tinted, which is what keeps a dense line from turning into
+ * confetti — the one restraint a loud theme cannot skip.
+ *
+ * Replace this file to disagree: a site's own static/highlight.css wins over
+ * the one a theme ships, and these are chroma's class names, so any stylesheet
+ * chroma generates is a drop-in. Nothing here reads style.css, so a swap cannot
+ * leave dangling variables behind.
+ *
+ * Every color clears WCAG AA (4.5:1) against the surface it sits on, the diff
+ * beds included, and each bed is far enough from the block's own background to
+ * be visible as a bed rather than only as tinted text.
+ */
+
+:root {
+  --tok-comment: #8d80ab;
+  --tok-keyword: #f472c8;
+  --tok-function: #7cc4ff;
+  --tok-entity: #c9a4ff;
+  --tok-tag: #7fe3a6;
+  --tok-constant: #ffb877;
+  --tok-string: #5ee0d0;
+  --tok-plain: #ece7f5;
+
+  --tok-del: #ffb3c8;
+  --tok-del-bg: #601d33;
+  --tok-add: #8ef0c2;
+  --tok-add-bg: #0f3d2f;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --tok-comment: #6b5f82;
+    --tok-keyword: #b0248f;
+    --tok-function: #1f5fb0;
+    --tok-entity: #6b3fc0;
+    --tok-tag: #1d7a4f;
+    --tok-constant: #8a4b00;
+    --tok-string: #0f7a70;
+    --tok-plain: #1d1729;
+
+    --tok-del: #8a1038;
+    --tok-del-bg: #ffe4ec;
+    --tok-add: #0b5135;
+    --tok-add-bg: #d8f5e6;
+  }
+}
+
+.chroma .c,
+.chroma .ch,
+.chroma .cm,
+.chroma .c1,
+.chroma .cs,
+.chroma .cp,
+.chroma .cpf {
+  color: var(--tok-comment);
+}
+
+.chroma .k,
+.chroma .kc,
+.chroma .kd,
+.chroma .kn,
+.chroma .kp,
+.chroma .kr,
+.chroma .kt,
+.chroma .ow {
+  color: var(--tok-keyword);
+}
+
+.chroma .nf,
+.chroma .nd {
+  color: var(--tok-function);
+}
+
+.chroma .nc,
+.chroma .nn,
+.chroma .ne,
+.chroma .no,
+.chroma .na,
+.chroma .nv {
+  color: var(--tok-entity);
+}
+
+/* Markup tags and their attributes, which is where a green earns its place:
+   an HTML or XML block is mostly tags, and leaving them at the body color
+   would make the one language nobody wants to read the hardest to skim. */
+.chroma .nt {
+  color: var(--tok-tag);
+}
+
+.chroma .nb,
+.chroma .m,
+.chroma .mb,
+.chroma .mf,
+.chroma .mh,
+.chroma .mi,
+.chroma .mo {
+  color: var(--tok-constant);
+}
+
+.chroma .s,
+.chroma .sa,
+.chroma .sb,
+.chroma .sc,
+.chroma .sd,
+.chroma .se,
+.chroma .sh,
+.chroma .si,
+.chroma .sr,
+.chroma .ss,
+.chroma .sx,
+.chroma .s1,
+.chroma .s2,
+.chroma .dl {
+  color: var(--tok-string);
+}
+
+.chroma .o,
+.chroma .p {
+  color: var(--tok-plain);
+}
+
+/* Understated on purpose. The tokenizer marks a character it could not place
+   as an error, and it is wrong often enough on ordinary content that a loud
+   treatment would be noise on a page that is perfectly fine. */
+.chroma .err {
+  color: var(--tok-del);
+}
+
+.chroma .gd {
+  color: var(--tok-del);
+  background: var(--tok-del-bg);
+}
+
+.chroma .gi {
+  color: var(--tok-add);
+  background: var(--tok-add-bg);
+}
+
+.chroma .gh,
+.chroma .gu,
+.chroma .gp {
+  color: var(--tok-constant);
+  font-weight: 600;
+}
+
+.chroma .ge {
+  font-style: italic;
+}
+
+.chroma .gs {
+  font-weight: 600;
+}

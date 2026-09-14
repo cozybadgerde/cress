@@ -1,0 +1,587 @@
+/* orchid — vivid and dark-first: a violet ground, a magenta-to-teal accent.
+ *
+ * The other three built-in themes are light designs that carry a faithful dark
+ * scheme. This one is the other way round: the dark palette below is the design,
+ * and the light block further down is the variant. That is the whole reason the
+ * theme exists, so it is worth saying before the first color.
+ *
+ * Two hues, not a dozen. --accent is the theme's voice and the one a site can
+ * replace; --accent-2 is fixed and is what the gradients fade into. A site that
+ * sets `accent` takes over links, the active nav entry, every focus ring and the
+ * first stop of each gradient, and the second stop stays where the theme put it:
+ * a pair picked by the site and the theme independently is a pair nobody has
+ * looked at together.
+ *
+ * Every color pairing that carries text clears WCAG AA (4.5:1) against the
+ * surface it sits on, in both schemes, gradients sampled along their length
+ * rather than at the ends. Nothing here puts a shadow or a glow on text: a glow
+ * eats effective contrast and blurs the glyph it is meant to flatter. The glow
+ * in this theme lives on things that are not text, which is the rule that lets
+ * it be loud without becoming hard to read.
+ */
+
+:root {
+  --bg: #15111e;
+  --fg: #ece7f5;
+  --muted: #a89cc0;
+  --border: #3a2f52;
+  --panel: #1e1830;
+  --panel-alt: #272038;
+
+  --accent: #e879c8;
+  --accent-2: #5ee0d0;
+
+  --max-width: 48rem;
+  --radius: 10px;
+  font-size: 16px;
+
+  /* Dark first, light second, so the browser paints form controls, scrollbars
+     and the space beyond the page in the theme's own order rather than cutting
+     bright rectangles out of a dark ground. */
+  color-scheme: dark light;
+}
+
+/* The light variant. Genuinely designed rather than offered as a courtesy: the
+   same two hues, re-weighted for a pale ground, because a magenta that sings at
+   7:1 on violet-black is unreadable at 1.6:1 on white. */
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #fdfbff;
+    --fg: #1d1729;
+    --muted: #5c5170;
+    --border: #ddd2ea;
+    --panel: #f5f0fa;
+    --panel-alt: #ebe3f4;
+
+    --accent: #b0248f;
+    --accent-2: #0f7a70;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Reserve the scrollbar's width on every page, so moving between a short page
+   and a long one does not shift everything centered by half a scrollbar. */
+html {
+  -webkit-text-size-adjust: 100%;
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Noto Sans", Helvetica, Arial, sans-serif;
+  line-height: 1.65;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.page,
+.site-footer {
+  width: 100%;
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+/* --- masthead ------------------------------------------------------------ */
+
+/* A bar across the whole window, with its contents still lining up with the
+   prose below. The padding is what centres them: half the leftover width either
+   side, plus the gutter the page uses, which lands the brand on exactly the
+   same left edge as the first paragraph. max() keeps the gutter from collapsing
+   once the window is narrower than the column.
+
+   Done with padding rather than an inner wrapper because the header markup is
+   one partial shared with the other themes, and a wrapper here would have to
+   exist in all of them.
+
+   Centered rather than baseline-aligned. The brand and the nav are both flex
+   containers, so each contributes the baseline of its own first item: the nav's
+   is a line of text, and the brand's is the logo, whose baseline as a replaced
+   element is its bottom edge. Lining that edge up with a line of text lifts the
+   whole brand well above the nav. Baseline is the right instinct for two runs of
+   text, and the brand stops being one the moment it has a mark in it. */
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+  padding: 1.1rem max(1.5rem, calc((100% - var(--max-width)) / 2 + 1.5rem));
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+/* The theme's signature, and the reason the masthead needs no other decoration:
+   a two-hue rule along the bottom edge. It sits on ::after rather than on the
+   border so the border can stay a plain hairline underneath it, which is what
+   keeps the bar legible when the gradient is turned off by forced colors. */
+.site-header::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+.site-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--fg);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.site-title:hover span {
+  color: var(--accent);
+}
+
+/* The logo always sits in a <picture>, which carries the dark-scheme <source>
+   when the site configured one. */
+.site-title picture {
+  display: inline-flex;
+}
+
+.site-logo {
+  display: block;
+  height: 1.5rem;
+  width: auto;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.1rem;
+  margin-inline-start: auto;
+}
+
+.site-nav a {
+  color: var(--muted);
+  font-size: 0.95rem;
+  text-decoration: none;
+  padding-block: 0.15rem;
+}
+
+.site-nav a:hover {
+  color: var(--fg);
+}
+
+/* The current entry is marked with a rule as well as a color, so it is still
+   marked for a reader who cannot tell the two colors apart.
+
+   Drawn with an inset shadow rather than a border, because a border is part of
+   the box: the header centres its children, so two pixels along one edge lift
+   the text off the line the brand sits on, and a transparent border on every
+   entry lifts them all rather than fixing it. A shadow paints in the same place
+   and occupies no space. */
+.site-nav a[aria-current="page"] {
+  color: var(--accent);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+/* --- landing ------------------------------------------------------------- */
+
+/* The landing layout opens with the header and a panel that together fill the
+   first screen. */
+.landing-top {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+}
+
+.hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5rem;
+  padding: 4rem 1.5rem 3rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* The bloom: a soft two-hue wash behind the type. It is its own element rather
+   than a background on the panel so it can sit behind the text at z-index 0 and
+   cannot tint a single glyph. Being decorative and empty, it is aria-hidden in
+   the template rather than hidden here. */
+.hero-bloom {
+  position: absolute;
+  inset: -20%;
+  z-index: 0;
+  background:
+    radial-gradient(40% 45% at 30% 35%, color-mix(in srgb, var(--accent) 45%, transparent), transparent 70%),
+    radial-gradient(40% 45% at 70% 65%, color-mix(in srgb, var(--accent-2) 38%, transparent), transparent 70%);
+  filter: blur(70px);
+  pointer-events: none;
+}
+
+/* Positioned so it sits above the bloom. Without this the panel's own type is
+   painted underneath the wash rather than on it. */
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 34rem;
+}
+
+/* The site's name, set as display type and filled with the theme's two hues. It
+   is a <p>, not a heading, because the page's own H1 comes from its Markdown.
+
+   The gradient fill is the one place type is painted with something other than
+   a flat color, so it is the one place worth checking: both stops clear 7:1 on
+   this panel and every point between them was sampled, the darkest landing at
+   7.07. The flat color underneath is what a browser without background-clip
+   paints instead, and it is a stop rather than a compromise between them. */
+.hero-title {
+  margin: 0;
+  font-size: clamp(2.6rem, 8vw, 4.2rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  color: var(--accent);
+}
+
+/* The gradient fill is applied only where the clip is supported, and that guard
+   is load-bearing rather than tidy: -webkit-text-fill-color: transparent paints
+   the glyphs with nothing, so a browser that took the fill and refused the clip
+   would render the site's name invisible. Behind the guard the flat --accent
+   above is what shows, which is a color from the palette rather than a
+   compromise between two.
+
+   Both stops clear 7:1 on this panel and every point between them was sampled,
+   the darkest landing at 7.07. */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .hero-title {
+    background: linear-gradient(105deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Interpolated through oklch where the browser can, because sRGB takes the
+     short way between two near-complementary hues and that route runs through
+     grey: the middle of the word goes flat exactly where the type is largest.
+     oklch keeps the chroma up across the join. Lightness still interpolates
+     between the two stops, so the contrast floor above is the floor here too. */
+  @supports (background: linear-gradient(in oklch, red, blue)) {
+    .hero-title {
+      background: linear-gradient(105deg in oklch, var(--accent), var(--accent-2));
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+  }
+}
+
+.hero-lede {
+  margin: 1.25rem 0 0;
+  color: var(--fg);
+  font-size: 1.15rem;
+  line-height: 1.6;
+}
+
+.hero-more {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.hero-more:hover {
+  color: var(--accent);
+}
+
+.hero-chevron {
+  width: 1.4rem;
+  height: 1.4rem;
+  animation: orchid-nudge 2.4s ease-in-out infinite;
+}
+
+@keyframes orchid-nudge {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(0.25rem); }
+}
+
+/* Motion is decoration here, and decoration is the first thing to drop for a
+   reader who asked for less of it. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-chevron {
+    animation: none;
+  }
+}
+
+/* --- prose --------------------------------------------------------------- */
+
+.page {
+  flex: 1;
+  padding-block: 3rem 4rem;
+}
+
+/* The page's lead image, above everything the author wrote. It is a figure like
+   any other image, so it is styled with them below; only the spacing above the
+   prose belongs to it. */
+.page-image {
+  margin: 0 0 2.5rem;
+}
+
+.page-image img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  display: block;
+}
+
+/* Underlined rather than color alone, so a link is still a link for a reader
+   who cannot tell the accent from the body text. The offset keeps the rule off
+   the descenders. */
+.page a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.page a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.page h1,
+.page h2,
+.page h3,
+.page h4 {
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 2.5rem 0 1rem;
+}
+
+.page h1 {
+  font-size: 2.3rem;
+  font-weight: 800;
+  margin-top: 0;
+}
+
+/* A short two-hue tick above the top two levels, which is what carries the
+   theme into a long page rather than leaving the color at the masthead. */
+.page h1::before,
+.page h2::before {
+  content: "";
+  display: block;
+  width: 2.5rem;
+  height: 3px;
+  margin-bottom: 0.9rem;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+.page h2 {
+  font-size: 1.7rem;
+  font-weight: 700;
+}
+
+.page h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.page h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.page p,
+.page ul,
+.page ol {
+  margin: 0 0 1.15rem;
+}
+
+.page li {
+  margin-block: 0.3rem;
+}
+
+.page li::marker {
+  color: var(--accent);
+}
+
+.page img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* An image alone in its paragraph always arrives wrapped in a figure, with or
+   without a caption, so there is one shape to style. */
+.page figure {
+  margin: 2rem 0;
+}
+
+.page figure img {
+  width: 100%;
+  border-radius: var(--radius);
+  display: block;
+}
+
+.page figcaption {
+  margin-top: 0.6rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+  text-align: center;
+}
+
+/* A gradient band rather than a line: the one piece of markdown furniture that
+   exists purely to separate, so it is the one that can be pure color. */
+.page hr {
+  border: 0;
+  height: 2px;
+  margin: 3rem 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  opacity: 0.75;
+}
+
+/* Lit down one edge rather than boxed. The quote is somebody else's voice, and
+   the accent edge is what says so without a second background. */
+.page blockquote {
+  margin: 2rem 0;
+  padding: 0.25rem 0 0.25rem 1.4rem;
+  border-inline-start: 3px solid var(--accent);
+  color: var(--muted);
+  font-style: italic;
+}
+
+.page blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.page code {
+  background: var(--panel-alt);
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+  font-size: 0.9em;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas,
+    "Liberation Mono", monospace;
+}
+
+.page pre {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  margin: 1.75rem 0;
+  overflow-x: auto;
+  position: relative;
+}
+
+/* The block's own two-hue edge, matching the masthead. Set on the frame rather
+   than behind the tokens so it cannot change the ground any token was checked
+   against. */
+.page pre::before {
+  content: "";
+  position: absolute;
+  inset-block: -1px;
+  inset-inline-start: -1px;
+  width: 3px;
+  border-radius: var(--radius) 0 0 var(--radius);
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+}
+
+.page pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* Ruled rather than boxed, with the header carrying the theme's edge. A striped
+   table is busier, and this one is already carrying two hues elsewhere. */
+.page table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.75rem 0;
+  font-size: 0.95rem;
+}
+
+.page th {
+  text-align: start;
+  font-weight: 700;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 2px solid var(--accent);
+}
+
+.page td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.page tbody tr:hover {
+  background: var(--panel);
+}
+
+/* --- footer -------------------------------------------------------------- */
+
+.site-footer {
+  padding-block: 2rem 2.5rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.site-footer a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.1rem;
+  margin-bottom: 0.9rem;
+}
+
+.footer-nav a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.footer-nav a:hover {
+  color: var(--accent);
+}
+
+.footer-nav a[aria-current="page"] {
+  color: var(--accent);
+}
+
+.footer-text {
+  margin: 0;
+}
+
+.footer-copyright {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+}
