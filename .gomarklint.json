@@ -1,0 +1,10 @@
+{
+  "default": true,
+  "rules": {
+    "external-link": false,
+    "heading-level": { "minLevel": 1 },
+    "blanks-around-lists": false,
+    "link-fragments": true
+  },
+  "include": ["AGENTS.md", "readme.md", "todo.md", "docs"]
+}

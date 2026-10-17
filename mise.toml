@@ -1,0 +1,73 @@
+[tools]
+go = "1.27.2"
+golangci-lint = "2.15.0"
+goreleaser = "2.18.3"
+"github:shinagawa-web/gomarklint" = "3.3.1"
+typos = "1.51.1"
+taplo = "0.10.0"
+
+[tasks.check]
+description = "Check formatting, lint, spelling, and tests without editing files"
+depends = [
+  "check:go-format",
+  "check:go-lint",
+  "check:markdown",
+  "check:spelling",
+  "check:toml-format",
+  "check:toml",
+  "test",
+]
+
+[tasks."check:go-format"]
+description = "Check Go formatting without editing files"
+run = """
+unformatted=$(gofmt -l .)
+if [ -n "$unformatted" ]; then
+  printf 'Run mise run fmt:go to format:\\n%s\\n' "$unformatted"
+  exit 1
+fi
+"""
+
+[tasks."check:go-lint"]
+description = "Lint Go code"
+run = "golangci-lint run"
+
+[tasks."check:markdown"]
+description = "Lint Markdown and internal anchors"
+run = "gomarklint"
+
+[tasks."check:spelling"]
+description = "Check spelling"
+run = "typos"
+
+[tasks."check:toml-format"]
+description = "Check TOML formatting without editing files"
+run = "taplo fmt --check"
+
+[tasks."check:toml"]
+description = "Validate TOML syntax"
+run = "taplo check"
+
+[tasks."check:goreleaser"]
+description = "Validate GoReleaser configuration without building or publishing"
+run = "goreleaser check"
+
+[tasks.fmt]
+description = "Format Go and TOML files"
+depends = ["fmt:go", "fmt:toml"]
+
+[tasks."fmt:go"]
+description = "Format Go files"
+run = "gofmt -w ."
+
+[tasks."fmt:toml"]
+description = "Format TOML files"
+run = "taplo fmt"
+
+[tasks.test]
+description = "Run Go tests"
+run = "go test ./..."
+
+[tasks.build]
+description = "Build the local executable in bin/"
+run = "go build -o bin/cress ./cmd/cress"
