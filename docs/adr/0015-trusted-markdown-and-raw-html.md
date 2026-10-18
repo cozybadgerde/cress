@@ -80,7 +80,7 @@ finished site.
 
 This record settles trust and authored-HTML pass-through, not all Markdown
 capabilities.
-[First-class captions](../prd.md#captions-attribution-and-disclosures)
+[First-class captions](../PRD.md#captions-attribution-and-disclosures)
 provide author-supplied text and links without requiring raw HTML or
 changing the escaping of ordinary values.
 [The accessibility baseline](0016-accessibility-baseline-and-assessment.md)
@@ -113,4 +113,4 @@ sandbox.
 
 See [rendering responsibilities and trust guardrails](0008-rendering-and-template-trust-boundary.md),
 [public URL policy](0014-public-origin-and-deployment-path.md),
-and [the product requirements](../prd.md).
+and [the product requirements](../PRD.md).

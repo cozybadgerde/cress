@@ -109,6 +109,6 @@ covered by the authenticated checksum manifest.
 
 ## More information
 
-See the [release requirements](../prd.md) and
+See the [release requirements](../PRD.md) and
 [SPDX BSD-3-Clause reference](https://spdx.org/licenses/BSD-3-Clause.html).
 See [release artifacts](0012-release-artifacts.md) for SBOM distribution.

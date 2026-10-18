@@ -127,7 +127,7 @@ Document concrete verification and macOS trust limitations with releases.
 
 ## More information
 
-- [Product requirements](../prd.md).
+- [Product requirements](../PRD.md).
 - [Implementation language](0001-go-implementation-language.md).
 - [Generation and deployment boundary](0002-offline-generation-and-deployment-boundary.md).
 - [Theme packages and integration](0007-theme-packages-and-integration.md).

@@ -100,7 +100,7 @@ First-class inline-image and code-block captions belong to
 generator-produced content markup. Cress prepares title-image caption data
 for the selected theme to render. Themes style captioned content and
 preserve provided caption text and links, whether bundled or third-party.
-[The caption requirements](../prd.md#captions-attribution-and-disclosures)
+[The caption requirements](../PRD.md#captions-attribution-and-disclosures)
 define the authoring capability. Exact syntax, field names, and render-model
 types remain implementation choices.
 
@@ -120,7 +120,7 @@ Content preparation owns list scope, visibility, ordering, and entry
 metadata. The selected theme renders the optional introductory body and
 prepared entry sequence, including valid empty collections. It does not
 discover, filter, or reorder source pages or construct excerpts.
-[The list-page requirements](../prd.md#list-pages) define that behavior.
+[The list-page requirements](../PRD.md#list-pages) define that behavior.
 
 Page-type-specific template overrides apply only to that type. Shared
 layouts and partials may intentionally affect several types; they must not

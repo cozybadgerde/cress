@@ -78,7 +78,7 @@ accessibility-validation command. Final-site legal applicability remains
 the publisher's responsibility; WCAG assessment is not a blanket guarantee
 of compliance with every applicable law.
 
-[Caption, attribution, and disclosure support](../prd.md#captions-attribution-and-disclosures)
+[Caption, attribution, and disclosure support](../PRD.md#captions-attribution-and-disclosures)
 is defined in the PRD. Captions remain distinct from image alternatives;
 publishers determine applicable disclosure obligations and wording.
 
@@ -126,7 +126,7 @@ not evidence that an implementation or assessment already exists.
 
 ## More information
 
-See [the accessibility product requirements](../prd.md#accessibility),
+See [the accessibility product requirements](../PRD.md#accessibility),
 [theme integration](0007-theme-packages-and-integration.md),
 and [release distribution](0012-release-artifacts.md).
 

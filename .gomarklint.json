@@ -6,5 +6,5 @@
     "blanks-around-lists": false,
     "link-fragments": true
   },
-  "include": ["AGENTS.md", "readme.md", "todo.md", "docs"]
+  "include": ["AGENTS.md", "README.md", "TODO.md", "docs"]
 }

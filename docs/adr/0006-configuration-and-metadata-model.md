@@ -56,7 +56,7 @@ Navigation is site data, not theme customization.
 The generator resolves these values before passing them to themes.
 There is no directory-level metadata inheritance. Themes present resolved
 values rather than implement inheritance or Markdown rendering policy.
-The [PRD](../prd.md#authoring-and-content) records agreed fields and
+The [PRD](../PRD.md#authoring-and-content) records agreed fields and
 behavior. Remaining field definitions and defaults belong to the authoring
 implementation.
 

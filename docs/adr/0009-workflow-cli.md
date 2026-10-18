@@ -73,5 +73,5 @@ root.
 
 ## More information
 
-See [the product requirements](../prd.md)
+See [the product requirements](../PRD.md)
 and [output protection](0010-staged-output-and-ownership.md).

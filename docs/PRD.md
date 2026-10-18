@@ -17,6 +17,8 @@ files. It does not deploy those files.
 The primary maintainer is a technical person at Cozy Badger or an
 open-source enthusiast. The website serves a solopreneur or small business,
 such as a restaurant, coach, photographer, or freelance consultant.
+Open-source project sites and other general-purpose sites can use Cress
+as well. When needs conflict, small-business requirements guide decisions.
 
 Business owners can prepare Markdown in their preferred editor and send it
 to the maintainer. The maintainer builds locally or through continuous
@@ -24,7 +26,7 @@ integration and continuous delivery (CI/CD).
 
 This document describes product needs, scope, and observable acceptance
 criteria. The [ADRs](adr/) provide architectural guidance and guardrails.
-The [work plan](../todo.md) tracks remaining decisions and implementation.
+The [work plan](../TODO.md) tracks remaining decisions and implementation.
 Agreed field names and observable behavior are part of the product
 contract. Remaining authoring syntax, package layouts, algorithms, and
 setup instructions belong to implementation and its documentation.

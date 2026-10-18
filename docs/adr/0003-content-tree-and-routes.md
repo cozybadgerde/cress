@@ -43,7 +43,7 @@ names.
 List pages use logical direct children of their containing section, not a
 filesystem-depth scan. Equivalent source layouts for a page must not change
 its membership. List and landing types are not restricted to section index
-files. [The list-page requirements](../prd.md#list-pages) own eligibility,
+files. [The list-page requirements](../PRD.md#list-pages) own eligibility,
 ordering, visibility, and introduction behavior.
 
 Keep page-owned assets identifiable and separate from content sections.
@@ -103,5 +103,5 @@ without recursively including deeper descendants.
 
 ## More information
 
-See [the product requirements](../prd.md) and
+See [the product requirements](../PRD.md) and
 [output ownership and recovery](0010-staged-output-and-ownership.md).

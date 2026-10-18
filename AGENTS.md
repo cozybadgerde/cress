@@ -1,9 +1,17 @@
 # Working on Cress
 
-- Read [readme.md](readme.md) for setup, [the PRD](docs/prd.md) for scope,
-  [the ADRs](docs/prd.md#decision-records) for decisions, and
-  [todo.md](todo.md) for pending work. Agreed behavior is not necessarily
+- Read [the developer guide](docs/DEVELOPER.md) for setup,
+  [the PRD](docs/PRD.md) for scope,
+  [the ADRs](docs/PRD.md#decision-records) for decisions,
+  [the architecture guide](docs/ARCHITECTURE.md) for structure, and
+  [TODO.md](TODO.md) for pending work. Agreed behavior is not necessarily
   implemented.
+- Follow the [development guidelines](docs/DEVELOPER.md#development-guidelines):
+  interface first, standard library first, established libraries over custom
+  code, and comments of at most two lines.
+- Use these skills when available: `context-cozy-badger` for company context,
+  `convention-md` for Markdown, `convention-go` for Go, and `impeccable` for
+  user interface design.
 - Keep tooling and code small. Add packages, interfaces, dependencies, and
   configuration only for a current need.
 - Cress generates offline; deployment stays external. Themes present

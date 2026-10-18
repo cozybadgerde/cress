@@ -80,4 +80,4 @@ or Go toolchain.
 
 See [the generation boundary](0002-offline-generation-and-deployment-boundary.md),
 [release distribution](0012-release-artifacts.md), and
-[the product requirements](../prd.md).
+[the product requirements](../PRD.md).

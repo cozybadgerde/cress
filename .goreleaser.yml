@@ -24,4 +24,4 @@ builds:
 archives:
   - files:
       - LICENSE
-      - readme.md
+      - README.md

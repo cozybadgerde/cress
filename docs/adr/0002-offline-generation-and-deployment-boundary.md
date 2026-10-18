@@ -75,4 +75,4 @@ network access and produce local output without initiating deployment.
 
 See [the implementation language](0001-go-implementation-language.md),
 [release distribution](0012-release-artifacts.md), and
-[the product requirements](../prd.md).
+[the product requirements](../PRD.md).

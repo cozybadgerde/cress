@@ -190,6 +190,6 @@ state machine or evidence of completed functionality.
 
 ## More information
 
-See [the product requirements](../prd.md),
+See [the product requirements](../PRD.md),
 [content and asset boundaries](0003-content-tree-and-routes.md), and
 [CLI command organization](0009-workflow-cli.md).
