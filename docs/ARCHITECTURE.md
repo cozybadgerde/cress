@@ -5,9 +5,10 @@ responsibilities, data flow, and failure boundaries. The
 [PRD](PRD.md) owns product behavior. The [ADRs](adr/) own decision
 rationale. This guide links to both instead of repeating them.
 
-Status: agreed target structure. The generator is not implemented yet.
-Package layouts and interfaces emerge with the implementation; this guide
-names responsibilities, not packages.
+Status: agreed target structure, with a phase 1 walking skeleton implemented.
+The current build handles ordinary pages and new or empty output only.
+Later pipeline stages below remain target behavior. Package layouts and
+interfaces emerge with implementation.
 
 ## System context
 
@@ -146,15 +147,27 @@ hide failures or substitute silent fallbacks.
 
 ## Development structure
 
-The repository currently holds one entry point, `cmd/cress`, with no
-dependencies. Packages follow the responsibilities above as code arrives.
+The executable entry point is `cmd/cress`. Current implementation packages
+follow the responsibilities above:
+
+| Package | Responsibility |
+|---------|----------------|
+| `internal/command` | urfave/cli command definitions and terminal reporting. |
+| `internal/generator` | Build coordination. |
+| `internal/content` | Local discovery, frontmatter validation, routes, draft exclusion, and Markdown preparation. |
+| `internal/page` | Prepared page data shared by content preparation and rendering. |
+| `internal/render` | Embedded skeleton loading and page composition. |
+| `internal/output` | Destination checks and confined new-or-empty output writes. |
+
 Dependencies point from the CLI and generator toward content preparation,
 rendering, and output handling. The renderer depends only on the render
 model, not on content preparation internals. Interfaces appear at a real
 test seam or a second implementation.
 
 Prefer the Go standard library, including `html/template` for rendering.
-Built-in themes and the theme skeleton are embedded in the executable.
+The theme skeleton is embedded in the executable; built-in themes follow
+in phase 8. The [user reference](USER.md) describes current limitations,
+and the [theme reference](THEMES.md) owns the initial render-model fields.
 See the [developer guide](DEVELOPER.md) for commands and layout.
 
 ## Architecture decision records

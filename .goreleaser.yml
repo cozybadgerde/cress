@@ -25,3 +25,4 @@ archives:
   - files:
       - LICENSE
       - README.md
+      - docs/THIRD-PARTY-NOTICES.md

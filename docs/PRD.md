@@ -1,6 +1,7 @@
 # Cress product requirements
 
-Status: approved product direction; scaffold exists, generator not implemented.
+Status: approved product direction; phase 1 walking skeleton implemented,
+remaining generator capabilities planned.
 
 Target release: 1.0.0.
 

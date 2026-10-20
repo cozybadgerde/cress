@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Cress development frontmatter",
+  "description": "Parsed TOML frontmatter for the Phase 1 development contract.",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "pattern": "[^\u0009-\u000d\u0020\u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]"
+    },
+    "draft": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "if": {
+    "properties": {
+      "draft": { "const": true }
+    },
+    "required": ["draft"]
+  },
+  "else": {
+    "required": ["title"]
+  },
+  "additionalProperties": true
+}

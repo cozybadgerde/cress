@@ -64,6 +64,8 @@ needs network access. Go dependencies live in `go.mod` and `go.sum`.
 | Path | Contents |
 |------|----------|
 | `cmd/cress/` | Executable entry point. |
+| `internal/` | CLI, generator, content, render model, renderer, and output handling. |
+| `schemas/` | Authoring schemas and schema/runtime agreement tests. |
 | `docs/` | Product requirements, architecture guide, and this guide. |
 | `docs/adr/` | Architectural decision records. |
 | `mise.toml` | Pinned tools and developer tasks. |
@@ -97,7 +99,22 @@ Run the executable from source:
 go run ./cmd/cress
 ```
 
-The scaffold prints `cress: not implemented yet` and exits with status 1.
+The executable prints root help. Build a prepared site with:
+
+```sh
+go run ./cmd/cress site build /path/to/site
+```
+
+Replace `/path/to/site` with a site directory containing `content/`.
+The [user reference](USER.md) documents the current authoring contract and
+new-or-empty output restriction. The
+[theme reference](THEMES.md) documents the initial prepared render model.
+
+The CLI uses urfave/cli v3, TOML parsing uses go-toml v2, and Markdown
+conversion uses goldmark. Go text provides portable output-name comparison.
+Schema tests use a test-only JSON Schema validator. Reviewed licenses and
+redistribution notices live in
+[third-party notices](THIRD-PARTY-NOTICES.md).
 
 Use `mise tasks ls` to list all tasks. The tasks call ordinary tools, so
 native Go commands remain usable directly.
@@ -119,8 +136,10 @@ mise run check:goreleaser
 ```
 
 The GoReleaser configuration is a packaging scaffold for the three agreed
-targets, not a release-ready pipeline. Signing, component inventories,
-third-party notices, and release automation remain in the work plan.
+targets, not a release-ready pipeline. Signing, release-specific component
+inventories, review enforcement, and release automation remain in the work
+plan. The archive already includes the required notices for current runtime
+dependencies.
 
 ## Testing and checks
 
@@ -150,6 +169,10 @@ run `mise run fmt` to fix formatting.
 Unit tests are the default. Integration tests cover real filesystem or
 process boundaries. Browser and end-to-end tests are not part of the setup
 yet.
+
+Run `go test -short ./...` to skip filesystem integration tests. Schema
+tests compare representative parsed TOML values with runtime validation
+without downloading schemas or using an external validation service.
 
 CI runs `mise run check` and `mise run build` with the same pinned tools on
 pushes to `trunk` and on pull requests.

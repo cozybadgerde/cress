@@ -111,41 +111,57 @@ Every phase is done when:
   with their intended phase or separate-commit scope, and suggest a commit
   message. Creating a commit requires a separate instruction.
 
-### Open planning items
+### Planning review
 
 These are clarification gates, not changes to the approved phase order.
 
-- [ ] Before phase 1, agree the build command, site layout, frontmatter
-  delimiters, minimum supported fields, and route normalization rules.
-- [ ] Before phase 1, reconcile its first frontmatter fields with the
-  same-change schema rule above; prefer a minimal frontmatter schema now
-  and expand it with site configuration in phase 2.
-- [ ] Before phase 1, agree minimum path and output protection, including
+- [x] Agree the phase 1 build command, site layout, frontmatter delimiters,
+  minimum fields, and routing rules in the [user reference](docs/USER.md).
+- [x] Publish the minimal frontmatter schema in phase 1, with executable
+  schema/runtime agreement tests. Expand it with site contracts in phase 2.
+- [x] Agree phase 1 minimum path and output protection, including
   symlink refusal, source/output separation, duplicate page destinations,
   and file/directory conflicts. Full asset collision handling remains in
   phase 3; ownership, replacement, and recovery remain in phase 6.
-- [ ] Before phase 1, settle draft handling so the walking skeleton does
-  not silently publish a recognized draft. Full metadata resolution and
-  draft validation remain in phase 2.
-- [ ] Before phase 1, define the minimal prepared render model and
-  embedded skeleton interface needed by its renderer. Complete package
-  integration remains in phase 5; do not present the skeleton as a third
-  selectable built-in theme.
-- [ ] Review dependencies and required notices when first introduced,
-  beginning in phase 1. Phase 9 completes release inventory and enforcement,
-  rather than postponing component review until release.
+  Phase 1 also rejects case-folded and canonically equivalent destinations.
+- [x] Exclude drafts in phase 1 and validate their provided known fields.
+  Full metadata resolution remains in phase 2.
+- [x] Document the initial prepared model and ordinary-page skeleton in the
+  [theme reference](docs/THEMES.md). Complete package integration remains in
+  phase 5; the skeleton is not a third selectable built-in theme.
+- [x] Review phase 1 dependencies and supply required runtime notices.
+  Use urfave/cli v3 for the CLI. Continue component review as dependencies
+  arrive; phase 9 completes release inventory and enforcement.
 - [ ] Include generated-markup accessibility checks as content rendering
   arrives in phase 3. Phase 8 adds complete-page assessment for both
   shipped themes.
 
 ### Phase 1: Walking skeleton
 
-- [ ] Add root help and version output and the `cress site` and
+- [x] Add root help and version output and the `cress site` and
   `cress theme` scopes [11].
-- [ ] Build ordinary Markdown pages with TOML frontmatter into
+- [x] Build ordinary Markdown pages with TOML frontmatter into
   directory-index routes through the embedded theme skeleton [3].
-- [ ] Write output only to a new or empty directory. Refuse anything else
+- [x] Write output only to a new or empty directory. Refuse anything else
   until phase 6 adds ownership checks and replacement.
+
+#### Phase 1 handoff and leftovers
+
+Implementation and local verification are complete. Phase closure still
+requires CI confirmation.
+
+- [ ] Confirm `mise run check` and `mise run build` in CI for these changes
+  before closing phase 1. Local checks, build, and release-configuration
+  validation pass; changes have not been committed or pushed.
+- [ ] Before phase 2, review the current authoring and render interfaces,
+  including published-page title requirements, the English-only skeleton,
+  and reserved site configuration that is not yet loaded.
+
+Output replacement, recovery, and writer locking remain intentional
+phase 6 work. Until then, builds refuse existing nonempty output; a
+filesystem failure can leave incomplete new output requiring inspection.
+Do not run concurrent builds for one site. Markdown URL resolution and
+asset publication remain phase 3 work, as documented in the user reference.
 
 ### Phase 2: Site contracts
 
@@ -156,7 +172,8 @@ These are clarification gates, not changes to the approved phase order.
   types, and draft exclusion for builds [7, 17].
 - [ ] Configure navigation, public origin, and deployment path, and
   resolve generator-owned URLs beneath the deployment path [3].
-- [ ] Publish the first JSON schemas for configuration and frontmatter [6].
+- [ ] Publish the site-configuration schema and expand the initial
+  frontmatter schema with the new contracts [6].
 
 ### Phase 3: Content rendering
 
@@ -180,8 +197,8 @@ These are clarification gates, not changes to the approved phase order.
 
 ### Phase 5: Theme integration
 
-- [ ] Define the theme package, JSON manifest, and render model, and
-  publish the manifest schema [6, 18].
+- [ ] Define the theme package and JSON manifest, extend the prepared
+  render model, and publish the manifest schema [6, 18].
 - [ ] Select local themes before built-in themes as complete packages,
   check runtime compatibility, and fail invalid packages without
   fallback [5].

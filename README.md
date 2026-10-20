@@ -36,11 +36,13 @@ deployment tools you already use. The
 
 ## Getting started
 
-Cress is in early development. Requirements, architecture, and planning
-are complete, and implementation follows the [work plan](TODO.md).
-There is no usable release yet.
+Cress is in early development. The walking skeleton builds ordinary
+Markdown pages through an embedded developer template, with draft exclusion
+and new-or-empty output protection. Implementation follows the
+[work plan](TODO.md); there is no published release yet.
 
 To build it from source, follow the [developer guide](docs/DEVELOPER.md).
+The [user reference](docs/USER.md) explains the supported development slice.
 
 ## Documentation
 
@@ -51,6 +53,8 @@ To build it from source, follow the [developer guide](docs/DEVELOPER.md).
 - [Architectural decision records](docs/adr/): accepted decisions and their
   rationale, listed in the [decision index](docs/PRD.md#decision-records).
 - [Developer guide](docs/DEVELOPER.md): set up, build, and test the source.
+- [User reference](docs/USER.md): commands, authoring, and current limitations.
+- [Theme reference](docs/THEMES.md): initial prepared render model.
 - [Work plan](TODO.md): implementation phases.
 
 ## Contributing
@@ -70,6 +74,7 @@ For questions or feedback, contact the project maintainers via:
 
 ## License
 
-Cress is licensed under [BSD-3-Clause](LICENSE). No third-party code or
-assets are bundled yet. See
-[the licensing decision](docs/adr/0011-bsd-3-clause-license.md).
+Cress is licensed under [BSD-3-Clause](LICENSE). Bundled dependencies retain
+their own licenses; see the
+[third-party notices](docs/THIRD-PARTY-NOTICES.md) and
+[licensing decision](docs/adr/0011-bsd-3-clause-license.md).
