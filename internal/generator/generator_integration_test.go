@@ -42,10 +42,10 @@ func TestBuildSite(t *testing.T) {
 		"content/blog/first.md":  "+++\ntitle = 'First'\n+++\n<script>trusted()</script>",
 		"content/draft.md":       "+++\ndraft = true\n+++\nPrivate body",
 		"content/ignored.MD":     "Not a lowercase Markdown file",
-		"content/photo.jpg":      "Private until asset copying is implemented",
+		"content/photo.jpg":      "Private outside an asset directory",
 		"cress.toml":             "[theme.custom]\nprivate = 'configuration'",
 		"themes/private.gohtml":  "private template",
-		"static/private.txt":     "not copied in phase 1",
+		"static/shared.txt":      "shared static file",
 	})
 	result, err := generator.Build(context.Background(), site)
 	if err != nil {
@@ -73,7 +73,7 @@ func TestBuildSite(t *testing.T) {
 		t.Fatal(err)
 	}
 	slices.Sort(published)
-	if !slices.Equal(published, []string{"about/index.html", "blog/first/index.html", "index.html"}) {
+	if !slices.Equal(published, []string{"about/index.html", "blog/first/index.html", "index.html", "shared.txt"}) {
 		t.Fatalf("unexpected published files: %v", published)
 	}
 	home, err := os.ReadFile(filepath.Join(site, "public", "index.html"))

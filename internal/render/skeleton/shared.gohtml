@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{.Title}}</title>
   {{if .Description}}<meta name="description" content="{{.Description}}">{{end}}
+  <style>
+    pre { padding: 1rem; overflow: auto; background: #f5f5f5; color: #202020; }
+    pre .k, pre .kd, pre .kn, pre .kp, pre .kr, pre .kt { color: #005a9c; }
+    pre .s, pre .s1, pre .s2, pre .sb, pre .sc, pre .sd { color: #7d2300; }
+    pre .c, pre .c1, pre .cm, pre .cp, pre .cs { color: #525252; }
+    figcaption, .image-caption { font-size: .9em; }
+    .captioned-image { display: inline-block; vertical-align: middle; }
+    .image-caption { display: block; }
+    img { max-width: 100%; height: auto; }
+  </style>
 </head>
 <body>
   {{if or .Site.Title .Site.Navigation.Main}}
@@ -20,7 +30,10 @@
 {{end}}
 
 {{define "title-image"}}
-  {{with .Image}}<img src="{{.URL}}" alt="{{.Alt}}">{{end}}
+  {{with .Image}}
+  {{if .Caption}}<figure>{{end}}<img src="{{.URL}}" alt="{{.Alt}}">
+  {{with .Caption}}<figcaption>{{range .}}{{if .URL}}<a href="{{.URL}}">{{.Text}}</a>{{else}}{{.Text}}{{end}}{{end}}</figcaption></figure>{{end}}
+  {{end}}
 {{end}}
 
 {{define "document-end"}}

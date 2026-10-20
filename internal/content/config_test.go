@@ -66,7 +66,7 @@ title = { nested = ["kept", "as data"] }
 			Custom: map[string]any{"title": map[string]any{"nested": []any{"kept", "as data"}}},
 		},
 		Description: "Shared description", Host: "https://example.org:8443",
-		Image: &page.Image{URL: "/company/team.jpg", Alt: "Our team"},
+		Image: &page.Image{URL: "/company/team.jpg", Alt: "Our team"}, Highlight: true,
 	}
 	if !reflect.DeepEqual(config, want) {
 		t.Fatalf("config = %#v, want %#v", config, want)
@@ -75,7 +75,7 @@ title = { nested = ["kept", "as data"] }
 
 func TestConfigDefaults(t *testing.T) {
 	config := defaultConfig(t)
-	want := content.Config{Site: page.Site{Language: "en", URL: "/"}}
+	want := content.Config{Site: page.Site{Language: "en", URL: "/"}, Highlight: true}
 	if !reflect.DeepEqual(config, want) {
 		t.Fatalf("config = %#v, want %#v", config, want)
 	}
@@ -122,6 +122,10 @@ func TestInvalidConfig(t *testing.T) {
 		{"theme = false", "theme"},
 		{"[theme]\ncustom = 1", "theme.custom"},
 		{"[theme]\ncustom = []", "theme.custom"},
+		{"markdown = false", "markdown must be a table"},
+		{"[markdown]\nhighlight = 'true'", "markdown.highlight must be a boolean"},
+		{"[site.image]\nsrc = ''\ncaption = false", "site.image.caption"},
+		{"[site.image]\nsrc = ''\ncaption = '[Credit](relative.md)'", "site.image.caption"},
 		{"[site", "parse configuration"},
 		{"\xff", "UTF-8"},
 	}
@@ -161,7 +165,6 @@ site = { nonsense = 1 }
 	want := []string{
 		`cress.toml: unknown configuration field "brand"`,
 		`cress.toml: unknown configuration field "site.unknown"`,
-		`cress.toml: unknown configuration field "site.image.caption"`,
 		`cress.toml: unknown configuration field "navigation.extra"`,
 		`cress.toml: unknown configuration field "navigation.main[0].target"`,
 		`cress.toml: unknown configuration field "theme.name"`,

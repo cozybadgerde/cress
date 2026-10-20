@@ -111,7 +111,9 @@ new-or-empty output restriction. The
 [theme reference](THEMES.md) documents the initial prepared render model.
 
 The CLI uses urfave/cli v3, TOML parsing uses go-toml v2, and Markdown
-conversion uses goldmark. Go text provides portable output-name comparison
+conversion uses goldmark, with Chroma's HTML formatter for build-time
+highlighting. Its SVG formatter and embedded font are not linked.
+Go text provides portable output-name comparison
 and language-tag validation.
 Schema tests use a test-only JSON Schema validator. Reviewed licenses and
 redistribution notices live in

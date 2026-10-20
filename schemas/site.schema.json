@@ -28,7 +28,21 @@
           "default": "/",
           "description": "Web URL prefix, not an output directory."
         },
-        "image": { "$ref": "frontmatter.schema.json#/$defs/image" }
+        "image": {
+          "allOf": [
+            { "$ref": "frontmatter.schema.json#/$defs/image" },
+            {
+              "properties": {
+                "src": {
+                  "anyOf": [
+                    { "const": "" },
+                    { "$ref": "frontmatter.schema.json#/$defs/url" }
+                  ]
+                }
+              }
+            }
+          ]
+        }
       },
       "additionalProperties": true
     },
@@ -37,6 +51,13 @@
       "properties": {
         "main": { "$ref": "#/$defs/links" },
         "footer": { "$ref": "#/$defs/links" }
+      },
+      "additionalProperties": true
+    },
+    "markdown": {
+      "type": "object",
+      "properties": {
+        "highlight": { "type": "boolean", "default": true }
       },
       "additionalProperties": true
     },

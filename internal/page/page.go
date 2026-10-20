@@ -16,8 +16,15 @@ const (
 
 // Image holds a resolved image URL and its plain-text alternative.
 type Image struct {
-	URL string
-	Alt string
+	URL     string
+	Alt     string
+	Caption []CaptionPart
+}
+
+// CaptionPart is escaped caption text, optionally linked to a prepared URL.
+type CaptionPart struct {
+	Text string
+	URL  string
 }
 
 // Link holds a resolved navigation destination and plain-text label.

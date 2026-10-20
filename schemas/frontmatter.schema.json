@@ -19,7 +19,21 @@
       "default": "ordinary"
     },
     "image": {
-      "$ref": "#/$defs/image"
+      "allOf": [
+        { "$ref": "#/$defs/image" },
+        {
+          "properties": {
+            "src": {
+              "anyOf": [
+                { "const": "" },
+                { "$ref": "#/$defs/url" },
+                { "type": "string", "pattern": "^[^/:\\s\\\\][^:\\s\\\\]*$" }
+              ],
+              "description": "Site-root, HTTP/HTTPS, or source-relative published asset; runtime validates syntax and resolution."
+            }
+          }
+        }
+      ]
     }
   },
   "if": {
@@ -46,12 +60,14 @@
       "type": "object",
       "properties": {
         "src": {
-          "anyOf": [
-            { "const": "" },
-            { "$ref": "#/$defs/url" }
-          ]
+          "type": "string"
         },
-        "alt": { "type": "string" }
+        "alt": { "type": "string" },
+        "caption": {
+          "type": "string",
+          "pattern": "^[^\\r\\n]*$",
+          "description": "Single-line caption with text and Markdown links only; runtime validates its markup and links."
+        }
       },
       "required": ["src"],
       "if": {

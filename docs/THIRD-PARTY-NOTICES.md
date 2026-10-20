@@ -9,11 +9,17 @@ policy in [ADR 0011](adr/0011-bsd-3-clause-license.md).
 | urfave/cli | v3.14.0 | MIT | <https://github.com/urfave/cli/tree/v3.14.0> |
 | go-toml v2 | v2.4.3 | MIT | <https://github.com/pelletier/go-toml/tree/v2.4.3> |
 | goldmark | v1.8.6 | MIT | <https://github.com/yuin/goldmark/tree/v1.8.6> |
+| Chroma | v2.27.0 | MIT | <https://github.com/alecthomas/chroma/tree/v2.27.0> |
+| regexp2 | v2.2.1 | MIT | <https://github.com/dlclark/regexp2/tree/v2.2.1> |
 | Go text | v0.43.0 | BSD-3-Clause | <https://github.com/golang/text/tree/v0.43.0> |
 
 These licenses permit redistribution with their copyright and permission
 notices. No third-party theme assets are bundled. Release-specific SBOMs
 and automated component-review enforcement remain phase 9 work.
+
+Chroma's HTML formatter, lexers, and styles are linked. Its SVG formatter
+and bundled Liberation Mono font are not linked or redistributed; the font
+license in Chroma's `COPYING` does not apply to the bundled components.
 
 The schema tests also use
 [jsonschema v6.0.3](https://github.com/santhosh-tekuri/jsonschema/tree/v6.0.3),
@@ -29,6 +35,8 @@ The following copyright notices apply to their respective components:
 - urfave/cli: Copyright (c) 2023 urfave/cli maintainers
 - go-toml v2: Copyright (c) 2021 - 2023 Thomas Pelletier
 - goldmark: Copyright (c) 2019 Yusuke Inuzuka
+- Chroma: Copyright (C) 2017 Alec Thomas
+- regexp2: Copyright (c) Doug Clark
 
 The following license text applies to each component listed above:
 

@@ -135,7 +135,7 @@ These are clarification gates, not changes to the approved phase order.
 - [x] Review phase 1 dependencies and supply required runtime notices.
   Use urfave/cli v3 for the CLI. Continue component review as dependencies
   arrive; phase 9 completes release inventory and enforcement.
-- [ ] Include generated-markup accessibility checks as content rendering
+- [x] Include generated-markup accessibility checks as content rendering
   arrives in phase 3. Phase 8 adds complete-page assessment for both
   shipped themes.
 
@@ -184,11 +184,11 @@ See the [user reference](docs/USER.md) for validation and override rules.
 
 #### Phase 2 handoff and leftovers
 
-Implementation and local verification are complete. CI remains aligned
-through the existing check/build tasks; no CI run is required. No commit
-or push was performed for phase 2.
+Implementation and local verification are complete. The maintainer
+confirmed commit `9af8877`. CI remains aligned through the existing
+check/build tasks; no CI run is required.
 
-- [ ] Before phase 3, clarify source-relative Markdown and title-image
+- [x] Before phase 3, clarify source-relative Markdown and title-image
   references, asset ownership, caption syntax, highlighting options, and
   generated-markup accessibility coverage. Preserve the agreed separation
   between resolved Markdown URLs and unchanged authored HTML.
@@ -205,15 +205,45 @@ commit is currently required.
 
 ### Phase 3: Content rendering
 
-- [ ] Resolve site-root and source-relative Markdown links and images
+Agreed interface: source-stem `.assets/` directories, shared `static/`
+files, strict source-to-output reference resolution, text-and-link caption
+attributes and image metadata, and default-on Chroma highlighting through
+`[markdown].highlight`. The [user reference](docs/USER.md) owns syntax and
+validation. Phase 2 leftovers require no separate cleanup commit.
+
+- [x] Resolve site-root and source-relative Markdown links and images
   and leave authored HTML and external URLs unchanged [3, 19].
-- [ ] Render trusted raw HTML, literal code, and build-time syntax
+- [x] Render trusted raw HTML, literal code, and build-time syntax
   highlighting that can be disabled [16, 19].
-- [ ] Render captions for inline images and fenced code blocks, and
+- [x] Render captions for inline images and fenced code blocks, and
   prepare title-image caption data [20].
-- [ ] Copy page-owned assets and shared static files unchanged, keep
+- [x] Copy page-owned assets and shared static files unchanged, keep
   private sources private, and reject output collisions with both
   sources named [4].
+
+#### Phase 3 handoff and leftovers
+
+Implementation and local checks/build are complete. Unit and filesystem
+tests cover source resolution, draft isolation, unchanged asset bytes,
+collisions, invalid sources, code escaping, and caption markup/association.
+The new Chroma and regexp2 dependencies have reviewed MIT notices; the SVG
+formatter and its embedded font are not linked. CI remains aligned through
+the existing tasks; no CI execution was required.
+
+No commit or push was performed. The maintainer plans the first push after
+this phase. No separate cleanup commit is currently required.
+
+- [ ] Before phase 4, review the remaining list and publication-metadata
+  work and clarify date formats, list configuration and render data,
+  excerpts, and origin-dependent generated files and warnings.
+- [ ] In phase 8, assess complete pages for both shipped themes against
+  WCAG 2.2 AA. Current tests cover generated markup and caption association,
+  not complete-page accessibility or publisher-authored HTML.
+
+Output ownership, replacement, recovery, and writer locking remain phase 6
+work. Until then, nonempty output is refused, filesystem write failures can
+leave incomplete new output, and concurrent builds must be avoided.
+Published lists and origin-dependent metadata remain phase 4 work.
 
 ### Phase 4: Lists and publication metadata
 

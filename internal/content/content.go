@@ -3,7 +3,6 @@ package content
 import (
 	"bytes"
 	"fmt"
-	"html/template"
 	"io/fs"
 	"net/url"
 	"path"
@@ -11,9 +10,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/pelletier/go-toml/v2"
-	"github.com/yuin/goldmark"
-	"github.com/yuin/goldmark/extension"
-	"github.com/yuin/goldmark/renderer/html"
 
 	"github.com/cozybadgerde/cress/internal/page"
 )
@@ -24,10 +20,23 @@ type Page struct {
 	Destination string
 	Draft       bool
 	Data        page.Page
+	body        []byte
+	pageImage   bool
 }
 
 // Prepare validates a content-relative Markdown source and prepares its page.
 func Prepare(name string, source []byte, config Config) (Page, []string, error) {
+	prepared, warnings, err := prepareMetadata(name, source, config)
+	if err != nil || prepared.Draft {
+		return prepared, warnings, err
+	}
+	if err := renderContent(&prepared, config, nil); err != nil {
+		return prepared, warnings, err
+	}
+	return prepared, warnings, nil
+}
+
+func prepareMetadata(name string, source []byte, config Config) (Page, []string, error) {
 	prepared := Page{Source: path.Join("content", name)}
 	destination, route, err := resolveRoute(name)
 	if err != nil {
@@ -84,7 +93,8 @@ func Prepare(name string, source []byte, config Config) (Page, []string, error) 
 		return prepared, warnings, input.invalidField("type", "must be ordinary, landing, or list")
 	}
 	if _, exists := values["image"]; exists {
-		prepared.Data.Image, err = input.readImage(config.Site.URL)
+		prepared.pageImage = true
+		prepared.Data.Image, err = input.readImage("")
 		if err != nil {
 			return prepared, warnings, err
 		}
@@ -99,15 +109,7 @@ func Prepare(name string, source []byte, config Config) (Page, []string, error) 
 		return prepared, warnings, input.invalidField("type", "list generation is not implemented yet (phase 4)")
 	}
 
-	markdown := goldmark.New(
-		goldmark.WithExtensions(extension.Table),
-		goldmark.WithRendererOptions(html.WithUnsafe()),
-	)
-	var rendered bytes.Buffer
-	if err := markdown.Convert(body, &rendered); err != nil {
-		return prepared, warnings, fmt.Errorf("%s: render Markdown: %w", prepared.Source, err)
-	}
-	prepared.Data.Body = template.HTML(rendered.String())
+	prepared.body = body
 	return prepared, warnings, nil
 }
 

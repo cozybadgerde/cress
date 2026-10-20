@@ -75,7 +75,7 @@ func (input fields) readImage(prefix string) (*page.Image, error) {
 	if err != nil {
 		return nil, err
 	}
-	image.warnUnknown("src", "alt")
+	image.warnUnknown("src", "alt", "caption")
 	if _, exists := image.values["src"]; !exists {
 		return nil, image.invalidField("src", "is required")
 	}
@@ -87,15 +87,39 @@ func (input fields) readImage(prefix string) (*page.Image, error) {
 	if err != nil {
 		return nil, err
 	}
+	caption, err := image.readString("caption", "")
+	if err != nil {
+		return nil, err
+	}
+	resolve := func(value string) (string, error) {
+		if prefix == "" {
+			parsed, err := parseURL(value)
+			if err != nil {
+				return "", err
+			}
+			if strings.HasPrefix(value, "//") || strings.HasPrefix(parsed.Path, "//") {
+				return "", fmt.Errorf("protocol-relative URLs are not allowed")
+			}
+			if strings.HasPrefix(value, "/") {
+				return ResolveURL(value, "/")
+			}
+			return value, nil
+		}
+		return ResolveURL(value, prefix)
+	}
+	parts, err := parseCaption(caption, resolve)
+	if err != nil {
+		return nil, image.invalidField("caption", err.Error())
+	}
 	if src == "" {
 		return nil, nil
 	}
 	if _, exists := image.values["alt"]; !exists {
 		return nil, image.invalidField("alt", "is required for a nonempty image source")
 	}
-	resolved, err := ResolveURL(src, prefix)
+	resolved, err := resolve(src)
 	if err != nil {
 		return nil, image.invalidField("src", err.Error())
 	}
-	return &page.Image{URL: resolved, Alt: alt}, nil
+	return &page.Image{URL: resolved, Alt: alt, Caption: parts}, nil
 }

@@ -72,7 +72,8 @@ func TestPageValidationAndListBoundary(t *testing.T) {
 		{"invalid draft description", "draft = true\ndescription = false", "description must be a string", true},
 		{"incomplete override", "title = 'Page'\n[image]\nalt = 'Missing source'", "image.src is required", false},
 		{"no inherited alternative", "title = 'Page'\n[image]\nsrc = '/page.jpg'", "image.alt is required", false},
-		{"invalid draft image", "draft = true\n[image]\nsrc = 'relative.jpg'\nalt = ''", "image.src", true},
+		{"relative draft image", "draft = true\n[image]\nsrc = 'relative.jpg'\nalt = ''", "", true},
+		{"invalid draft image", "draft = true\n[image]\nsrc = '//example.org/image.jpg'\nalt = ''", "image.src", true},
 		{"missing page title", "description = 'Not a title'", "published pages require a title", false},
 	}
 	config := defaultConfig(t)

@@ -24,8 +24,9 @@ commands arrive in later phases.
 
 ## Writing pages
 
-Create a `content/` directory. Each lowercase `.md` file is a page.
-Other regular files are not published. Symlinks and special files inside
+Create a `content/` directory. Each lowercase `.md` file outside an asset
+directory is a page. Other regular files outside designated asset roots
+are not published. Symlinks and special files inside
 the content tree are rejected, as is a symlink at `content/` or `public/`.
 The selected site directory is resolved to its canonical filesystem path.
 
@@ -59,8 +60,10 @@ validated even on excluded drafts. No directory-level inheritance occurs.
 
 An image table requires a string `src`. A nonempty source also requires
 an explicit string `alt`; an empty alternative marks a decorative image.
-Sources are site-root paths or absolute HTTP/HTTPS URLs. Source-relative
-image references, asset copying, and captions arrive in phase 3.
+Sources are site-root paths, absolute HTTP/HTTPS URLs, or source-relative
+assets on a page. Site defaults cannot use source-relative paths.
+See [content and assets](#content-and-assets-contract) for asset publication
+and caption syntax.
 
 ## Site configuration
 
@@ -135,9 +138,9 @@ does not guess whether a prefix has already been included. External URLs
 remain unchanged.
 
 The future `[brand]` table will hold brand color, logo, and favicon;
-its fields and rendering contract are phase 5 work. `[markdown]` options
-arrive in phase 3, and selectable theme packages in phase 5. These
-unimplemented settings warn as unknown rather than silently taking effect.
+its fields and rendering contract are phase 5 work. Selectable theme
+packages also arrive in phase 5. These unimplemented settings warn as
+unknown rather than silently taking effect.
 
 The [frontmatter schema](../schemas/frontmatter.schema.json) describes
 parsed page values; the [configuration schema](../schemas/site.schema.json)
@@ -165,10 +168,9 @@ Names retain their case and are not slugified. URL path segments are
 escaped separately from filesystem paths. Empty page names, backslashes,
 and path traversal are rejected.
 
-Markdown destinations remain as authored until URL resolution arrives in
-phase 3, even when a URL prefix is configured. For now, supply complete
-published destinations for body links. Authored HTML URLs always pass
-through unchanged.
+Markdown source references resolve to published destinations, and
+site-root URLs receive the configured prefix. Authored HTML URLs always
+pass through unchanged.
 
 ## Markdown and trust
 
@@ -180,9 +182,87 @@ Review imported or contributed HTML before building or opening it.
 Generation does not execute embedded code or fetch referenced resources,
 but browsers can do both. Local files are not a content sandbox.
 
-Syntax highlighting, captions, asset copying, list generation, publication
-metadata, and theme selection are not implemented yet. `static/` and
-`themes/` remain reserved and are not loaded.
+List generation, publication metadata, and theme selection are not
+implemented yet. `themes/` remains reserved and is not loaded.
+
+## Content and assets contract
+
+Use explicit page-owned asset directories named after the source
+stem: `about.md` owns `about.assets/`; `about/index.md` owns
+`about/index.assets/`. Publish these beside the owning page's `index.html`,
+omitting the `.assets` directory name. Preserve nested asset paths and
+contents. Orphan asset directories fail. Draft-owned assets stay private.
+Files in asset directories are opaque assets, not content pages.
+
+Shared `static/` files publish without the `static/` prefix. Files outside
+designated asset roots remain private. Reject symlinks and special files
+in either kind of asset tree. All published files share collision checks,
+including case-folded and canonically equivalent destinations.
+
+Resolve source-relative `.md` links and asset references relative to the
+Markdown file, preserving query strings and fragments. A source reference
+must map to a published page or asset; missing sources, boundary escapes,
+and excluded draft destinations fail. This is source-to-output resolution,
+not a general broken-link check. Site-root URLs need not name an existing
+file; external URLs remain unchanged. Fragment-only and query-only links
+stay local. Title images may use source-relative assets on a page; site
+image defaults remain site-root or external.
+
+For example, `content/about.assets/team.jpg` publishes as
+`public/about/team.jpg`. Link to it from `content/about.md` with
+`![Team](about.assets/team.jpg)`. A shared `static/images/logo.svg`
+publishes as `public/images/logo.svg`; reference it with `/images/logo.svg`
+or a source-relative path such as `../static/images/logo.svg` from
+`content/index.md`. CSS and other asset contents are copied verbatim;
+Cress does not rewrite their URLs.
+
+### Captions
+
+Use an immediate caption attribute after a Markdown image:
+
+```markdown
+![Our team](about.assets/team.jpg){caption="Photo by [Alex](https://example.org/)"}
+```
+
+Use the same attribute in a code fence's opening info line:
+
+````markdown
+```go caption="Example from [the guide](https://example.org/)"
+fmt.Println("Hello")
+```
+````
+
+For title images, add a `caption` string to `[image]` or `[site.image]`.
+Image overrides still replace the entire table, including its caption.
+An omitted or empty caption adds no caption markup.
+
+Captions support text and Markdown links only. Raw HTML is escaped, not
+trusted; other Markdown formatting and media are rejected. Caption links
+support HTTP/HTTPS, site-root paths, and source-relative destinations,
+including local queries and fragments. Inherited site image captions use
+site-root or HTTP/HTTPS destinations. Image alternative text and hover
+titles remain separate. Quoted attributes support `\"` and `\\` escapes.
+Malformed explicit caption attributes fail with source context. Captions
+must fit on one line. Captioned images inside Markdown links or image
+alternatives fail rather than producing nested or inaccessible links.
+
+Standalone captioned images and fenced code use `figure` and `figcaption`.
+Images inside prose use inline markup with an associated caption, not a
+figure inside a paragraph. No creator, license, or disclosure is inferred.
+
+### Highlighting
+
+Highlighting is enabled by default. Disable it in `cress.toml` for plain
+code:
+
+```toml
+[markdown]
+highlight = false
+```
+
+Recognized language names and aliases are highlighted during generation.
+Untagged and unknown languages stay plain without guessing. No browser JavaScript
+or resource fetching is used. Code always remains literal escaped text.
 
 ## Output protection
 

@@ -32,7 +32,7 @@ func Build(ctx context.Context, directory string) (Result, error) {
 	if err != nil {
 		return result, err
 	}
-	pages, warnings, err := content.Load(ctx, site, config)
+	prepared, warnings, err := content.Load(ctx, site, config)
 	result.Warnings = append(result.Warnings, warnings...)
 	if err != nil {
 		return result, err
@@ -43,21 +43,24 @@ func Build(ctx context.Context, directory string) (Result, error) {
 		return result, err
 	}
 	var files []output.File
-	for _, prepared := range pages {
+	for _, item := range prepared.Pages {
 		if err := ctx.Err(); err != nil {
 			return result, err
 		}
-		rendered, err := renderer.Render(prepared.Data)
+		rendered, err := renderer.Render(item.Data)
 		if err != nil {
-			return result, fmt.Errorf("%s: %w", prepared.Source, err)
+			return result, fmt.Errorf("%s: %w", item.Source, err)
 		}
 		files = append(files, output.File{
-			Path: prepared.Destination, Source: prepared.Source, Data: rendered,
+			Path: item.Destination, Source: item.Source, Data: rendered,
 		})
+	}
+	for _, asset := range prepared.Assets {
+		files = append(files, output.File{Path: asset.Destination, Source: asset.Source, Data: asset.Data})
 	}
 	if err := output.Write(ctx, site, files); err != nil {
 		return result, err
 	}
-	result.Pages = len(files)
+	result.Pages = len(prepared.Pages)
 	return result, nil
 }

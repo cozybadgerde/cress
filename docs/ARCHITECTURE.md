@@ -5,9 +5,10 @@ responsibilities, data flow, and failure boundaries. The
 [PRD](PRD.md) owns product behavior. The [ADRs](adr/) own decision
 rationale. This guide links to both instead of repeating them.
 
-Status: agreed target structure, with phases 1 and 2 implemented.
+Status: agreed target structure, with phases 1 through 3 implemented.
 The current build handles site contracts, metadata, navigation, ordinary
-and landing pages, and new or empty output. Later pipeline stages below
+and landing pages, assets, source references, captions, syntax highlighting,
+and new or empty output. Later pipeline stages below
 remain target behavior. Package layouts and interfaces emerge with
 implementation.
 
@@ -105,6 +106,12 @@ existing output changes.
    and replace the previous output as a complete result. Restore it on
    failure where possible.
 
+Current content preparation first inventories pages and designated assets,
+then resolves visible sources through a complete source-to-public-URL map.
+Drafts and their assets never enter that map. Only after resolution and
+Markdown preparation does the generator compose pages and submit all page
+and asset destinations to the output collision checker.
+
 Content preparation can run and be tested without templates. The renderer
 can be tested with a hand-built render model.
 
@@ -155,7 +162,7 @@ follow the responsibilities above:
 |---------|----------------|
 | `internal/command` | urfave/cli command definitions and terminal reporting. |
 | `internal/generator` | Build coordination. |
-| `internal/content` | Site/frontmatter validation, metadata and navigation preparation, local discovery, routes, draft exclusion, and Markdown preparation. |
+| `internal/content` | Site/frontmatter validation, metadata, navigation, source and asset discovery, routes, draft exclusion, URL resolution, captions, and Markdown highlighting. |
 | `internal/page` | Prepared page data shared by content preparation and rendering. |
 | `internal/render` | Embedded skeleton loading and page composition. |
 | `internal/output` | Destination checks and confined new-or-empty output writes. |

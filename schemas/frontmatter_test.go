@@ -73,7 +73,11 @@ func TestFrontmatterSchemaMatchesRuntime(t *testing.T) {
 		{"cleared image", "title = 'About'\n[image]\nsrc = ''", true},
 		{"missing alternative", "title = 'About'\n[image]\nsrc = '/photo.jpg'", false},
 		{"missing source", "title = 'About'\n[image]\nalt = ''", false},
-		{"relative image", "title = 'About'\n[image]\nsrc = 'photo.jpg'\nalt = ''", false},
+		{"relative draft image", "draft = true\n[image]\nsrc = 'page.assets/photo.jpg'\nalt = ''", true},
+		{"image caption", "title = 'About'\n[image]\nsrc = '/photo.jpg'\nalt = ''\ncaption = 'By [Alex](/credits/)'", true},
+		{"image caption type", "title = 'About'\n[image]\nsrc = ''\ncaption = false", false},
+		{"image scheme", "title = 'About'\n[image]\nsrc = 'javascript:alert'\nalt = ''", false},
+		{"image protocol relative", "title = 'About'\n[image]\nsrc = '//example.org/photo.jpg'\nalt = ''", false},
 		{"invalid draft image", "draft = true\nimage = false", false},
 		{"invalid alternative", "title = 'About'\n[image]\nsrc = ''\nalt = 1", false},
 	}

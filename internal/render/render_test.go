@@ -107,6 +107,7 @@ func TestEmptyOptionalMarkup(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	output, err := renderer.Render(page.Page{
 		Title: "Title", Type: page.Ordinary, Site: page.Site{Language: "en", URL: "/"},
 	})
@@ -116,6 +117,35 @@ func TestEmptyOptionalMarkup(t *testing.T) {
 	for _, unwanted := range []string{"<header>", "<footer>", "<nav", "<img", `name="description"`} {
 		if strings.Contains(string(output), unwanted) {
 			t.Errorf("empty optional markup %q was rendered", unwanted)
+		}
+	}
+}
+
+func TestTitleImageCaptionEscaping(t *testing.T) {
+	renderer, err := NewRenderer()
+	if err != nil {
+		t.Fatal(err)
+	}
+	model := page.Page{
+		Title: "Title", Type: page.Ordinary, Site: page.Site{Language: "en", URL: "/"},
+		Image: &page.Image{
+			URL: "/team.jpg", Alt: "<Team>",
+			Caption: []page.CaptionPart{
+				{Text: "<script>not HTML</script> by "},
+				{Text: "<Alex>", URL: "/credits/?q=1&view=full"},
+			},
+		},
+	}
+	output, err := renderer.Render(model)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{
+		`<figure><img src="/team.jpg" alt="&lt;Team&gt;">`,
+		`<figcaption>&lt;script&gt;not HTML&lt;/script&gt; by <a href="/credits/?q=1&amp;view=full">&lt;Alex&gt;</a></figcaption></figure>`,
+	} {
+		if !strings.Contains(string(output), want) {
+			t.Errorf("missing %q in %s", want, output)
 		}
 	}
 }

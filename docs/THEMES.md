@@ -14,7 +14,7 @@ The renderer accepts a prepared `page.Page` value:
 | `Description` | `string` | Resolved plain-text description after site inheritance and page overrides. |
 | `Type` | `page.Type` | Explicit `ordinary`, `landing`, or `list` behavior. |
 | `URL` | `string` | Escaped browsing path, including the site URL prefix and a trailing slash. |
-| `Image` | `*page.Image` | Optional resolved title image with `URL` and escaped plain-text `Alt`. |
+| `Image` | `*page.Image` | Optional resolved title image with `URL`, escaped plain-text `Alt`, and prepared `Caption` parts. |
 | `Body` | `template.HTML` | Trusted HTML produced by content preparation from the Markdown body. |
 | `Site` | `page.Site` | Prepared shared presentation data. |
 
@@ -24,6 +24,12 @@ home `URL`; ordered `Navigation.Main` and `Navigation.Footer` slices of
 The supplied language spelling is preserved. Missing site title or
 copyright is represented by an empty string, and missing navigation groups
 have no entries.
+
+`Image.Caption` is an ordered slice of `page.CaptionPart` values. Each part
+has escaped plain-text `Text` and an optional resolved `URL` for a link.
+Render the caption beside its image with `figure` and `figcaption`; omit
+caption markup when the slice is empty. Caption parts are ordinary data,
+not trusted HTML.
 
 The public origin is not needed for browsing and is not exposed as raw
 configuration. No template receives draft pages, raw source metadata, or
@@ -47,10 +53,11 @@ A list template is scaffolded but rendering and generation fail explicitly
 until prepared list entries arrive in phase 4.
 
 The skeleton renders the configured document language, page title,
-description, title image, site identity, main/footer links, copyright,
-main landmark, and prepared body. Empty optional groups are omitted. It
+description, title image and caption, site identity, main/footer links,
+copyright, main landmark, and prepared body. Empty optional groups are omitted. It
 adds no hardcoded translated labels or translation fallback. The footer
 links use a list; main links use a navigation landmark.
+Minimal inline styles keep code readable without browser JavaScript.
 
 These templates form a development interface, not the complete
 theme contract. Phase 5 adds complete packages, manifests, compatibility,
