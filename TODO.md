@@ -99,6 +99,45 @@ Every phase is done when:
 - Decisions taken during implementation are recorded in the owning
   document, and CI grows with the checks the phase needs.
 
+### Phase workflow
+
+- Before each phase, review open leftovers and agree whether to include
+  them in that phase or address them in a separate commit.
+- Ask detail questions and resolve material ambiguities before starting
+  the phase. Record agreed interfaces in their owning references.
+- Implement and verify one phase at a time. Do not start the next phase
+  without its clarification and leftover review.
+- At phase end, update completed tasks, document remaining loose ends here
+  with their intended phase or separate-commit scope, and suggest a commit
+  message. Creating a commit requires a separate instruction.
+
+### Open planning items
+
+These are clarification gates, not changes to the approved phase order.
+
+- [ ] Before phase 1, agree the build command, site layout, frontmatter
+  delimiters, minimum supported fields, and route normalization rules.
+- [ ] Before phase 1, reconcile its first frontmatter fields with the
+  same-change schema rule above; prefer a minimal frontmatter schema now
+  and expand it with site configuration in phase 2.
+- [ ] Before phase 1, agree minimum path and output protection, including
+  symlink refusal, source/output separation, duplicate page destinations,
+  and file/directory conflicts. Full asset collision handling remains in
+  phase 3; ownership, replacement, and recovery remain in phase 6.
+- [ ] Before phase 1, settle draft handling so the walking skeleton does
+  not silently publish a recognized draft. Full metadata resolution and
+  draft validation remain in phase 2.
+- [ ] Before phase 1, define the minimal prepared render model and
+  embedded skeleton interface needed by its renderer. Complete package
+  integration remains in phase 5; do not present the skeleton as a third
+  selectable built-in theme.
+- [ ] Review dependencies and required notices when first introduced,
+  beginning in phase 1. Phase 9 completes release inventory and enforcement,
+  rather than postponing component review until release.
+- [ ] Include generated-markup accessibility checks as content rendering
+  arrives in phase 3. Phase 8 adds complete-page assessment for both
+  shipped themes.
+
 ### Phase 1: Walking skeleton
 
 - [ ] Add root help and version output and the `cress site` and
