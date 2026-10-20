@@ -122,6 +122,36 @@ redistribution notices live in
 Use `mise tasks ls` to list all tasks. The tasks call ordinary tools, so
 native Go commands remain usable directly.
 
+### Local playground
+
+An optional `.local/site/` directory can hold a reusable manual test site
+until `site init` arrives. The entire `.local/` tree is gitignored, including
+sources and generated output; it is not supplied by a fresh clone.
+
+If the local fixture is present, build it from the repository root:
+
+```sh
+mise run build
+./bin/cress site build .local/site
+```
+
+Serve the generated files with a local static server. For example, if
+Python 3 is installed:
+
+```sh
+python3 -m http.server 8000 --bind 127.0.0.1 --directory .local/site/public
+```
+
+Open `http://127.0.0.1:8000/` and stop the server with Ctrl-C. The fixture
+uses `site.path = "/"` so it works at the server root. It exercises ordinary
+and landing pages, both source layouts, navigation, metadata overrides,
+captions, code highlighting, page-owned assets, and shared static files.
+Draft pages, draft-owned assets, and non-asset content files stay private.
+
+Before rebuilding, inspect and remove only `.local/site/public/`; current
+builds refuse nonempty output. Keep the source files for repeated testing.
+This playground is not a replacement for automated tests.
+
 ## Building
 
 ```sh

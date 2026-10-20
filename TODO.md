@@ -233,6 +233,10 @@ the existing tasks; no CI execution was required.
 No commit or push was performed. The maintainer plans the first push after
 this phase. No separate cleanup commit is currently required.
 
+- [x] Create a gitignored `.local/site/` playground for manual validation
+  while site initialization is unavailable.
+- [ ] When `site init` arrives in phase 8, replace the temporary playground
+  setup guidance with the supported initialization workflow.
 - [ ] Before phase 4, review the remaining list and publication-metadata
   work and clarify date formats, list configuration and render data,
   excerpts, and origin-dependent generated files and warnings.
