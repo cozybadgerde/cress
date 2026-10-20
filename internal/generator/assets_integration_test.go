@@ -45,7 +45,8 @@ func TestBuildAssetsAndRelativeURLs(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if result.Pages != 2 || len(result.Warnings) != 0 {
+			if result.Pages != 2 || len(result.Warnings) != 1 ||
+				!strings.Contains(result.Warnings[0], "site.host") {
 				t.Fatalf("unexpected result: %+v", result)
 			}
 			for source, destination := range map[string]string{

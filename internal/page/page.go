@@ -58,4 +58,20 @@ type Page struct {
 	Image       *Image
 	Body        template.HTML
 	Site        Site
+	Canonical   string
+	PublishedAt string
+	UpdatedAt   string
+	Excerpt     string
+	Entries     []Entry
+}
+
+// Entry holds prepared list metadata without an article body or nested entries.
+type Entry struct {
+	Title       string
+	URL         string
+	Description string
+	Image       *Image
+	PublishedAt string
+	UpdatedAt   string
+	Excerpt     string
 }

@@ -51,7 +51,7 @@ func TestBuildSite(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result.Pages != 3 || len(result.Warnings) != 1 ||
+	if result.Pages != 3 || len(result.Warnings) != 2 ||
 		!strings.Contains(result.Warnings[0], `unknown frontmatter field "extra"`) {
 		t.Fatalf("unexpected result: %+v", result)
 	}
@@ -73,7 +73,7 @@ func TestBuildSite(t *testing.T) {
 		t.Fatal(err)
 	}
 	slices.Sort(published)
-	if !slices.Equal(published, []string{"about/index.html", "blog/first/index.html", "index.html", "shared.txt"}) {
+	if !slices.Equal(published, []string{"about/index.html", "blog/first/index.html", "index.html", "robots.txt", "shared.txt"}) {
 		t.Fatalf("unexpected published files: %v", published)
 	}
 	home, err := os.ReadFile(filepath.Join(site, "public", "index.html"))
@@ -236,7 +236,7 @@ func TestBuildWithNoPublishedPages(t *testing.T) {
 				t.Fatalf("result = %+v, error = %v", result, err)
 			}
 			entries, err := os.ReadDir(filepath.Join(site, "public"))
-			if err != nil || len(entries) != 0 {
+			if err != nil || len(entries) != 1 || entries[0].Name() != "robots.txt" {
 				t.Fatalf("unpublished output = %v, error = %v", entries, err)
 			}
 		})

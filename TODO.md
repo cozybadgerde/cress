@@ -192,7 +192,7 @@ check/build tasks; no CI run is required.
   references, asset ownership, caption syntax, highlighting options, and
   generated-markup accessibility coverage. Preserve the agreed separation
   between resolved Markdown URLs and unchanged authored HTML.
-- [ ] In phase 4, implement published list generation and rendering, plus
+- [x] In phase 4, implement published list generation and rendering, plus
   canonical URLs, sitemap, `robots.txt`, and missing-origin warnings.
   Until then, published lists fail explicitly; excluded draft lists remain
   valid. `site.host` is validated but not used for publication metadata yet.
@@ -230,14 +230,15 @@ The new Chroma and regexp2 dependencies have reviewed MIT notices; the SVG
 formatter and its embedded font are not linked. CI remains aligned through
 the existing tasks; no CI execution was required.
 
-No commit or push was performed. The maintainer plans the first push after
-this phase. No separate cleanup commit is currently required.
+Phase 3 and the local-playground follow-up are committed as `23e2e09` and
+`05d0fe3`. Push confirmation remains with the maintainer. No separate
+cleanup commit is currently required.
 
 - [x] Create a gitignored `.local/site/` playground for manual validation
   while site initialization is unavailable.
 - [ ] When `site init` arrives in phase 8, replace the temporary playground
   setup guidance with the supported initialization workflow.
-- [ ] Before phase 4, review the remaining list and publication-metadata
+- [x] Before phase 4, review the remaining list and publication-metadata
   work and clarify date formats, list configuration and render data,
   excerpts, and origin-dependent generated files and warnings.
 - [ ] In phase 8, assess complete pages for both shipped themes against
@@ -247,15 +248,49 @@ this phase. No separate cleanup commit is currently required.
 Output ownership, replacement, recovery, and writer locking remain phase 6
 work. Until then, nonempty output is refused, filesystem write failures can
 leave incomplete new output, and concurrent builds must be avoided.
-Published lists and origin-dependent metadata remain phase 4 work.
+List and publication-metadata implementation is tracked in phase 4 below.
 
 ### Phase 4: Lists and publication metadata
 
-- [ ] Build list pages with section-local membership, draft visibility,
+Agreed interface: optional date-only `published_at` and `updated_at`, plain
+`excerpt`, and `[list]` with `order = "published_at" | "title"` and
+`reverse = false`. Title ordering uses case-folded Unicode lexical keys.
+Prepare entries before rendering. Generate canonicals, sitemap entries
+with explicit update dates, and permissive robots output; without an
+origin, warn once and omit origin-dependent metadata. The
+[user reference](docs/USER.md) owns the complete authoring contract.
+Phase 3 leftovers stay in phases 6 and 8.
+
+- [x] Build list pages with section-local membership, draft visibility,
   publication and title ordering, reversal, route tie-breaks,
   missing-date warnings, and optional excerpts [21].
-- [ ] Generate canonical URLs, the sitemap, and `robots.txt`, and warn
+- [x] Generate canonical URLs, the sitemap, and `robots.txt`, and warn
   and omit origin-dependent metadata without a public origin [15].
+
+#### Phase 4 handoff and leftovers
+
+Implementation is complete. Coverage includes date validation on drafts,
+logical list membership across equivalent source layouts, chronological
+and Unicode title ordering, reversal and route ties, missing-date warnings,
+prepared metadata-only entries, empty-list introductions, and escaping.
+Publication coverage includes root and prefixed canonicals, XML sitemap
+URLs and explicit update dates, missing-origin behavior, and generated-file
+collisions that preserve previous output. No dependencies were added.
+
+`mise run check` and `mise run build` pass locally. CI remains aligned
+through the existing tasks; no CI run was required. No commit or push
+was performed for phase 4.
+
+- [ ] Before phase 5, agree brand fields and formats, theme manifest and
+  runtime compatibility, local/built-in selection, required templates and
+  prepared data, exact-language labels, public asset namespacing, and
+  `theme init` behavior.
+
+No separate cleanup commit is required. Output replacement, recovery, and
+locking remain in phase 6; the temporary site scaffold and complete-theme
+accessibility assessment remain in phase 8. For subpath deployments,
+host-root robots handling stays an external deployment responsibility,
+as documented in the user reference.
 
 ### Phase 5: Theme integration
 

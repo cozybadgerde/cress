@@ -35,7 +35,7 @@ func (renderer *Renderer) Render(prepared page.Page) ([]byte, error) {
 	case page.Landing:
 		name = "landing.gohtml"
 	case page.List:
-		return nil, fmt.Errorf("list rendering is not implemented yet (phase 4)")
+		name = "list.gohtml"
 	default:
 		return nil, fmt.Errorf("unsupported prepared page type %q", prepared.Type)
 	}

@@ -5,9 +5,10 @@ responsibilities, data flow, and failure boundaries. The
 [PRD](PRD.md) owns product behavior. The [ADRs](adr/) own decision
 rationale. This guide links to both instead of repeating them.
 
-Status: agreed target structure, with phases 1 through 3 implemented.
+Status: agreed target structure, with phases 1 through 4 implemented.
 The current build handles site contracts, metadata, navigation, ordinary
-and landing pages, assets, source references, captions, syntax highlighting,
+and landing pages, lists, assets, source references, captions, syntax highlighting,
+canonical URLs, a sitemap, robots output,
 and new or empty output. Later pipeline stages below
 remain target behavior. Package layouts and interfaces emerge with
 implementation.
@@ -111,6 +112,12 @@ then resolves visible sources through a complete source-to-public-URL map.
 Drafts and their assets never enter that map. Only after resolution and
 Markdown preparation does the generator compose pages and submit all page
 and asset destinations to the output collision checker.
+
+List preparation selects logical direct children from visible ordinary
+pages after image and caption URLs are resolved. It supplies metadata-only
+entries in their final order. Publication preparation creates canonical
+URLs and XML sitemap/robots files without inspecting filesystem clocks;
+generated files share the same collision checker as local assets.
 
 Content preparation can run and be tested without templates. The renderer
 can be tested with a hand-built render model.

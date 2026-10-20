@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-// Asset is an unchanged public file and its source ownership.
+// Asset is an unchanged local file or generated publication file.
 type Asset struct {
 	Source      string
 	Destination string
@@ -127,6 +127,13 @@ func Load(ctx context.Context, site string, config Config) (prepared Prepared, w
 			return prepared, warnings, err
 		}
 	}
+	warnings = append(warnings, prepareLists(prepared.Pages)...)
+	publication, diagnostics, err := preparePublication(prepared.Pages, config)
+	warnings = append(warnings, diagnostics...)
+	if err != nil {
+		return prepared, warnings, err
+	}
+	prepared.Assets = append(prepared.Assets, publication...)
 	return prepared, warnings, nil
 }
 

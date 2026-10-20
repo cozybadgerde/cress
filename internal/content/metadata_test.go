@@ -59,12 +59,12 @@ alt = "Shared alternative"
 	}
 }
 
-func TestPageValidationAndListBoundary(t *testing.T) {
+func TestPageValidationAndTypes(t *testing.T) {
 	tests := []struct {
 		name, fields, wantError string
 		draft                   bool
 	}{
-		{"published list", "title = 'List'\ntype = 'list'", "list generation is not implemented", false},
+		{"published list", "title = 'List'\ntype = 'list'", "", false},
 		{"excluded list", "draft = true\ntype = 'list'", "", true},
 		{"invalid type", "title = 'Page'\ntype = 'article'", "type must be ordinary, landing, or list", false},
 		{"invalid draft type", "draft = true\ntype = false", "type must be a string", true},

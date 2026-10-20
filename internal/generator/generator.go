@@ -16,7 +16,7 @@ type Result struct {
 	Warnings []string
 }
 
-// Build prepares a site's ordinary pages and writes new or empty output.
+// Build prepares a site's pages and publication files in new or empty output.
 func Build(ctx context.Context, directory string) (Result, error) {
 	var result Result
 	site, err := filepath.Abs(directory)

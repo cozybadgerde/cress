@@ -3,5 +3,17 @@
     <h1>{{.Title}}</h1>
     {{template "title-image" .}}
     {{.Body}}
+    {{with .Entries}}
+    <ul>
+      {{range .}}
+      <li>
+        <h2><a href="{{.URL}}">{{.Title}}</a></h2>
+        {{with .PublishedAt}}<p><time datetime="{{.}}">{{.}}</time></p>{{end}}
+        {{with .UpdatedAt}}<p><time datetime="{{.}}">{{.}}</time></p>{{end}}
+        {{with .Excerpt}}<p>{{.}}</p>{{end}}
+      </li>
+      {{end}}
+    </ul>
+    {{end}}
   </main>
 {{template "document-end" .}}

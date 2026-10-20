@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Cress development frontmatter",
-  "description": "Parsed TOML frontmatter. List generation is not implemented until phase 4.",
+  "description": "Parsed TOML frontmatter; normalize TOML local dates to YYYY-MM-DD strings before schema validation.",
   "type": "object",
   "properties": {
     "title": {
@@ -13,6 +13,17 @@
     },
     "description": {
       "type": "string"
+    },
+    "published_at": { "$ref": "#/$defs/date" },
+    "updated_at": { "$ref": "#/$defs/date" },
+    "excerpt": { "type": "string" },
+    "list": {
+      "type": "object",
+      "properties": {
+        "order": { "enum": ["published_at", "title"], "default": "published_at" },
+        "reverse": { "type": "boolean", "default": false }
+      },
+      "additionalProperties": true
     },
     "type": {
       "enum": ["ordinary", "landing", "list"],
@@ -45,8 +56,21 @@
   "else": {
     "required": ["title"]
   },
+  "allOf": [
+    {
+      "if": { "required": ["list"] },
+      "then": { "required": ["type"], "properties": { "type": { "const": "list" } } }
+    }
+  ],
   "additionalProperties": true,
   "$defs": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "not": { "pattern": "^0000-" },
+      "description": "Valid Gregorian date in years 0001-9999; runtime validates calendar semantics."
+    },
     "nonblank": {
       "type": "string",
       "pattern": "[^\u0009-\u000d\u0020\u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]"

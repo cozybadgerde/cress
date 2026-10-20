@@ -1,7 +1,7 @@
 # Using Cress
 
 Cress currently provides a development walking skeleton, not the complete
-1.0 feature set. It builds ordinary and landing pages through an embedded
+1.0 feature set. It builds ordinary, landing, and list pages through an embedded
 developer theme skeleton. That skeleton is not a selectable built-in theme.
 
 ## Commands
@@ -55,7 +55,7 @@ validated even on excluded drafts. No directory-level inheritance occurs.
 | Additional field | Type | Behavior |
 |------------------|------|----------|
 | `description` | String | Inherits `site.description` when absent; `""` clears it. |
-| `type` | String | `ordinary` by default; also accepts `landing` and `list`. Published lists fail explicitly until phase 4. |
+| `type` | String | `ordinary` by default; also accepts `landing` and `list`. |
 | `image` | Table | Replaces the complete inherited `site.image`; `{ src = "" }` clears it. |
 
 An image table requires a string `src`. A nonempty source also requires
@@ -64,6 +64,73 @@ Sources are site-root paths, absolute HTTP/HTTPS URLs, or source-relative
 assets on a page. Site defaults cannot use source-relative paths.
 See [content and assets](#content-and-assets-contract) for asset publication
 and caption syntax.
+
+## Dates, excerpts, and lists
+
+`published_at` and `updated_at` are optional page-specific calendar dates.
+Use TOML local dates such as `published_at = 2026-10-20`, or equivalent
+`"YYYY-MM-DD"` strings. Empty strings, invalid calendar dates, times, and
+timestamps fail, including on drafts. Dates never schedule publication.
+No ordering relationship between the two fields is required.
+
+`excerpt` is optional plain text, escaped in templates. An absent or empty
+excerpt has no output; Cress never extracts body text or uses the description
+as an excerpt. Dates and excerpts do not inherit from site configuration.
+
+Create a list with explicit `type = "list"`:
+
+```toml
+title = "Journal"
+type = "list"
+
+[list]
+order = "published_at"
+reverse = false
+```
+
+The `[list]` table is optional on lists and invalid on other page types.
+`order` is `"published_at"` by default, newest first, or `"title"` for
+case-insensitive Unicode-normalized lexical order. This is not
+language-specific dictionary ordering. Equal keys sort by published URL
+ascending. `reverse = true` reverses the complete sequence, including ties.
+
+A list selects visible ordinary pages directly beneath its containing
+logical section. For `blog/list.md` or `blog/list/index.md`, the section
+is `/blog/`; for `blog.md` or `blog/index.md`, it is `/`. A list at `/`
+selects direct children of `/`. Exclude the section's
+own root, the list itself, landing pages, other lists, drafts, and deeper
+descendants. Equivalent source layouts select the same entries.
+
+Chronological lists warn about and omit eligible pages without
+`published_at`; those pages still publish normally. Title-ordered lists
+include undated pages without that warning. `updated_at` never affects
+ordering.
+
+The Markdown body appears above the prepared entries. Each entry exposes
+its title, URL, description, image/caption, dates, and optional excerpt,
+but not its body. The developer skeleton renders linked titles, explicit
+dates, and excerpts. Empty lists preserve their introduction without
+prescribed empty-state wording.
+
+## Publication metadata
+
+With `site.host`, every visible page receives an absolute canonical URL.
+`public/sitemap.xml` includes all visible pages, ordered by published URL;
+`lastmod` is present only when `updated_at` is explicitly supplied. No
+filesystem timestamps or build dates are inferred. Canonicals and sitemap
+URLs combine the public origin and already-prefixed browsing URL once.
+
+`public/robots.txt` permits crawling and advertises the absolute sitemap
+URL. Without `site.host`, Cress issues one actionable warning, omits
+canonicals and the sitemap, and writes `robots.txt` without a sitemap line.
+These generated files share collision checks with pages and assets;
+conflicting `static/robots.txt` or `static/sitemap.xml` fails rather than
+overriding either source when the corresponding file is generated.
+
+Crawlers discover `robots.txt` only at a host's root. For subpath
+deployments, the host-root robots policy and any sitemap advertisement
+must be coordinated through external deployment; Cress does not write
+outside the selected output directory.
 
 ## Site configuration
 
@@ -114,8 +181,7 @@ titles, types, and draft status do not inherit.
 
 `host` cannot contain credentials, a query, a fragment, or a path other
 than an optional final `/`. The prepared origin omits that final slash.
-An explicitly empty host is invalid; omit it when unknown. Canonical
-URLs, sitemap generation, and missing-origin warnings arrive in phase 4.
+An explicitly empty host is invalid; omit it when unknown.
 Ordinary browsing links do not depend on the configured hostname.
 
 `path` must start and end with `/`. Reject dot segments, repeated slashes,
@@ -145,7 +211,9 @@ unknown rather than silently taking effect.
 The [frontmatter schema](../schemas/frontmatter.schema.json) describes
 parsed page values; the [configuration schema](../schemas/site.schema.json)
 describes parsed site values. External tools must parse TOML and extract
-frontmatter before applying them. Unknown fields are permitted by schemas;
+frontmatter before applying them. Normalize TOML local dates to date-only
+strings; enable date-format assertions for calendar validation.
+Unknown fields are permitted by schemas;
 Cress reports their warnings. Runtime also validates URL semantics and
 language tags. Schemas are versioned with source and will track releases.
 
@@ -182,8 +250,8 @@ Review imported or contributed HTML before building or opening it.
 Generation does not execute embedded code or fetch referenced resources,
 but browsers can do both. Local files are not a content sandbox.
 
-List generation, publication metadata, and theme selection are not
-implemented yet. `themes/` remains reserved and is not loaded.
+Theme selection is not implemented yet. `themes/` remains reserved and
+is not loaded.
 
 ## Content and assets contract
 

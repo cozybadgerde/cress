@@ -76,8 +76,9 @@ private = "not raw configuration for templates"
 	if strings.Index(home, ">First</a>") > strings.Index(home, ">&lt;Second&gt;</a>") {
 		t.Fatal("navigation was reordered")
 	}
-	if strings.Contains(home, "publication.example.org") {
-		t.Fatal("ordinary browsing depends on the publication hostname")
+	if strings.Contains(home, `<a href="https://publication.example.org`) ||
+		!strings.Contains(home, `<link rel="canonical" href="https://publication.example.org/company/">`) {
+		t.Fatal("canonical identity or hostname-independent browsing is incorrect")
 	}
 	if !strings.Contains(readPage("landing"), "<section>") ||
 		strings.Contains(home, "<section>") {
@@ -104,7 +105,7 @@ func TestInvalidConfigurationAndPageTypesPreserveOutput(t *testing.T) {
 		{"invalid config", "[site]\npath = '../outside/'", "title = 'Home'"},
 		{"invalid language", "[site]\nlanguage = 'en_US'", "title = 'Home'"},
 		{"malformed config", "[site", "title = 'Home'"},
-		{"published list", "", "title = 'List'\ntype = 'list'"},
+		{"invalid list", "", "title = 'List'\ntype = 'list'\n[list]\norder = 'invalid'"},
 		{"invalid draft", "", "draft = true\ntype = 'invalid'"},
 	}
 	for _, test := range tests {
@@ -134,7 +135,7 @@ func TestBuildWarningsIncludeConfigurationAndPages(t *testing.T) {
 		"content/index.md": "+++\ntitle = 'Home'\nunknown = 'warning'\n+++\nBody",
 	})
 	result, err := generator.Build(context.Background(), site)
-	if err != nil || result.Pages != 1 || len(result.Warnings) != 2 {
+	if err != nil || result.Pages != 1 || len(result.Warnings) != 3 {
 		t.Fatalf("result = %+v, error = %v", result, err)
 	}
 	if !strings.Contains(result.Warnings[0], "cress.toml:") ||

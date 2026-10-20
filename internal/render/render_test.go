@@ -66,7 +66,7 @@ func TestPreparedMetadataAndPageTypes(t *testing.T) {
 			Custom: map[string]any{"raw": "<script>custom()</script>"},
 		},
 	}
-	for _, pageType := range []page.Type{page.Ordinary, page.Landing} {
+	for _, pageType := range []page.Type{page.Ordinary, page.Landing, page.List} {
 		t.Run(string(pageType), func(t *testing.T) {
 			model.Type = pageType
 			output, err := renderer.Render(model)
@@ -94,7 +94,7 @@ func TestPreparedMetadataAndPageTypes(t *testing.T) {
 			}
 		})
 	}
-	for _, invalidType := range []page.Type{"", "unknown", page.List} {
+	for _, invalidType := range []page.Type{"", "unknown"} {
 		model.Type = invalidType
 		if _, err := renderer.Render(model); err == nil {
 			t.Fatalf("unsupported type %q rendered via fallback", invalidType)
@@ -147,5 +147,47 @@ func TestTitleImageCaptionEscaping(t *testing.T) {
 		if !strings.Contains(string(output), want) {
 			t.Errorf("missing %q in %s", want, output)
 		}
+	}
+}
+
+func TestPreparedListPresentation(t *testing.T) {
+	renderer, err := NewRenderer()
+	if err != nil {
+		t.Fatal(err)
+	}
+	model := page.Page{
+		Title: "Journal", Type: page.List, Site: page.Site{Language: "en", URL: "/"},
+		Canonical: "https://example.org/journal/", Body: template.HTML("<p>Introduction</p>"),
+		Entries: []page.Entry{
+			{Title: "<First>", URL: "/first/", PublishedAt: "2026-10-20", UpdatedAt: "2026-10-21", Excerpt: "<Excerpt>"},
+			{Title: "Second", URL: "/second/", Description: "Not an excerpt"},
+		},
+	}
+	output, err := renderer.Render(model)
+	if err != nil {
+		t.Fatal(err)
+	}
+	html := string(output)
+	for _, want := range []string{
+		`<link rel="canonical" href="https://example.org/journal/">`,
+		`<h2><a href="/first/">&lt;First&gt;</a></h2>`,
+		`<time datetime="2026-10-20">2026-10-20</time>`,
+		`<time datetime="2026-10-21">2026-10-21</time>`, `<p>&lt;Excerpt&gt;</p>`,
+		`<h2><a href="/second/">Second</a></h2>`,
+	} {
+		if !strings.Contains(html, want) {
+			t.Errorf("missing %q in %s", want, html)
+		}
+	}
+	if strings.Index(html, "<p>Introduction</p>") > strings.Index(html, "<ul>") ||
+		strings.Index(html, "&lt;First&gt;</a>") > strings.Index(html, ">Second</a>") ||
+		strings.Contains(html, "<Excerpt>") || strings.Contains(html, "Not an excerpt") {
+		t.Fatalf("list metadata, intro or prepared order changed: %s", html)
+	}
+	model.Entries = nil
+	output, err = renderer.Render(model)
+	if err != nil || !strings.Contains(string(output), "<p>Introduction</p>") ||
+		strings.Contains(string(output), "<ul>") {
+		t.Fatalf("empty list lost intro or added empty markup: %s, %v", output, err)
 	}
 }

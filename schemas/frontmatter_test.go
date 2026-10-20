@@ -22,6 +22,7 @@ var siteSchema string
 func compileSchema(t *testing.T, name string) *jsonschema.Schema {
 	t.Helper()
 	compiler := jsonschema.NewCompiler()
+	compiler.AssertFormat()
 	for name, source := range map[string]string{
 		"frontmatter.schema.json": frontmatterSchema,
 		"site.schema.json":        siteSchema,
@@ -66,6 +67,21 @@ func TestFrontmatterSchemaMatchesRuntime(t *testing.T) {
 		{"ordinary", "title = 'About'\ntype = 'ordinary'", true},
 		{"landing", "title = 'About'\ntype = 'landing'", true},
 		{"excluded list", "type = 'list'\ndraft = true", true},
+		{"published list", "title = 'List'\ntype = 'list'", true},
+		{"list configuration", "title = 'List'\ntype = 'list'\n[list]\norder = 'title'\nreverse = true\nunknown = 1", true},
+		{"list order", "title = 'List'\ntype = 'list'\n[list]\norder = 'updated_at'", false},
+		{"list reverse type", "title = 'List'\ntype = 'list'\n[list]\nreverse = 'yes'", false},
+		{"list table type", "title = 'List'\ntype = 'list'\nlist = []", false},
+		{"list on ordinary", "title = 'Page'\n[list]", false},
+		{"excerpt", "title = 'Page'\nexcerpt = '<plain text>'", true},
+		{"excerpt type", "title = 'Page'\nexcerpt = false", false},
+		{"date strings", "title = 'Page'\npublished_at = '2026-10-20'\nupdated_at = '2024-02-29'", true},
+		{"TOML dates", "title = 'Page'\npublished_at = 2026-10-20\nupdated_at = 2024-02-29", true},
+		{"date empty", "draft = true\npublished_at = ''", false},
+		{"date invalid calendar", "draft = true\npublished_at = '2025-02-29'", false},
+		{"date year zero", "draft = true\nupdated_at = '0000-01-01'", false},
+		{"date timestamp", "draft = true\nupdated_at = 2026-10-20T12:00:00Z", false},
+		{"date type", "draft = true\npublished_at = 20261020", false},
 		{"invalid type", "title = 'About'\ntype = 'article'", false},
 		{"invalid type kind", "title = 'About'\ntype = false", false},
 		{"image", "title = 'About'\n[image]\nsrc = '/photo.jpg'\nalt = 'Photo'", true},

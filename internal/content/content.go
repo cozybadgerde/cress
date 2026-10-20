@@ -22,6 +22,7 @@ type Page struct {
 	Data        page.Page
 	body        []byte
 	pageImage   bool
+	list        listOptions
 }
 
 // Prepare validates a content-relative Markdown source and prepares its page.
@@ -65,7 +66,8 @@ func prepareMetadata(name string, source []byte, config Config) (Page, []string,
 
 	var warnings []string
 	input := fields{values: values, source: prepared.Source, kind: "frontmatter", warnings: &warnings}
-	input.warnUnknown("title", "draft", "description", "type", "image")
+	input.warnUnknown("title", "draft", "description", "type", "image",
+		"published_at", "updated_at", "excerpt", "list")
 
 	if value, exists := values["draft"]; exists {
 		draft, ok := value.(bool)
@@ -92,6 +94,22 @@ func prepareMetadata(name string, source []byte, config Config) (Page, []string,
 	default:
 		return prepared, warnings, input.invalidField("type", "must be ordinary, landing, or list")
 	}
+	prepared.Data.PublishedAt, err = input.readDate("published_at")
+	if err != nil {
+		return prepared, warnings, err
+	}
+	prepared.Data.UpdatedAt, err = input.readDate("updated_at")
+	if err != nil {
+		return prepared, warnings, err
+	}
+	prepared.Data.Excerpt, err = input.readString("excerpt", "")
+	if err != nil {
+		return prepared, warnings, err
+	}
+	prepared.list, err = input.readList(prepared.Data.Type)
+	if err != nil {
+		return prepared, warnings, err
+	}
 	if _, exists := values["image"]; exists {
 		prepared.pageImage = true
 		prepared.Data.Image, err = input.readImage("")
@@ -105,8 +123,8 @@ func prepareMetadata(name string, source []byte, config Config) (Page, []string,
 	if prepared.Data.Title == "" {
 		return prepared, warnings, fmt.Errorf("%s: published pages require a title", prepared.Source)
 	}
-	if prepared.Data.Type == page.List {
-		return prepared, warnings, input.invalidField("type", "list generation is not implemented yet (phase 4)")
+	if config.Host != "" {
+		prepared.Data.Canonical = config.Host + prepared.Data.URL
 	}
 
 	prepared.body = body

@@ -37,9 +37,9 @@ deployment tools you already use. The
 ## Getting started
 
 Cress is in early development. The current build supports site
-configuration, inherited metadata, navigation, ordinary and landing
+configuration, inherited metadata, navigation, ordinary, landing, and list
 Markdown pages, assets, resolved source links, captions, syntax highlighting,
-draft exclusion, and new-or-empty output protection through
+publication metadata, draft exclusion, and new-or-empty output protection through
 embedded developer templates. Implementation follows the
 [work plan](TODO.md); there is no published release yet.
 
