@@ -5,11 +5,11 @@ responsibilities, data flow, and failure boundaries. The
 [PRD](PRD.md) owns product behavior. The [ADRs](adr/) own decision
 rationale. This guide links to both instead of repeating them.
 
-Status: agreed target structure, with phases 1 through 4 implemented.
+Status: agreed target structure, with phases 1 through 6 implemented.
 The current build handles site contracts, metadata, navigation, ordinary
 and landing pages, lists, assets, source references, captions, syntax highlighting,
-canonical URLs, a sitemap, robots output,
-and new or empty output. Later pipeline stages below
+canonical URLs, a sitemap, robots output, local theme packages, and
+recoverable output replacement. Preview and built-in themes below
 remain target behavior. Package layouts and interfaces emerge with
 implementation.
 
@@ -81,30 +81,33 @@ follows the [compatibility policy](adr/0004-shared-contract-policy.md).
 
 ## Build flow
 
-A build runs these stages in order. Any error stops the build before
-existing output changes.
+A build runs these stages in order. Preparation failures leave previous
+output untouched. Publication failures restore verified output where possible;
+cleanup errors after confirmed publication leave the new result in place.
 
-1. **Load.** Read the site configuration, Markdown files, page assets,
+1. **Acquire.** Take the site-wide OS advisory writer lock and recover only
+   verified interrupted transactions. Hold ownership for the whole build.
+2. **Load.** Read the site configuration, Markdown files, page assets,
    and shared static files. Parse TOML configuration and frontmatter.
-2. **Validate.** Reject malformed input and invalid known fields. Warn
+3. **Validate.** Reject malformed input and invalid known fields. Warn
    about unknown fields. Keep open theme customizations as custom data.
-3. **Resolve.** Apply site metadata defaults and explicit page overrides,
+4. **Resolve.** Apply site metadata defaults and explicit page overrides,
    page types, and draft visibility. Derive directory-index routes and
    resolve generator-owned URLs beneath the deployment path.
-4. **Prepare.** Convert Markdown to HTML, resolve Markdown links and
+5. **Prepare.** Convert Markdown to HTML, resolve Markdown links and
    images, highlight code, render captions, build list entries, and
    prepare navigation and publication metadata.
-5. **Select theme.** Use a same-name local package when one exists, and
+6. **Select theme.** Use a same-name local package when one exists, and
    a built-in theme only when it is absent. An invalid local package
    fails. Check compatibility, required page-type support, and labels
    before rendering.
-6. **Render.** Compose each page from the render model and theme
+7. **Render.** Compose each page from the render model and theme
    templates.
-7. **Stage.** Write pages, sitemap, `robots.txt`, page assets, shared
+8. **Stage.** Write pages, sitemap, `robots.txt`, page assets, shared
    static files, and public theme assets into a staging area. Reject
    destination collisions and name the competing sources.
-8. **Publish.** Take the writer lock, verify ownership of the target,
-   and replace the previous output as a complete result. Restore it on
+9. **Publish.** Verify ownership of the target and replace the previous
+   output as a complete result. Restore it on
    failure where possible.
 
 Current content preparation first inventories pages and designated assets,
@@ -121,6 +124,29 @@ generated files share the same collision checker as local assets.
 
 Content preparation can run and be tested without templates. The renderer
 can be tested with a hand-built render model.
+
+### Output transaction
+
+`internal/output.Writer` holds a confined site root and an OS `flock` on
+the persistent `.cress/writer.lock` file. Canonical site aliases share that
+inode. A private versioned record pairs the current output token with
+`public/.cress-output.json`; the marker's path is reserved by the collision
+checker. New and empty destinations need no previous ownership token.
+
+Before staging, the record names a new random token, the previous token,
+and whether a public directory exists. A complete stage advances from
+`staging` to `ready`. Publication moves previous output to the recorded
+backup and the stage to `public/`. Verified promotion advances to
+`published` before backup cleanup. Each state update writes an exclusive
+`output.next` and renames it over `output.json`.
+
+Recovery checks real directories, regular marker files, matching tokens,
+and allowed path combinations. It restores interrupted previous output or
+retains confirmed new output, never promotes a merely staged directory.
+Unexpected paths or an uncommitted next record stop with preserved
+evidence. Cleanup failure remains an error without rolling back published
+output. The [user reference](USER.md#output-protection) owns migration and
+manual-recovery guidance.
 
 ## Preview flow
 
@@ -171,8 +197,9 @@ follow the responsibilities above:
 | `internal/generator` | Build coordination. |
 | `internal/content` | Site/frontmatter validation, metadata, navigation, source and asset discovery, routes, draft exclusion, URL resolution, captions, and Markdown highlighting. |
 | `internal/page` | Prepared page data shared by content preparation and rendering. |
-| `internal/render` | Embedded skeleton loading and page composition. |
-| `internal/output` | Destination checks and confined new-or-empty output writes. |
+| `internal/render` | Theme-template parsing and page composition. |
+| `internal/theme` | Package discovery, manifests, compatibility, labels, public assets, and offline initialization. |
+| `internal/output` | Destination checks, confined staging, ownership, OS writer locking, replacement, and verified recovery. |
 
 Dependencies point from the CLI and generator toward content preparation,
 rendering, and output handling. The renderer depends only on the render

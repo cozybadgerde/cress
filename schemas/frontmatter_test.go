@@ -19,6 +19,9 @@ var frontmatterSchema string
 //go:embed site.schema.json
 var siteSchema string
 
+//go:embed theme.schema.json
+var themeSchema string
+
 func compileSchema(t *testing.T, name string) *jsonschema.Schema {
 	t.Helper()
 	compiler := jsonschema.NewCompiler()
@@ -26,6 +29,7 @@ func compileSchema(t *testing.T, name string) *jsonschema.Schema {
 	for name, source := range map[string]string{
 		"frontmatter.schema.json": frontmatterSchema,
 		"site.schema.json":        siteSchema,
+		"theme.schema.json":       themeSchema,
 	} {
 		document, err := jsonschema.UnmarshalJSON(strings.NewReader(source))
 		if err != nil {

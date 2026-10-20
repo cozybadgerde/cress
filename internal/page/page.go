@@ -47,6 +47,14 @@ type Site struct {
 	URL        string
 	Navigation Navigation
 	Custom     map[string]any
+	Brand      Brand
+}
+
+// Brand holds optional presentation values with prepared asset URLs.
+type Brand struct {
+	Color   string
+	Logo    *Image
+	Favicon string
 }
 
 // Page holds prepared page data, without source or generator access.

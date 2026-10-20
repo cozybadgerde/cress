@@ -14,6 +14,9 @@ func TestValidate(t *testing.T) {
 		wantError bool
 	}{
 		{name: "empty"},
+		{name: "ownership marker", paths: []string{".cress-output.json"}, wantError: true},
+		{name: "marker alias", paths: []string{".CRESS-OUTPUT.JSON"}, wantError: true},
+		{name: "marker directory alias", paths: []string{".CRESS-OUTPUT.JSON/child"}, wantError: true},
 		{name: "pages", paths: []string{"index.html", "about/index.html", "blog/first/index.html"}},
 		{name: "duplicate", paths: []string{"about/index.html", "about/index.html"}, wantError: true},
 		{name: "case collision", paths: []string{"About/index.html", "about/index.html"}, wantError: true},

@@ -1,6 +1,7 @@
 package generator_test
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io/fs"
@@ -11,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/cozybadgerde/cress/internal/generator"
+	"github.com/cozybadgerde/cress/internal/output"
 )
 
 func createSite(t *testing.T, sources map[string]string) string {
@@ -73,7 +75,7 @@ func TestBuildSite(t *testing.T) {
 		t.Fatal(err)
 	}
 	slices.Sort(published)
-	if !slices.Equal(published, []string{"about/index.html", "blog/first/index.html", "index.html", "robots.txt", "shared.txt"}) {
+	if !slices.Equal(published, []string{".cress-output.json", "about/index.html", "blog/first/index.html", "index.html", "robots.txt", "shared.txt"}) {
 		t.Fatalf("unexpected published files: %v", published)
 	}
 	home, err := os.ReadFile(filepath.Join(site, "public", "index.html"))
@@ -236,9 +238,46 @@ func TestBuildWithNoPublishedPages(t *testing.T) {
 				t.Fatalf("result = %+v, error = %v", result, err)
 			}
 			entries, err := os.ReadDir(filepath.Join(site, "public"))
-			if err != nil || len(entries) != 1 || entries[0].Name() != "robots.txt" {
+			if err != nil || len(entries) != 2 ||
+				entries[0].Name() != ".cress-output.json" || entries[1].Name() != "robots.txt" {
 				t.Fatalf("unpublished output = %v, error = %v", entries, err)
 			}
+
 		})
+	}
+}
+
+func TestRebuildPreservesOwnedOutputOnInvalidInput(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping filesystem integration test")
+	}
+	site := createSite(t, map[string]string{"content/index.md": "+++\ntitle = 'Home'\n+++\nOriginal"})
+	if _, err := generator.Build(context.Background(), site); err != nil {
+		t.Fatal(err)
+	}
+	previous, err := os.ReadFile(filepath.Join(site, "public/index.html"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(site, "content/index.md"), []byte("invalid without title"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	writer, err := output.Acquire(context.Background(), site)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, buildErr := generator.Build(context.Background(), site)
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if !errors.Is(buildErr, output.ErrBusy) {
+		t.Fatalf("build did not lock before loading invalid inputs: %v", buildErr)
+	}
+	if _, err := generator.Build(context.Background(), site); err == nil || !strings.Contains(err.Error(), "title") {
+		t.Fatalf("invalid input not reported after lock release: %v", err)
+	}
+	current, err := os.ReadFile(filepath.Join(site, "public/index.html"))
+	if err != nil || !bytes.Equal(current, previous) {
+		t.Fatalf("owned output changed on generation error: %q, %v", current, err)
 	}
 }

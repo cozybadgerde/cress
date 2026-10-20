@@ -6,6 +6,9 @@
   <title>{{.Title}}</title>
   {{if .Description}}<meta name="description" content="{{.Description}}">{{end}}
   {{if .Canonical}}<link rel="canonical" href="{{.Canonical}}">{{end}}
+  {{with .Site.Brand.Favicon}}<link rel="icon" href="{{.}}">{{end}}
+  {{with .Site.Brand.Color}}<meta name="theme-color" content="{{.}}">{{end}}
+  {{block "theme-styles" .}}{{end}}
   <style>
     pre { padding: 1rem; overflow: auto; background: #f5f5f5; color: #202020; }
     pre .k, pre .kd, pre .kn, pre .kp, pre .kr, pre .kt { color: #005a9c; }
@@ -18,9 +21,10 @@
   </style>
 </head>
 <body>
-  {{if or .Site.Title .Site.Navigation.Main}}
+  {{if or .Site.Title .Site.Navigation.Main .Site.Brand.Logo}}
   <header>
     {{if .Site.Title}}<a href="{{.Site.URL}}">{{.Site.Title}}</a>{{end}}
+    {{with .Site.Brand.Logo}}<img src="{{.URL}}" alt="{{.Alt}}">{{end}}
     {{with .Site.Navigation.Main}}
     <nav>
       <ul>{{range .}}<li><a href="{{.URL}}">{{.Label}}</a></li>{{end}}</ul>

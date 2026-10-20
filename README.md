@@ -39,8 +39,10 @@ deployment tools you already use. The
 Cress is in early development. The current build supports site
 configuration, inherited metadata, navigation, ordinary, landing, and list
 Markdown pages, assets, resolved source links, captions, syntax highlighting,
-publication metadata, draft exclusion, and new-or-empty output protection through
-embedded developer templates. Implementation follows the
+publication metadata, branding, local themes, theme initialization, draft
+exclusion, and staged output replacement with ownership and recovery.
+An embedded developer skeleton
+is used when no theme is selected. Implementation follows the
 [work plan](TODO.md); there is no published release yet.
 
 To build it from source, follow the [developer guide](docs/DEVELOPER.md).

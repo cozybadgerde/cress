@@ -158,11 +158,9 @@ for phase closure under the current workflow.
   including published-page title requirements, the English-only skeleton,
   and reserved site configuration that is not yet loaded.
 
-Output replacement, recovery, and writer locking remain intentional
-phase 6 work. Until then, builds refuse existing nonempty output; a
-filesystem failure can leave incomplete new output requiring inspection.
-Do not run concurrent builds for one site. Markdown URL resolution and
-asset publication remain phase 3 work, as documented in the user reference.
+At the phase 1 handoff, output replacement, recovery, and writer locking
+were deferred to phase 6. Markdown URL resolution and asset publication
+were deferred to phase 3. Those follow-ups are recorded below.
 
 ### Phase 2: Site contracts
 
@@ -245,9 +243,8 @@ cleanup commit is currently required.
   WCAG 2.2 AA. Current tests cover generated markup and caption association,
   not complete-page accessibility or publisher-authored HTML.
 
-Output ownership, replacement, recovery, and writer locking remain phase 6
-work. Until then, nonempty output is refused, filesystem write failures can
-leave incomplete new output, and concurrent builds must be avoided.
+At the phase 3 handoff, output ownership, replacement, recovery, and writer
+locking remained phase 6 work. That follow-up is recorded below.
 List and publication-metadata implementation is tracked in phase 4 below.
 
 ### Phase 4: Lists and publication metadata
@@ -278,45 +275,103 @@ URLs and explicit update dates, missing-origin behavior, and generated-file
 collisions that preserve previous output. No dependencies were added.
 
 `mise run check` and `mise run build` pass locally. CI remains aligned
-through the existing tasks; no CI run was required. No commit or push
-was performed for phase 4.
+through the existing tasks; no CI run was required. Phase 4 is committed
+as `77399e7`; push confirmation remains with the maintainer.
 
-- [ ] Before phase 5, agree brand fields and formats, theme manifest and
+- [x] Before phase 5, agree brand fields and formats, theme manifest and
   runtime compatibility, local/built-in selection, required templates and
   prepared data, exact-language labels, public asset namespacing, and
   `theme init` behavior.
 
-No separate cleanup commit is required. Output replacement, recovery, and
-locking remain in phase 6; the temporary site scaffold and complete-theme
-accessibility assessment remain in phase 8. For subpath deployments,
+No separate cleanup commit was required before phase 5. Output replacement,
+recovery, and locking were assigned to phase 6; the temporary site scaffold
+and complete-theme accessibility assessment remain in phase 8. For subpath deployments,
 host-root robots handling stays an external deployment responsibility,
 as documented in the user reference.
 
 ### Phase 5: Theme integration
 
-- [ ] Define and implement `[brand]` for brand color, logo, and favicon,
+Agreed package and branding contracts live in the
+[theme reference](docs/THEMES.md) and [user reference](docs/USER.md).
+Phases 5 and 6 may follow consecutively without a commit pause; retain the
+clarification and leftover review before phase 6.
+
+- [x] Define and implement `[brand]` for brand color, logo, and favicon,
   including prepared theme data, asset URLs, schemas, and references.
   Keep it distinct from site metadata and `theme.custom`; clarify field
   formats and logo alternatives before implementation.
 
-- [ ] Define the theme package and JSON manifest, extend the prepared
+- [x] Define the theme package and JSON manifest, extend the prepared
   render model, and publish the manifest schema [6, 18].
-- [ ] Select local themes before built-in themes as complete packages,
+- [x] Select local themes before built-in themes as complete packages,
   check runtime compatibility, and fail invalid packages without
   fallback [5].
-- [ ] Require ordinary, landing, and list support, load exact-language
+- [x] Require ordinary, landing, and list support, load exact-language
   labels, and publish only namespaced public theme assets [18].
-- [ ] Add `cress theme init` from the embedded skeleton without
+- [x] Add `cress theme init` from the embedded skeleton without
   overwriting files [11].
+
+#### Phase 5 handoff and leftovers
+
+Local checks and build pass. Brand fields, manifests, runtime compatibility,
+exact-language labels, asset namespaces, and non-overwriting initialization
+are implemented with schema/runtime and filesystem coverage. Go modules'
+semantic-version helper has reviewed BSD-3-Clause notices.
+
+No commit or push was performed. Suggested phase message:
+`feat: add local theme packages and branding`.
+
+The two named built-in themes remain phase 8 work; currently selected names
+resolve locally or fail explicitly. Unconfigured builds retain the embedded
+development skeleton. No separate cleanup commit is needed before phase 6.
+Site initialization, temporary-playground retirement, and complete-theme
+accessibility assessment stay in phase 8.
 
 ### Phase 6: Output safety
 
-- [ ] Stage complete output, verify Cress ownership, and replace previous
+Clarified before implementation: private gitignored `.cress/` state, paired
+public ownership marker, no adoption of old nonempty output, verified
+automatic recovery with an explicit stop on ambiguity, and a fail-fast OS
+lock covering the entire build. No phase 5 cleanup is required first.
+
+- [x] Stage complete output, verify Cress ownership, and replace previous
   output as a whole, removing stale files [10].
-- [ ] Coordinate writers per site with OS advisory locking and fail fast
+- [x] Coordinate writers per site with OS advisory locking and fail fast
   on contention [10].
-- [ ] Restore previous output on failed publication, preserve recovery
+- [x] Restore previous output on failed publication, preserve recovery
   evidence, and stop with guidance in ambiguous states [10].
+
+#### Phase 6 handoff and leftovers
+
+Complete staged replacement, paired ownership, whole-build OS locking, and
+verified recovery are implemented. Coverage exercises stale/manual file
+removal, source and staging errors, interrupted transactions, injected
+promotion/restoration/cleanup/state-record failures, unsafe targets, path
+aliases, cross-process contention, and lock release on process exit.
+Unit-only mode, race checks, and both Linux cross-builds pass alongside
+the repository checks/build. No dependency was needed for output safety.
+CI continues to use the same local tasks; no CI run was required.
+
+No commit or push was performed. Suggested phase message:
+`feat: add staged output ownership and recovery`.
+If keeping phases 5 and 6 together, use:
+`feat: add local themes and safe output publication`.
+
+- [ ] Before the next manual playground build, inspect and remove only
+  the pre-ownership `.local/site/public/` once. Its existing files are left
+  untouched; subsequent builds retain `.cress/` and replace owned output.
+- [ ] Before phase 7, clarify preview CLI/draft choices, session ownership,
+  watch/retry scheduling, and cleanup. Extend the writer with explicit
+  session targets and verified-usable-output reporting for preview errors;
+  current builds intentionally target only deployable `public/`.
+- [ ] In phase 8, include private `.cress/` state in initialized sites'
+  Git ignore rules.
+
+No separate cleanup commit is required. Preview/session behavior remains
+phase 7 work. Built-in themes, site initialization, playground retirement,
+and complete-theme accessibility assessment remain in phase 8.
+Ambiguous recovery still requires manual inspection; no repair/adoption
+command or power-loss durability guarantee is introduced.
 
 ### Phase 7: Preview
 

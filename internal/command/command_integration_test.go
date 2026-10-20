@@ -48,13 +48,51 @@ func TestBuildCommand(t *testing.T) {
 			}
 			stdout.Reset()
 			cmd = command.NewCommand(command.Deps{Version: "dev", Output: &stdout, Errors: &stderr})
+			if err := cmd.Run(context.Background(), args); err != nil {
+				t.Fatalf("owned output could not be rebuilt: %v", err)
+			}
+			stdout.Reset()
+			if err := os.WriteFile(filepath.Join(site, "content/index.md"), []byte("missing title"), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			cmd = command.NewCommand(command.Deps{Version: "dev", Output: &stdout, Errors: &stderr})
 			if err := cmd.Run(context.Background(), args); err == nil {
-				t.Fatal("nonempty output accepted")
+				t.Fatal("invalid rebuild accepted")
 			}
 			if strings.Contains(stdout.String(), "Built") {
 				t.Fatal("failed build reported success")
 			}
 		})
+	}
+}
+
+func TestThemeInitCommand(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping filesystem integration test")
+	}
+	site := t.TempDir()
+	var stdout, stderr bytes.Buffer
+	cmd := command.NewCommand(command.Deps{Version: "1.0.0", Output: &stdout, Errors: &stderr})
+	args := []string{"cress", "theme", "init", "demo", site}
+	if err := cmd.Run(context.Background(), args); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(stdout.String(), "Created themes/demo/") {
+		t.Fatalf("missing initialization message: %s", stdout.String())
+	}
+	manifest := filepath.Join(site, "themes/demo/theme.json")
+	previous, err := os.ReadFile(manifest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	stdout.Reset()
+	cmd = command.NewCommand(command.Deps{Version: "1.0.0", Output: &stdout, Errors: &stderr})
+	if err := cmd.Run(context.Background(), args); err == nil {
+		t.Fatal("existing theme target accepted")
+	}
+	current, err := os.ReadFile(manifest)
+	if err != nil || !bytes.Equal(previous, current) || stdout.Len() != 0 {
+		t.Fatalf("failed initialization modified files or claimed success: %s, %v", stdout.String(), err)
 	}
 }
 

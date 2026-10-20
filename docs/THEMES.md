@@ -1,8 +1,75 @@
 # Theme development
 
-Theme package integration is not implemented yet. The current embedded
-skeleton exercises ordinary, landing, and list rendering during development.
-It is not a selectable third built-in theme.
+Themes are complete local packages. The embedded skeleton exercises all
+page types and supplies offline initialization; it is not a selectable third
+built-in theme. The two named built-in themes arrive in phase 8.
+
+## Package contract
+
+```text
+themes/my-theme/
+  theme.json
+  templates/
+    page.gohtml
+    landing.gohtml
+    list.gohtml
+    shared.gohtml
+  public/
+    site.css
+  locales/
+    en.toml
+```
+
+Run `cress theme init my-theme [site-directory]` to create this structure
+without overwriting an existing target. Initialization supplies minimal CSS
+and no translated labels, since its templates request none. Select the
+package with `[theme] name = "my-theme"` in `cress.toml`.
+
+The required JSON manifest uses full semantic versions without `v`:
+
+```json
+{
+  "name": "my-theme",
+  "version": "1.0.0",
+  "cress": { "minimum": "1.0.0", "major": 1 }
+}
+```
+
+`name` must match the selected directory. `version` identifies the theme.
+The runtime must match `cress.major` and meet `cress.minimum`, which must
+belong to that major. Prereleases follow semantic-version precedence:
+`1.0.0-rc.1` does not satisfy `1.0.0`. Development runtimes reporting `dev`
+use the explicit `1.0.0` baseline with a warning, not a compatibility bypass.
+Unknown manifest fields warn; invalid known fields fail. See the
+[manifest schema](../schemas/theme.schema.json).
+
+Only a missing local package permits built-in lookup; no built-in names
+exist yet. Unreadable, invalid, incompatible, or incomplete local packages
+never fall back. No package files merge. Symlinks and special files anywhere
+inside a selected package are rejected.
+
+Templates are UTF-8 Go `html/template` files below `templates/`; nested
+partials retain their relative names, such as `partials/header.gohtml`.
+Every package requires nonempty `page.gohtml`, `landing.gohtml`, and
+`list.gohtml`. Template errors and missing map keys fail generation.
+Templates remain trusted sources requiring publisher review.
+
+Two presentation-only helpers are available:
+
+- `{{asset "css/site.css"}}` requires an existing file at
+  `public/css/site.css` and returns its prepared, URL-escaped
+  `<site.path>themes/<name>/css/site.css` browsing URL.
+- `{{label "read_more"}}` reads a string from `locales/<site.language>.toml`,
+  whose top level is a plain-text label map, such as
+  `read_more = "Read more"`. Matching is exact: `en-US` never falls back to
+  `en`. A missing requested language or key fails, without empty/key-name
+  substitution. An explicitly authored empty label remains empty.
+
+Packages that request no labels need no locale file. A supplied matching
+locale must parse as a string map even when unused. Private files, manifests,
+templates, and locale sources never publish. Public files copy unchanged
+into the theme namespace, including nested paths, with normal collision
+checks. CSS URLs are not rewritten.
 
 ## Prepared render model
 
@@ -30,6 +97,11 @@ The supplied language spelling is preserved. Missing site title or
 copyright is represented by an empty string, and missing navigation groups
 have no entries.
 
+`Site.Brand` holds optional `Color`, `Favicon`, and `Logo` values. Colors
+are validated `#RRGGBB` strings; asset URLs are already prefixed or external.
+`Logo` uses the image URL/alternative fields without captions. Do not
+reinterpret brand settings as routing or content-selection rules.
+
 `Image.Caption` is an ordered slice of `page.CaptionPart` values. Each part
 has escaped plain-text `Text` and an optional resolved `URL` for a link.
 Render the caption beside its image with `figure` and `figcaption`; omit
@@ -56,7 +128,7 @@ helpers, and template errors stop generation.
 
 ## Embedded skeleton
 
-The executable embeds the templates in `internal/render/skeleton/`.
+The executable embeds the package in `internal/theme/skeleton/`.
 Ordinary, landing, and list pages select distinct templates, with shared
 document composition. Missing or unknown type support fails, without substitution.
 Lists render their introduction before linked entry titles, explicit dates,
@@ -70,7 +142,4 @@ links use a list; main links use a navigation landmark.
 Minimal inline styles keep code readable without browser JavaScript.
 Canonical links are included only when the prepared URL is nonempty.
 
-These templates form a development interface, not the complete
-theme contract. Phase 5 adds complete packages, manifests, compatibility,
-translations, initialization, branding, and complete required page-type
-support. Phase 8 supplies and assesses the two selectable built-in themes.
+Phase 8 supplies and assesses the two selectable built-in themes.

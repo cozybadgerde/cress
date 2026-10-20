@@ -76,7 +76,22 @@ func TestSiteSchemaMatchesRuntime(t *testing.T) {
 		{"open customizations", "[theme.custom]\nanything = { draft = 1, list = ['a', 'b'] }", true},
 		{"theme type", "theme = false", false},
 		{"custom type", "[theme]\ncustom = 1", false},
-		{"unknown fields", "brand = 1\n[site]\ndraft = true\n[theme]\nname = 'future'", true},
+		{"unknown fields", "future = 1\n[site]\ndraft = true\n[theme]\nfuture = 'unknown'", true},
+		{"theme name", "[theme]\nname = 'my-theme-2'", true},
+		{"theme name empty", "[theme]\nname = ''", false},
+		{"theme name traversal", "[theme]\nname = '../other'", false},
+		{"theme name case", "[theme]\nname = 'MyTheme'", false},
+		{"brand", "[brand]\ncolor = '#123AbC'\nfavicon = '/icon.svg'\n[brand.logo]\nsrc = '/logo.svg'\nalt = ''", true},
+		{"brand type", "brand = false", false},
+		{"brand color type", "[brand]\ncolor = 1", false},
+		{"brand color empty", "[brand]\ncolor = ''", false},
+		{"brand color short", "[brand]\ncolor = '#fff'", false},
+		{"brand color digits", "[brand]\ncolor = '#ffffff;'", false},
+		{"brand favicon empty", "[brand]\nfavicon = ''", false},
+		{"brand favicon relative", "[brand]\nfavicon = 'icon.svg'", false},
+		{"brand logo alternative", "[brand.logo]\nsrc = '/logo.svg'", false},
+		{"brand logo type", "[brand]\nlogo = false", false},
+		{"brand logo empty", "[brand.logo]\nsrc = ''\nalt = ''", false},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

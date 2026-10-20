@@ -15,12 +15,17 @@ cress site build
 ```
 
 `cress site build [directory]` builds the selected site directory, defaulting
-to the current directory. It reads `content/` and writes only to `public/`
-inside that directory. An unsuccessful build exits with status 1.
+to the current directory. It reads `content/`, writes generated files to
+`public/`, and keeps private writer state in `.cress/` inside that directory.
+An unsuccessful build exits with status 1.
 Warnings alone do not fail a build.
 
-The `theme` scope currently provides help only. Initialization and preview
-commands arrive in later phases.
+`cress theme init <name> [site-directory]` creates `themes/<name>/` from the
+embedded skeleton; the site directory defaults to `.`. The target must not
+exist. Partial initialization failures leave files for inspection, not
+automatic removal or overwriting. The command does not change `cress.toml`.
+Select the result with `[theme] name = "<name>"`.
+Site initialization and preview arrive in later phases.
 
 ## Writing pages
 
@@ -203,10 +208,44 @@ Internal URLs always describe paths beneath the site URL root. With
 does not guess whether a prefix has already been included. External URLs
 remain unchanged.
 
-The future `[brand]` table will hold brand color, logo, and favicon;
-its fields and rendering contract are phase 5 work. Selectable theme
-packages also arrive in phase 5. These unimplemented settings warn as
-unknown rather than silently taking effect.
+### Branding and theme selection
+
+Optional brand settings stay separate from `site` and `theme.custom`:
+
+```toml
+[brand]
+color = "#346b38"
+favicon = "/images/favicon.svg"
+
+[brand.logo]
+src = "/images/logo.svg"
+alt = "Example business"
+
+[theme]
+name = "my-theme"
+```
+
+`color` is exactly six hexadecimal digits after `#`; its authored case is
+preserved. Logo and favicon URLs are site-root or HTTP/HTTPS references.
+They receive the site URL prefix like navigation; targets are not checked.
+A logo requires explicit string `src` and `alt`; `alt = ""` is decorative.
+Omit optional settings instead of supplying empty colors or asset URLs.
+Themes choose how to present brand data. The skeleton renders the logo,
+favicon, and theme-color metadata.
+
+Theme names start with a lowercase ASCII letter and contain only lowercase
+letters, digits, and hyphens. A selected `themes/<name>/` must be a complete,
+readable package. Invalid local packages fail without merging or fallback.
+Only designated `public/` files publish, under `themes/<name>/` in output;
+all outputs share collision checks. No named built-in themes exist yet.
+With no selection, the current embedded development skeleton remains in use;
+it is not selectable by name.
+
+Named themes declare runtime compatibility in `theme.json`. Development
+builds reporting `dev` check against an explicit `1.0.0` compatibility
+baseline and warn; they do not skip minimum or major validation. This is
+development policy, not a release claim. See the
+[theme reference](THEMES.md) for manifests, templates, and translations.
 
 The [frontmatter schema](../schemas/frontmatter.schema.json) describes
 parsed page values; the [configuration schema](../schemas/site.schema.json)
@@ -250,8 +289,7 @@ Review imported or contributed HTML before building or opening it.
 Generation does not execute embedded code or fetch referenced resources,
 but browsers can do both. Local files are not a content sandbox.
 
-Theme selection is not implemented yet. `themes/` remains reserved and
-is not loaded.
+Only the selected theme's designated public assets are published.
 
 ## Content and assets contract
 
@@ -334,16 +372,53 @@ or resource fetching is used. Code always remains literal escaped text.
 
 ## Output protection
 
-Build only into a new or empty `public/` directory. Cress refuses nonempty
-directories, symlinks, and non-directory targets without changing them.
-All pages are prepared and rendered, and destinations checked, before
-output writing begins.
+Cress accepts new or empty `public/` directories. Later builds replace
+recognized Cress output completely, removing stale files and manual
+additions. Put public inputs in the source project, not generated output.
+Unrecognized nonempty directories, symlinks, and non-directory targets are
+refused without modification.
 
-A filesystem failure while writing can leave incomplete output. Cress
-reports that failure; inspect the output before removing it manually.
-To rebuild, remove only the generated `public/` directory after verifying
-its contents. Existing-output ownership, replacement, recovery, and
-per-site writer locking arrive in phase 6. Do not run concurrent builds
-for the same site in this development slice.
+Ownership pairs the reserved `public/.cress-output.json` marker with private
+`.cress/output.json` state. The public marker contains only a format version
+and an opaque token, not source paths or secrets. Authored output cannot
+claim that marker or a case-equivalent path. Keep `.cress/` out of version
+control and deployment; it is created with owner-only directory access.
+Do not edit the ownership records or remove the persistent writer lock.
+Copying a deployed `public/` directory alone does not establish ownership
+in another site project.
+
+Output generated before ownership support is unrecognized. Inspect it and
+remove only the old generated `public/` once, keeping source files. There
+is no automatic adoption or force switch. Subsequent builds need no manual
+output removal.
+
+Each build takes a site-wide OS advisory lock before reading inputs or
+recovering output and holds it until the attempt finishes. Concurrent builds
+fail immediately with a busy diagnostic, including attempts through path
+aliases. Process exit releases ownership; lock-file existence and PID age
+are not evidence of an active writer. Do not delete the lock file to bypass
+contention. Coordination covers cooperating local processes on the
+supported Linux and macOS systems, not distributed writers or manual edits.
+
+Pages and assets are fully prepared, rendered, validated, and written to
+`.cress/stage-<token>/` before `public/` changes. Previous output moves to
+`.cress/backup-<token>/` during replacement. Input, rendering, or staging
+failures preserve previous output. Failed promotion restores verified
+previous output where possible; errors report failed restoration as well.
+After confirmed publication, cleanup failure keeps valid new output in
+place but still fails the command.
+
+The next build, under the writer lock, automatically restores or cleans
+only states verified against the transaction and paired ownership tokens.
+Ambiguous state stops without guessed promotion or deletion. Diagnostics
+name preserved paths. A leftover `.cress/output.next`, an altered marker,
+or an unrecognized stage requires inspection rather than automatic cleanup.
+Before manual recovery, stop Cress writers and copy the preserved evidence
+to a safe location. Compare the transaction's previous/current tokens with
+the output markers; restore only a verified backup. Do not simply delete
+`.cress/` to bypass an error. No general repair command is available yet.
+
+Replacement can briefly interrupt readers; it is not a universally atomic
+switch. Cress does not promise durability through power loss.
 
 For local source setup, see the [developer guide](DEVELOPER.md).

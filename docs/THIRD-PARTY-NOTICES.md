@@ -12,6 +12,7 @@ policy in [ADR 0011](adr/0011-bsd-3-clause-license.md).
 | Chroma | v2.27.0 | MIT | <https://github.com/alecthomas/chroma/tree/v2.27.0> |
 | regexp2 | v2.2.1 | MIT | <https://github.com/dlclark/regexp2/tree/v2.2.1> |
 | Go text | v0.43.0 | BSD-3-Clause | <https://github.com/golang/text/tree/v0.43.0> |
+| Go modules (semver) | v0.42.0 | BSD-3-Clause | <https://github.com/golang/mod/tree/v0.42.0> |
 
 These licenses permit redistribution with their copyright and permission
 notices. No third-party theme assets are bundled. Release-specific SBOMs
@@ -60,7 +61,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## Go text BSD-3-Clause license
+## Go modules and text BSD-3-Clause license
 
 ```text
 Copyright 2009 The Go Authors.
@@ -92,7 +93,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-## Go text additional IP rights grant
+## Go modules and text additional IP rights grant
 
 ```text
 Additional IP Rights Grant (Patents)

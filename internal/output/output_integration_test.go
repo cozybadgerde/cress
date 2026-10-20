@@ -43,8 +43,8 @@ func TestWriteNewAndEmptyOutput(t *testing.T) {
 					t.Fatalf("%s = %q, want %q", file.Path, data, file.Data)
 				}
 			}
-			if err := output.Write(context.Background(), site, files); err == nil {
-				t.Fatal("a subsequent build overwrote nonempty output")
+			if err := output.Write(context.Background(), site, files); err != nil {
+				t.Fatalf("subsequent build failed: %v", err)
 			}
 		})
 	}
@@ -145,8 +145,8 @@ func TestWriteFilesystemFailureIsExplicit(t *testing.T) {
 		Path: strings.Repeat("x", 256) + "/index.html", Source: "content/oversized.md", Data: []byte("Body"),
 	}}
 	err := output.Write(context.Background(), site, files)
-	if err == nil || !strings.Contains(err.Error(), "incomplete output") ||
+	if err == nil || !strings.Contains(err.Error(), "previous public unchanged") ||
 		!strings.Contains(err.Error(), "content/oversized.md") {
-		t.Fatalf("error = %v, want source and incomplete-output guidance", err)
+		t.Fatalf("error = %v, want source and preservation guidance", err)
 	}
 }

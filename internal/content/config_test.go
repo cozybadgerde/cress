@@ -142,7 +142,7 @@ func TestInvalidConfig(t *testing.T) {
 
 func TestConfigWarningsAndOpenCustomizations(t *testing.T) {
 	_, warnings, err := content.ParseConfig([]byte(`
-brand = { color = "future" }
+brand = { future = "unknown" }
 [site]
 unknown = 1
 [site.image]
@@ -155,7 +155,7 @@ label = "About"
 url = "/about/"
 target = "future"
 [theme]
-name = "future"
+future = "unknown"
 [theme.custom]
 site = { nonsense = 1 }
 `))
@@ -163,11 +163,11 @@ site = { nonsense = 1 }
 		t.Fatal(err)
 	}
 	want := []string{
-		`cress.toml: unknown configuration field "brand"`,
 		`cress.toml: unknown configuration field "site.unknown"`,
 		`cress.toml: unknown configuration field "navigation.extra"`,
 		`cress.toml: unknown configuration field "navigation.main[0].target"`,
-		`cress.toml: unknown configuration field "theme.name"`,
+		`cress.toml: unknown configuration field "theme.future"`,
+		`cress.toml: unknown configuration field "brand.future"`,
 	}
 	if !reflect.DeepEqual(warnings, want) {
 		t.Fatalf("warnings = %v, want %v", warnings, want)

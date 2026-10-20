@@ -2,12 +2,14 @@ package generator
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 
 	"github.com/cozybadgerde/cress/internal/content"
 	"github.com/cozybadgerde/cress/internal/output"
 	"github.com/cozybadgerde/cress/internal/render"
+	"github.com/cozybadgerde/cress/internal/theme"
 )
 
 // Result reports generated pages and nonfatal input diagnostics.
@@ -16,9 +18,13 @@ type Result struct {
 	Warnings []string
 }
 
-// Build prepares a site's pages and publication files in new or empty output.
+// Build prepares and safely replaces a site's complete generated output.
 func Build(ctx context.Context, directory string) (Result, error) {
-	var result Result
+	return BuildVersion(ctx, directory, "dev")
+}
+
+// BuildVersion validates named themes against the executable's runtime version.
+func BuildVersion(ctx context.Context, directory, version string) (result Result, buildErr error) {
 	site, err := filepath.Abs(directory)
 	if err != nil {
 		return result, fmt.Errorf("resolve site directory: %w", err)
@@ -27,6 +33,11 @@ func Build(ctx context.Context, directory string) (Result, error) {
 	if err != nil {
 		return result, fmt.Errorf("resolve site directory: %w", err)
 	}
+	writer, err := output.Acquire(ctx, site)
+	if err != nil {
+		return result, err
+	}
+	defer func() { buildErr = errors.Join(buildErr, writer.Close()) }()
 	config, warnings, err := content.LoadConfig(ctx, site)
 	result.Warnings = warnings
 	if err != nil {
@@ -38,7 +49,14 @@ func Build(ctx context.Context, directory string) (Result, error) {
 		return result, err
 	}
 
-	renderer, err := render.NewRenderer()
+	pkg, diagnostics, err := theme.Load(ctx, theme.Request{
+		Site: site, Name: config.Theme, Language: config.Site.Language, Prefix: config.Site.URL, Version: version,
+	})
+	result.Warnings = append(result.Warnings, diagnostics...)
+	if err != nil {
+		return result, err
+	}
+	renderer, err := render.NewPackageRenderer(pkg)
 	if err != nil {
 		return result, err
 	}
@@ -58,7 +76,10 @@ func Build(ctx context.Context, directory string) (Result, error) {
 	for _, asset := range prepared.Assets {
 		files = append(files, output.File{Path: asset.Destination, Source: asset.Source, Data: asset.Data})
 	}
-	if err := output.Write(ctx, site, files); err != nil {
+	for _, asset := range pkg.Assets {
+		files = append(files, output.File{Path: asset.Path, Source: asset.Source, Data: asset.Data})
+	}
+	if err := writer.Write(ctx, files); err != nil {
 		return result, err
 	}
 	result.Pages = len(prepared.Pages)

@@ -13,6 +13,7 @@ import (
 	"golang.org/x/text/language"
 
 	"github.com/cozybadgerde/cress/internal/page"
+	"github.com/cozybadgerde/cress/internal/theme"
 )
 
 // Config contains validated site settings and prepared shared presentation data.
@@ -22,6 +23,7 @@ type Config struct {
 	Image       *page.Image
 	Host        string
 	Highlight   bool
+	Theme       string
 }
 
 // ParseConfig validates TOML site configuration and resolves shared URLs.
@@ -36,7 +38,7 @@ func ParseConfig(source []byte) (Config, []string, error) {
 		return config, warnings, fmt.Errorf("cress.toml: parse configuration: %w", err)
 	}
 	input := fields{values: values, source: "cress.toml", kind: "configuration", warnings: &warnings}
-	input.warnUnknown("site", "navigation", "theme", "markdown")
+	input.warnUnknown("site", "navigation", "theme", "markdown", "brand")
 	site, err := input.readTable("site")
 	if err != nil {
 		return config, warnings, err
@@ -90,20 +92,32 @@ func ParseConfig(source []byte) (Config, []string, error) {
 	if err != nil {
 		return config, warnings, err
 	}
-	theme, err := input.readTable("theme")
+	themeFields, err := input.readTable("theme")
 	if err != nil {
 		return config, warnings, err
 	}
-	theme.warnUnknown("custom")
-	custom, err := theme.readTable("custom")
+	themeFields.warnUnknown("custom", "name")
+	config.Theme, err = themeFields.readString("name", "")
+	if err != nil {
+		return config, warnings, err
+	}
+	if _, exists := themeFields.values["name"]; exists && !theme.ValidName(config.Theme) {
+		return config, warnings, themeFields.invalidField("name", "must be a lowercase ASCII name with digits or hyphens, starting with a letter")
+	}
+	custom, err := themeFields.readTable("custom")
 	if err != nil {
 		return config, warnings, err
 	}
 	config.Site.Custom = custom.values
+	config.Site.Brand, err = input.readBrand(config.Site.URL)
+	if err != nil {
+		return config, warnings, err
+	}
 	markdown, err := input.readTable("markdown")
 	if err != nil {
 		return config, warnings, err
 	}
+
 	markdown.warnUnknown("highlight")
 	if value, exists := markdown.values["highlight"]; exists {
 		enabled, ok := value.(bool)

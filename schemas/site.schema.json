@@ -64,9 +64,27 @@
     "theme": {
       "type": "object",
       "properties": {
+        "name": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
         "custom": {
           "type": "object",
           "description": "Protected open theme customization data.",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "brand": {
+      "type": "object",
+      "properties": {
+        "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+        "favicon": { "$ref": "frontmatter.schema.json#/$defs/url" },
+        "logo": {
+          "type": "object",
+          "properties": {
+            "src": { "$ref": "frontmatter.schema.json#/$defs/url" },
+            "alt": { "type": "string" }
+          },
+          "required": ["src", "alt"],
           "additionalProperties": true
         }
       },

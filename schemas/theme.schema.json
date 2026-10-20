@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Cress theme manifest",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "version": { "$ref": "#/$defs/version" },
+    "cress": {
+      "type": "object",
+      "properties": {
+        "minimum": { "$ref": "#/$defs/version" },
+        "major": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["minimum", "major"],
+      "additionalProperties": true
+    }
+  },
+  "required": ["name", "version", "cress"],
+  "additionalProperties": true,
+  "$defs": {
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(\\.(0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*))?(\\+[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?$",
+      "description": "Full semantic version without a leading v. Runtime also checks minimum/major consistency and executable compatibility."
+    }
+  }
+}

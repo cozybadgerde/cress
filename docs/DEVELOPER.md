@@ -107,14 +107,15 @@ go run ./cmd/cress site build /path/to/site
 
 Replace `/path/to/site` with a site directory containing `content/`.
 The [user reference](USER.md) documents the current authoring contract and
-new-or-empty output restriction. The
+output ownership and recovery workflow. The
 [theme reference](THEMES.md) documents the initial prepared render model.
 
 The CLI uses urfave/cli v3, TOML parsing uses go-toml v2, and Markdown
 conversion uses goldmark, with Chroma's HTML formatter for build-time
 highlighting. Its SVG formatter and embedded font are not linked.
 Go text provides portable output-name comparison
-and language-tag validation.
+and language-tag validation. Go modules supplies the semantic-version helper
+for theme runtime compatibility.
 Schema tests use a test-only JSON Schema validator. Reviewed licenses and
 redistribution notices live in
 [third-party notices](THIRD-PARTY-NOTICES.md).
@@ -148,8 +149,9 @@ and landing pages, both source layouts, navigation, metadata overrides,
 captions, code highlighting, page-owned assets, and shared static files.
 Draft pages, draft-owned assets, and non-asset content files stay private.
 
-Before rebuilding, inspect and remove only `.local/site/public/`; current
-builds refuse nonempty output. Keep the source files for repeated testing.
+For output created before phase 6, inspect and remove only the old
+`.local/site/public/` once. Subsequent builds replace recognized output;
+retain the private `.local/site/.cress/` ownership state and source files.
 This playground is not a replacement for automated tests.
 
 ## Building
