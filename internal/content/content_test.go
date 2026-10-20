@@ -52,7 +52,7 @@ func TestPrepare(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			prepared, warnings, err := content.Prepare("about.md", []byte(test.source))
+			prepared, warnings, err := content.Prepare("about.md", []byte(test.source), defaultConfig(t))
 			if !slices.Equal(warnings, test.wantWarning) {
 				t.Fatalf("warnings = %q, want %q", warnings, test.wantWarning)
 			}
@@ -93,7 +93,7 @@ func TestRoutes(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.source, func(t *testing.T) {
-			prepared, _, err := content.Prepare(test.source, []byte("+++\ntitle = 'Title'\n+++\nBody"))
+			prepared, _, err := content.Prepare(test.source, []byte("+++\ntitle = 'Title'\n+++\nBody"), defaultConfig(t))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -109,7 +109,7 @@ func TestRejectInvalidPaths(t *testing.T) {
 	for _, name := range []string{"", ".", "../outside.md", "/absolute.md", "a/../b.md",
 		"a//b.md", `a\b.md`, "a\x00.md", ".md", "...md", "about.MD", "file.txt", "\xff.md"} {
 		t.Run(name, func(t *testing.T) {
-			if _, _, err := content.Prepare(name, []byte("+++\ntitle = 'Title'\n+++")); err == nil {
+			if _, _, err := content.Prepare(name, []byte("+++\ntitle = 'Title'\n+++"), defaultConfig(t)); err == nil {
 				t.Fatalf("accepted invalid source path %q", name)
 			}
 		})
@@ -132,7 +132,7 @@ func TestMarkdownTrustAndTables(t *testing.T) {
 |---------|-------|
 | Help    | 10    |
 `
-	prepared, _, err := content.Prepare("page.md", []byte("+++\ntitle = '<b>Title</b>'\n+++\n"+body))
+	prepared, _, err := content.Prepare("page.md", []byte("+++\ntitle = '<b>Title</b>'\n+++\n"+body), defaultConfig(t))
 	if err != nil {
 		t.Fatal(err)
 	}

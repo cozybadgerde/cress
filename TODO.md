@@ -90,7 +90,8 @@ completes it.
 
 Every phase is done when:
 
-- `mise run check` and `mise run build` pass locally and in CI.
+- `mise run check` and `mise run build` pass locally. Keep CI tasks aligned
+  with local checks; CI execution is not a phase-completion gate for now.
 - New behavior has unit tests, and integration tests where a real
   filesystem or process boundary matters.
 - New or changed fields update the JSON schemas and references in the
@@ -110,6 +111,8 @@ Every phase is done when:
 - At phase end, update completed tasks, document remaining loose ends here
   with their intended phase or separate-commit scope, and suggest a commit
   message. Creating a commit requires a separate instruction.
+- The maintainer confirms completed commits and pushes. The first planned
+  push is after phase 3.
 
 ### Planning review
 
@@ -147,13 +150,11 @@ These are clarification gates, not changes to the approved phase order.
 
 #### Phase 1 handoff and leftovers
 
-Implementation and local verification are complete. Phase closure still
-requires CI confirmation.
+Phase 1 is complete. Implementation and local verification passed, and
+the maintainer confirmed commit `12e8ad2`. CI execution is not required
+for phase closure under the current workflow.
 
-- [ ] Confirm `mise run check` and `mise run build` in CI for these changes
-  before closing phase 1. Local checks, build, and release-configuration
-  validation pass; changes have not been committed or pushed.
-- [ ] Before phase 2, review the current authoring and render interfaces,
+- [x] Before phase 2, review the current authoring and render interfaces,
   including published-page title requirements, the English-only skeleton,
   and reserved site configuration that is not yet loaded.
 
@@ -165,15 +166,42 @@ asset publication remain phase 3 work, as documented in the user reference.
 
 ### Phase 2: Site contracts
 
-- [ ] Validate site configuration and frontmatter: errors for malformed
+Agreed interface: optional `cress.toml` with `[site]`, `[site.image]`,
+`[navigation]`, and `[theme.custom]`. Site fields are `title`, `description`,
+`copyright`, `language`, `host`, and `path`. Page metadata keeps its required
+title, inherits only description and image, and adds explicit page types.
+See the [user reference](docs/USER.md) for validation and override rules.
+
+- [x] Validate site configuration and frontmatter: errors for malformed
   input and invalid known fields, warnings for unknown fields, and an
   open theme-customization area [6].
-- [ ] Resolve site metadata defaults and explicit page overrides, page
+- [x] Resolve site metadata defaults and explicit page overrides, page
   types, and draft exclusion for builds [7, 17].
-- [ ] Configure navigation, public origin, and deployment path, and
+- [x] Configure navigation, public origin, and deployment path, and
   resolve generator-owned URLs beneath the deployment path [3].
-- [ ] Publish the site-configuration schema and expand the initial
+- [x] Publish the site-configuration schema and expand the initial
   frontmatter schema with the new contracts [6].
+
+#### Phase 2 handoff and leftovers
+
+Implementation and local verification are complete. CI remains aligned
+through the existing check/build tasks; no CI run is required. No commit
+or push was performed for phase 2.
+
+- [ ] Before phase 3, clarify source-relative Markdown and title-image
+  references, asset ownership, caption syntax, highlighting options, and
+  generated-markup accessibility coverage. Preserve the agreed separation
+  between resolved Markdown URLs and unchanged authored HTML.
+- [ ] In phase 4, implement published list generation and rendering, plus
+  canonical URLs, sitemap, `robots.txt`, and missing-origin warnings.
+  Until then, published lists fail explicitly; excluded draft lists remain
+  valid. `site.host` is validated but not used for publication metadata yet.
+
+Title-image metadata, navigation, and page URLs now resolve the configured
+URL prefix. Markdown body destinations and image asset publication still
+wait for phase 3. Branding is recorded under phase 5; output replacement,
+recovery, and writer locking remain phase 6 work. No separate cleanup
+commit is currently required.
 
 ### Phase 3: Content rendering
 
@@ -196,6 +224,11 @@ asset publication remain phase 3 work, as documented in the user reference.
   and omit origin-dependent metadata without a public origin [15].
 
 ### Phase 5: Theme integration
+
+- [ ] Define and implement `[brand]` for brand color, logo, and favicon,
+  including prepared theme data, asset URLs, schemas, and references.
+  Keep it distinct from site metadata and `theme.custom`; clarify field
+  formats and logo alternatives before implementation.
 
 - [ ] Define the theme package and JSON manifest, extend the prepared
   render model, and publish the manifest schema [6, 18].

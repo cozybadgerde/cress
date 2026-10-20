@@ -36,9 +36,10 @@ deployment tools you already use. The
 
 ## Getting started
 
-Cress is in early development. The walking skeleton builds ordinary
-Markdown pages through an embedded developer template, with draft exclusion
-and new-or-empty output protection. Implementation follows the
+Cress is in early development. The current build supports site
+configuration, inherited metadata, navigation, ordinary and landing
+Markdown pages, draft exclusion, and new-or-empty output protection through
+embedded developer templates. Implementation follows the
 [work plan](TODO.md); there is no published release yet.
 
 To build it from source, follow the [developer guide](docs/DEVELOPER.md).

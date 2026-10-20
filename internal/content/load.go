@@ -10,7 +10,7 @@ import (
 )
 
 // Load prepares published pages and diagnostics from a site's local content.
-func Load(ctx context.Context, site string) (pages []Page, warnings []string, loadErr error) {
+func Load(ctx context.Context, site string, config Config) (pages []Page, warnings []string, loadErr error) {
 	root, err := os.OpenRoot(site)
 	if err != nil {
 		return nil, nil, fmt.Errorf("open site directory: %w", err)
@@ -50,7 +50,7 @@ func Load(ctx context.Context, site string) (pages []Page, warnings []string, lo
 		if err != nil {
 			return fmt.Errorf("read %s: %w", name, err)
 		}
-		prepared, diagnostics, err := Prepare(strings.TrimPrefix(name, "content/"), source)
+		prepared, diagnostics, err := Prepare(strings.TrimPrefix(name, "content/"), source, config)
 		warnings = append(warnings, diagnostics...)
 		if err != nil {
 			return err

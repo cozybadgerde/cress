@@ -43,7 +43,7 @@ func TestBuildSite(t *testing.T) {
 		"content/draft.md":       "+++\ndraft = true\n+++\nPrivate body",
 		"content/ignored.MD":     "Not a lowercase Markdown file",
 		"content/photo.jpg":      "Private until asset copying is implemented",
-		"cress.toml":             "private configuration",
+		"cress.toml":             "[theme.custom]\nprivate = 'configuration'",
 		"themes/private.gohtml":  "private template",
 		"static/private.txt":     "not copied in phase 1",
 	})

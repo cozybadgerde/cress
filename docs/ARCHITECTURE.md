@@ -5,10 +5,11 @@ responsibilities, data flow, and failure boundaries. The
 [PRD](PRD.md) owns product behavior. The [ADRs](adr/) own decision
 rationale. This guide links to both instead of repeating them.
 
-Status: agreed target structure, with a phase 1 walking skeleton implemented.
-The current build handles ordinary pages and new or empty output only.
-Later pipeline stages below remain target behavior. Package layouts and
-interfaces emerge with implementation.
+Status: agreed target structure, with phases 1 and 2 implemented.
+The current build handles site contracts, metadata, navigation, ordinary
+and landing pages, and new or empty output. Later pipeline stages below
+remain target behavior. Package layouts and interfaces emerge with
+implementation.
 
 ## System context
 
@@ -154,7 +155,7 @@ follow the responsibilities above:
 |---------|----------------|
 | `internal/command` | urfave/cli command definitions and terminal reporting. |
 | `internal/generator` | Build coordination. |
-| `internal/content` | Local discovery, frontmatter validation, routes, draft exclusion, and Markdown preparation. |
+| `internal/content` | Site/frontmatter validation, metadata and navigation preparation, local discovery, routes, draft exclusion, and Markdown preparation. |
 | `internal/page` | Prepared page data shared by content preparation and rendering. |
 | `internal/render` | Embedded skeleton loading and page composition. |
 | `internal/output` | Destination checks and confined new-or-empty output writes. |

@@ -1,16 +1,25 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Cress development frontmatter",
-  "description": "Parsed TOML frontmatter for the Phase 1 development contract.",
+  "description": "Parsed TOML frontmatter. List generation is not implemented until phase 4.",
   "type": "object",
   "properties": {
     "title": {
-      "type": "string",
-      "pattern": "[^\u0009-\u000d\u0020\u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]"
+      "$ref": "#/$defs/nonblank"
     },
     "draft": {
       "type": "boolean",
       "default": false
+    },
+    "description": {
+      "type": "string"
+    },
+    "type": {
+      "enum": ["ordinary", "landing", "list"],
+      "default": "ordinary"
+    },
+    "image": {
+      "$ref": "#/$defs/image"
     }
   },
   "if": {
@@ -22,5 +31,37 @@
   "else": {
     "required": ["title"]
   },
-  "additionalProperties": true
+  "additionalProperties": true,
+  "$defs": {
+    "nonblank": {
+      "type": "string",
+      "pattern": "[^\u0009-\u000d\u0020\u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]"
+    },
+    "url": {
+      "type": "string",
+      "pattern": "^([hH][tT][tT][pP][sS]?://[^/?#@\\s\\\\]+[^\\s\\\\]*|/([^/\\s\\\\][^\\s\\\\]*)?)$",
+      "description": "Site-root path or HTTP/HTTPS URL; runtime also validates URL syntax, ports, and dot segments."
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "src": {
+          "anyOf": [
+            { "const": "" },
+            { "$ref": "#/$defs/url" }
+          ]
+        },
+        "alt": { "type": "string" }
+      },
+      "required": ["src"],
+      "if": {
+        "properties": {
+          "src": { "type": "string", "minLength": 1 }
+        },
+        "required": ["src"]
+      },
+      "then": { "required": ["alt"] },
+      "additionalProperties": true
+    }
+  }
 }

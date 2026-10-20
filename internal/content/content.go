@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"html/template"
 	"io/fs"
-	"maps"
 	"net/url"
 	"path"
-	"slices"
 	"strings"
 	"unicode/utf8"
 
@@ -29,14 +27,20 @@ type Page struct {
 }
 
 // Prepare validates a content-relative Markdown source and prepares its page.
-func Prepare(name string, source []byte) (Page, []string, error) {
+func Prepare(name string, source []byte, config Config) (Page, []string, error) {
 	prepared := Page{Source: path.Join("content", name)}
 	destination, route, err := resolveRoute(name)
 	if err != nil {
 		return prepared, nil, fmt.Errorf("%s: %w", prepared.Source, err)
 	}
 	prepared.Destination = destination
-	prepared.Data.URL = route
+	prepared.Data = page.Page{
+		URL:         strings.TrimSuffix(config.Site.URL, "/") + route,
+		Type:        page.Ordinary,
+		Description: config.Description,
+		Image:       config.Image,
+		Site:        config.Site,
+	}
 
 	if !utf8.Valid(source) {
 		return prepared, nil, fmt.Errorf("%s: content must be UTF-8", prepared.Source)
@@ -45,37 +49,54 @@ func Prepare(name string, source []byte) (Page, []string, error) {
 	if err != nil {
 		return prepared, nil, fmt.Errorf("%s: %w", prepared.Source, err)
 	}
-	var fields map[string]any
-	if err := toml.Unmarshal(frontmatter, &fields); err != nil {
+	var values map[string]any
+	if err := toml.Unmarshal(frontmatter, &values); err != nil {
 		return prepared, nil, fmt.Errorf("%s: parse frontmatter: %w", prepared.Source, err)
 	}
 
 	var warnings []string
-	for _, key := range slices.Sorted(maps.Keys(fields)) {
-		if key != "title" && key != "draft" {
-			warnings = append(warnings, fmt.Sprintf("%s: unknown frontmatter field %q", prepared.Source, key))
-		}
-	}
+	input := fields{values: values, source: prepared.Source, kind: "frontmatter", warnings: &warnings}
+	input.warnUnknown("title", "draft", "description", "type", "image")
 
-	if value, exists := fields["draft"]; exists {
+	if value, exists := values["draft"]; exists {
 		draft, ok := value.(bool)
 		if !ok {
 			return prepared, warnings, fmt.Errorf("%s: draft must be a boolean", prepared.Source)
 		}
 		prepared.Draft = draft
 	}
-	if value, exists := fields["title"]; exists {
-		title, ok := value.(string)
-		if !ok || strings.TrimSpace(title) == "" {
-			return prepared, warnings, fmt.Errorf("%s: title must be a nonempty string", prepared.Source)
+	prepared.Data.Title, err = input.readNonblank("title", "")
+	if err != nil {
+		return prepared, warnings, err
+	}
+	prepared.Data.Description, err = input.readString("description", config.Description)
+	if err != nil {
+		return prepared, warnings, err
+	}
+	pageType, err := input.readString("type", string(page.Ordinary))
+	if err != nil {
+		return prepared, warnings, err
+	}
+	switch page.Type(pageType) {
+	case page.Ordinary, page.Landing, page.List:
+		prepared.Data.Type = page.Type(pageType)
+	default:
+		return prepared, warnings, input.invalidField("type", "must be ordinary, landing, or list")
+	}
+	if _, exists := values["image"]; exists {
+		prepared.Data.Image, err = input.readImage(config.Site.URL)
+		if err != nil {
+			return prepared, warnings, err
 		}
-		prepared.Data.Title = title
 	}
 	if prepared.Draft {
 		return prepared, warnings, nil
 	}
 	if prepared.Data.Title == "" {
 		return prepared, warnings, fmt.Errorf("%s: published pages require a title", prepared.Source)
+	}
+	if prepared.Data.Type == page.List {
+		return prepared, warnings, input.invalidField("type", "list generation is not implemented yet (phase 4)")
 	}
 
 	markdown := goldmark.New(

@@ -2,9 +2,53 @@ package page
 
 import "html/template"
 
-// Page holds prepared ordinary-page data, without source or generator access.
-type Page struct {
-	Title string
+// Type identifies an explicitly resolved page behavior.
+type Type string
+
+const (
+	// Ordinary is an ordinary content page.
+	Ordinary Type = "ordinary"
+	// Landing is a landing page with distinct template selection.
+	Landing Type = "landing"
+	// List is a page with a prepared collection.
+	List Type = "list"
+)
+
+// Image holds a resolved image URL and its plain-text alternative.
+type Image struct {
+	URL string
+	Alt string
+}
+
+// Link holds a resolved navigation destination and plain-text label.
+type Link struct {
+	Label string
 	URL   string
-	Body  template.HTML
+}
+
+// Navigation holds ordered, prepared main and footer links.
+type Navigation struct {
+	Main   []Link
+	Footer []Link
+}
+
+// Site contains prepared site presentation data, not raw configuration.
+type Site struct {
+	Title      string
+	Copyright  string
+	Language   string
+	URL        string
+	Navigation Navigation
+	Custom     map[string]any
+}
+
+// Page holds prepared page data, without source or generator access.
+type Page struct {
+	Title       string
+	Description string
+	Type        Type
+	URL         string
+	Image       *Image
+	Body        template.HTML
+	Site        Site
 }

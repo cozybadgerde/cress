@@ -27,8 +27,13 @@ func Build(ctx context.Context, directory string) (Result, error) {
 	if err != nil {
 		return result, fmt.Errorf("resolve site directory: %w", err)
 	}
-	pages, warnings, err := content.Load(ctx, site)
+	config, warnings, err := content.LoadConfig(ctx, site)
 	result.Warnings = warnings
+	if err != nil {
+		return result, err
+	}
+	pages, warnings, err := content.Load(ctx, site, config)
+	result.Warnings = append(result.Warnings, warnings...)
 	if err != nil {
 		return result, err
 	}

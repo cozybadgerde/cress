@@ -1,0 +1,37 @@
+{{define "document-start"}}<!doctype html>
+<html lang="{{.Site.Language}}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}}</title>
+  {{if .Description}}<meta name="description" content="{{.Description}}">{{end}}
+</head>
+<body>
+  {{if or .Site.Title .Site.Navigation.Main}}
+  <header>
+    {{if .Site.Title}}<a href="{{.Site.URL}}">{{.Site.Title}}</a>{{end}}
+    {{with .Site.Navigation.Main}}
+    <nav>
+      <ul>{{range .}}<li><a href="{{.URL}}">{{.Label}}</a></li>{{end}}</ul>
+    </nav>
+    {{end}}
+  </header>
+  {{end}}
+{{end}}
+
+{{define "title-image"}}
+  {{with .Image}}<img src="{{.URL}}" alt="{{.Alt}}">{{end}}
+{{end}}
+
+{{define "document-end"}}
+  {{if or .Site.Copyright .Site.Navigation.Footer}}
+  <footer>
+    {{with .Site.Navigation.Footer}}
+    <ul>{{range .}}<li><a href="{{.URL}}">{{.Label}}</a></li>{{end}}</ul>
+    {{end}}
+    {{with .Site.Copyright}}<p>{{.}}</p>{{end}}
+  </footer>
+  {{end}}
+</body>
+</html>
+{{end}}

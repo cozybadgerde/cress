@@ -111,7 +111,8 @@ new-or-empty output restriction. The
 [theme reference](THEMES.md) documents the initial prepared render model.
 
 The CLI uses urfave/cli v3, TOML parsing uses go-toml v2, and Markdown
-conversion uses goldmark. Go text provides portable output-name comparison.
+conversion uses goldmark. Go text provides portable output-name comparison
+and language-tag validation.
 Schema tests use a test-only JSON Schema validator. Reviewed licenses and
 redistribution notices live in
 [third-party notices](THIRD-PARTY-NOTICES.md).
@@ -175,7 +176,10 @@ tests compare representative parsed TOML values with runtime validation
 without downloading schemas or using an external validation service.
 
 CI runs `mise run check` and `mise run build` with the same pinned tools on
-pushes to `trunk` and on pull requests.
+pushes to `trunk` and on pull requests. These tasks automatically include
+the configuration/frontmatter schema tests and filesystem integration
+tests. Current phase-completion and commit/push coordination live in the
+[work plan](../TODO.md#phase-workflow).
 
 EditorConfig supplies basic editor defaults. Schema associations for Taplo
 will be added when authoring contracts exist.

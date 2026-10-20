@@ -1,7 +1,7 @@
 # Cress product requirements
 
-Status: approved product direction; phase 1 walking skeleton implemented,
-remaining generator capabilities planned.
+Status: approved product direction; walking skeleton and site contracts
+implemented, remaining generator capabilities planned.
 
 Target release: 1.0.0.
 

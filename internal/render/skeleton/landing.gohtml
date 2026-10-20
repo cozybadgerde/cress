@@ -1,0 +1,9 @@
+{{template "document-start" .}}
+  <main>
+    <section>
+      <h1>{{.Title}}</h1>
+      {{template "title-image" .}}
+      {{.Body}}
+    </section>
+  </main>
+{{template "document-end" .}}

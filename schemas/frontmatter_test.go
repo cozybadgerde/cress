@@ -16,20 +16,33 @@ import (
 //go:embed frontmatter.schema.json
 var frontmatterSchema string
 
-func TestFrontmatterSchemaMatchesRuntime(t *testing.T) {
-	document, err := jsonschema.UnmarshalJSON(strings.NewReader(frontmatterSchema))
-	if err != nil {
-		t.Fatal(err)
-	}
+//go:embed site.schema.json
+var siteSchema string
+
+func compileSchema(t *testing.T, name string) *jsonschema.Schema {
+	t.Helper()
 	compiler := jsonschema.NewCompiler()
-	const schemaURL = "https://example.invalid/frontmatter.schema.json"
-	if err := compiler.AddResource(schemaURL, document); err != nil {
-		t.Fatal(err)
+	for name, source := range map[string]string{
+		"frontmatter.schema.json": frontmatterSchema,
+		"site.schema.json":        siteSchema,
+	} {
+		document, err := jsonschema.UnmarshalJSON(strings.NewReader(source))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := compiler.AddResource("https://example.invalid/"+name, document); err != nil {
+			t.Fatal(err)
+		}
 	}
-	schema, err := compiler.Compile(schemaURL)
+	schema, err := compiler.Compile("https://example.invalid/" + name)
 	if err != nil {
 		t.Fatal(err)
 	}
+	return schema
+}
+
+func TestFrontmatterSchemaMatchesRuntime(t *testing.T) {
+	schema := compileSchema(t, "frontmatter.schema.json")
 	type testCase struct {
 		name   string
 		fields string
@@ -48,6 +61,21 @@ func TestFrontmatterSchemaMatchesRuntime(t *testing.T) {
 		{"invalid title", "title = 1", false},
 		{"invalid draft title", "draft = true\ntitle = []", false},
 		{"unknown table", "title = 'About'\n[custom]\nvalue = 'Open'", true},
+		{"description", "title = 'About'\ndescription = ''", true},
+		{"invalid description", "title = 'About'\ndescription = 1", false},
+		{"ordinary", "title = 'About'\ntype = 'ordinary'", true},
+		{"landing", "title = 'About'\ntype = 'landing'", true},
+		{"excluded list", "type = 'list'\ndraft = true", true},
+		{"invalid type", "title = 'About'\ntype = 'article'", false},
+		{"invalid type kind", "title = 'About'\ntype = false", false},
+		{"image", "title = 'About'\n[image]\nsrc = '/photo.jpg'\nalt = 'Photo'", true},
+		{"decorative image", "title = 'About'\n[image]\nsrc = '/photo.jpg'\nalt = ''", true},
+		{"cleared image", "title = 'About'\n[image]\nsrc = ''", true},
+		{"missing alternative", "title = 'About'\n[image]\nsrc = '/photo.jpg'", false},
+		{"missing source", "title = 'About'\n[image]\nalt = ''", false},
+		{"relative image", "title = 'About'\n[image]\nsrc = 'photo.jpg'\nalt = ''", false},
+		{"invalid draft image", "draft = true\nimage = false", false},
+		{"invalid alternative", "title = 'About'\n[image]\nsrc = ''\nalt = 1", false},
 	}
 	for _, whitespace := range []rune{'\t', '\n', '\v', '\f', '\r', ' ', '\u0085',
 		'\u00a0', '\u1680', '\u2000', '\u2001', '\u2002', '\u2003', '\u2004',
@@ -74,7 +102,11 @@ func TestFrontmatterSchemaMatchesRuntime(t *testing.T) {
 				t.Fatal(err)
 			}
 			schemaErr := schema.Validate(instance)
-			_, _, runtimeErr := content.Prepare("page.md", []byte("+++\n"+test.fields+"\n+++\nBody"))
+			config, _, err := content.ParseConfig(nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			_, _, runtimeErr := content.Prepare("page.md", []byte("+++\n"+test.fields+"\n+++\nBody"), config)
 			if (schemaErr == nil) != test.valid || (runtimeErr == nil) != test.valid {
 				t.Fatalf("want valid %v; schema error = %v; runtime error = %v",
 					test.valid, schemaErr, runtimeErr)

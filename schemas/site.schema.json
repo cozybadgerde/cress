@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Cress development site configuration",
+  "description": "Parsed cress.toml. Runtime also validates language tags and URL semantics.",
+  "type": "object",
+  "properties": {
+    "site": {
+      "type": "object",
+      "properties": {
+        "title": { "$ref": "frontmatter.schema.json#/$defs/nonblank" },
+        "description": { "type": "string" },
+        "copyright": { "type": "string" },
+        "language": {
+          "type": "string",
+          "pattern": "^([A-Za-z]{2,8}(-[A-Za-z0-9]{1,8})*|[iIxX](-[A-Za-z0-9]{1,8})+)$",
+          "default": "en",
+          "description": "Runtime validates BCP 47 tags and preserves their supplied spelling."
+        },
+        "host": {
+          "type": "string",
+          "pattern": "^[hH][tT][tT][pP][sS]?://[^/?#@\\s\\\\]+/?$",
+          "description": "Public HTTP/HTTPS origin; an optional final slash is removed from the prepared value."
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^/([^/%\\\\?#\\s]+/)*$",
+          "not": { "pattern": "(^|/)\\.{1,2}(/|$)" },
+          "default": "/",
+          "description": "Web URL prefix, not an output directory."
+        },
+        "image": { "$ref": "frontmatter.schema.json#/$defs/image" }
+      },
+      "additionalProperties": true
+    },
+    "navigation": {
+      "type": "object",
+      "properties": {
+        "main": { "$ref": "#/$defs/links" },
+        "footer": { "$ref": "#/$defs/links" }
+      },
+      "additionalProperties": true
+    },
+    "theme": {
+      "type": "object",
+      "properties": {
+        "custom": {
+          "type": "object",
+          "description": "Protected open theme customization data.",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": { "$ref": "frontmatter.schema.json#/$defs/nonblank" },
+          "url": { "$ref": "frontmatter.schema.json#/$defs/url" }
+        },
+        "required": ["label", "url"],
+        "additionalProperties": true
+      }
+    }
+  }
+}

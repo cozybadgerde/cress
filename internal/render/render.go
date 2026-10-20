@@ -17,9 +17,9 @@ type Renderer struct {
 	template *template.Template
 }
 
-// NewRenderer loads the embedded ordinary-page template.
+// NewRenderer loads the embedded development templates.
 func NewRenderer() (*Renderer, error) {
-	parsed, err := template.ParseFS(skeleton, "skeleton/page.gohtml")
+	parsed, err := template.ParseFS(skeleton, "skeleton/*.gohtml")
 	if err != nil {
 		return nil, fmt.Errorf("parse skeleton template: %w", err)
 	}
@@ -28,8 +28,19 @@ func NewRenderer() (*Renderer, error) {
 
 // Render produces a complete page without discovering or modifying content.
 func (renderer *Renderer) Render(prepared page.Page) ([]byte, error) {
+	var name string
+	switch prepared.Type {
+	case page.Ordinary:
+		name = "page.gohtml"
+	case page.Landing:
+		name = "landing.gohtml"
+	case page.List:
+		return nil, fmt.Errorf("list rendering is not implemented yet (phase 4)")
+	default:
+		return nil, fmt.Errorf("unsupported prepared page type %q", prepared.Type)
+	}
 	var output bytes.Buffer
-	if err := renderer.template.ExecuteTemplate(&output, "page.gohtml", prepared); err != nil {
+	if err := renderer.template.ExecuteTemplate(&output, name, prepared); err != nil {
 		return nil, fmt.Errorf("render skeleton template: %w", err)
 	}
 	return output.Bytes(), nil
