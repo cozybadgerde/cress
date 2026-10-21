@@ -32,7 +32,7 @@ func preparePublication(pages []Page, config Config) ([]Asset, []string, error) 
 	}
 	document := sitemap{XMLNS: "http://www.sitemaps.org/schemas/sitemap/0.9"}
 	for _, item := range pages {
-		if !item.Draft {
+		if !item.Draft || config.IncludeDrafts {
 			document.URLs = append(document.URLs, sitemapURL{
 				Location: item.Data.Canonical, Modified: item.Data.UpdatedAt,
 			})

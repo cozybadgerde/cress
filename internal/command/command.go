@@ -5,10 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/urfave/cli/v3"
 
 	"github.com/cozybadgerde/cress/internal/generator"
+	"github.com/cozybadgerde/cress/internal/preview"
 	"github.com/cozybadgerde/cress/internal/theme"
 )
 
@@ -40,6 +44,14 @@ func NewCommand(deps Deps) *cli.Command {
 						ArgsUsage: "[directory]",
 						Action:    buildSite,
 					},
+					{
+						Name: "preview", Usage: "Watch and preview an isolated local site",
+						ArgsUsage: "[directory]", Action: previewSite,
+						Flags: []cli.Flag{
+							&cli.BoolFlag{Name: "drafts", Usage: "Include drafts in this preview session"},
+							&cli.IntFlag{Name: "port", Value: preview.DefaultPort, Usage: "Loopback port (0 chooses a free port)"},
+						},
+					},
 				},
 			},
 			{
@@ -60,6 +72,22 @@ func showScopeHelp(ctx context.Context, command *cli.Command) error {
 		return fmt.Errorf("unknown command %q for %s", command.Args().First(), command.FullName())
 	}
 	return cli.ShowSubcommandHelp(command)
+}
+
+func previewSite(ctx context.Context, command *cli.Command) error {
+	if command.Args().Len() > 1 {
+		return fmt.Errorf("site preview accepts at most one directory")
+	}
+	directory := "."
+	if command.Args().Present() {
+		directory = command.Args().First()
+	}
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	return preview.Run(ctx, preview.Options{
+		Directory: directory, Version: command.Root().Version, Drafts: command.Bool("drafts"),
+		Port: command.Int("port"), Output: command.Root().Writer, Errors: command.Root().ErrWriter,
+	})
 }
 
 func initTheme(ctx context.Context, command *cli.Command) error {

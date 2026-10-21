@@ -16,6 +16,8 @@ import (
 type Result struct {
 	Pages    int
 	Warnings []string
+	Prefix   string
+	Token    string
 }
 
 // Build prepares and safely replaces a site's complete generated output.
@@ -38,11 +40,45 @@ func BuildVersion(ctx context.Context, directory, version string) (result Result
 		return result, err
 	}
 	defer func() { buildErr = errors.Join(buildErr, writer.Close()) }()
+	return generate(ctx, buildRequest{site: site, version: version, writer: writer})
+}
+
+// PreviewRequest fixes the target and draft visibility for one session.
+type PreviewRequest struct {
+	Version string
+	Drafts  bool
+	Session *output.Session
+}
+
+// BuildPreview uses the normal pipeline without touching deployable output.
+func BuildPreview(ctx context.Context, request PreviewRequest) (result Result, buildErr error) {
+	token, err := request.Session.Attempt(ctx, func(writer *output.Writer) error {
+		var err error
+		result, err = generate(ctx, buildRequest{
+			site: request.Session.Site(), version: request.Version, drafts: request.Drafts, writer: writer,
+		})
+		return err
+	})
+	result.Token = token
+	return result, err
+}
+
+type buildRequest struct {
+	site    string
+	version string
+	drafts  bool
+	writer  *output.Writer
+}
+
+func generate(ctx context.Context, request buildRequest) (result Result, buildErr error) {
+	site := request.site
 	config, warnings, err := content.LoadConfig(ctx, site)
 	result.Warnings = warnings
 	if err != nil {
 		return result, err
 	}
+	config.IncludeDrafts = request.drafts
+	result.Prefix = config.Site.URL
 	prepared, warnings, err := content.Load(ctx, site, config)
 	result.Warnings = append(result.Warnings, warnings...)
 	if err != nil {
@@ -50,7 +86,7 @@ func BuildVersion(ctx context.Context, directory, version string) (result Result
 	}
 
 	pkg, diagnostics, err := theme.Load(ctx, theme.Request{
-		Site: site, Name: config.Theme, Language: config.Site.Language, Prefix: config.Site.URL, Version: version,
+		Site: site, Name: config.Theme, Language: config.Site.Language, Prefix: config.Site.URL, Version: request.version,
 	})
 	result.Warnings = append(result.Warnings, diagnostics...)
 	if err != nil {
@@ -79,7 +115,7 @@ func BuildVersion(ctx context.Context, directory, version string) (result Result
 	for _, asset := range pkg.Assets {
 		files = append(files, output.File{Path: asset.Path, Source: asset.Source, Data: asset.Data})
 	}
-	if err := writer.Write(ctx, files); err != nil {
+	if err := request.writer.Write(ctx, files); err != nil {
 		return result, err
 	}
 	result.Pages = len(prepared.Pages)

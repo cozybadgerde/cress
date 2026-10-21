@@ -58,6 +58,22 @@ type Writer struct {
 
 // Acquire fails fast on contention and recovers only verified transactions.
 func Acquire(ctx context.Context, site string) (_ *Writer, acquireErr error) {
+	writer, err := acquireSite(ctx, site)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if acquireErr != nil {
+			acquireErr = errors.Join(acquireErr, writer.Close())
+		}
+	}()
+	if err := writer.prepare(); err != nil {
+		return nil, err
+	}
+	return writer, nil
+}
+
+func acquireSite(ctx context.Context, site string) (_ *Writer, acquireErr error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -75,18 +91,8 @@ func Acquire(ctx context.Context, site string) (_ *Writer, acquireErr error) {
 			acquireErr = errors.Join(acquireErr, writer.Close())
 		}
 	}()
-	info, err := root.Lstat(stateDirectory)
-	if errors.Is(err, fs.ErrNotExist) {
-		if err := root.Mkdir(stateDirectory, privateMode); err != nil && !errors.Is(err, fs.ErrExist) {
-			return nil, fmt.Errorf("create private writer state: %w", err)
-		}
-		info, err = root.Lstat(stateDirectory)
-	}
-	if err != nil {
-		return nil, fmt.Errorf("inspect private writer state: %w", err)
-	}
-	if !info.IsDir() || info.Mode().Perm()&0o077 != 0 {
-		return nil, fmt.Errorf(".cress must be a real private directory (mode 0700), not a symlink or file")
+	if err := ensurePrivate(root, stateDirectory); err != nil {
+		return nil, err
 	}
 	if info, err := root.Lstat(lockPath); err == nil && !info.Mode().IsRegular() {
 		return nil, fmt.Errorf("writer lock must be a regular file, not a symlink or special file")
@@ -97,7 +103,7 @@ func Acquire(ctx context.Context, site string) (_ *Writer, acquireErr error) {
 	if err != nil {
 		return nil, fmt.Errorf("open writer lock: %w", err)
 	}
-	info, err = writer.lock.Stat()
+	info, err := writer.lock.Stat()
 	if err != nil || !info.Mode().IsRegular() {
 		return nil, fmt.Errorf("writer lock must be a regular file: %w", errors.Join(err, fs.ErrInvalid))
 	}
@@ -107,13 +113,34 @@ func Acquire(ctx context.Context, site string) (_ *Writer, acquireErr error) {
 		}
 		return nil, fmt.Errorf("acquire site writer lock: %w", err)
 	}
+	return writer, nil
+}
+
+func ensurePrivate(root *os.Root, name string) error {
+	info, err := root.Lstat(name)
+	if errors.Is(err, fs.ErrNotExist) {
+		if err := root.Mkdir(name, privateMode); err != nil && !errors.Is(err, fs.ErrExist) {
+			return fmt.Errorf("create private writer state: %w", err)
+		}
+		info, err = root.Lstat(name)
+	}
+	if err != nil {
+		return fmt.Errorf("inspect private writer state: %w", err)
+	}
+	if !info.IsDir() || info.Mode().Perm()&0o077 != 0 {
+		return fmt.Errorf("%s must be a real private directory (mode 0700), not a symlink or file", name)
+	}
+	return nil
+}
+
+func (writer *Writer) prepare() error {
 	if err := writer.loadState(); err != nil {
-		return nil, writer.guidance(err)
+		return writer.guidance(err)
 	}
 	if err := writer.recover(); err != nil {
-		return nil, err
+		return err
 	}
-	return writer, nil
+	return nil
 }
 
 // Close releases OS ownership without deleting the persistent lock file.

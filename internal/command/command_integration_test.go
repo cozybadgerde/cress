@@ -1,14 +1,18 @@
 package command_test
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"errors"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"testing"
+	"time"
 
 	"github.com/cozybadgerde/cress/internal/command"
 )
@@ -100,6 +104,88 @@ type brokenWriter struct{}
 
 func (brokenWriter) Write([]byte) (int, error) {
 	return 0, io.ErrClosedPipe
+}
+
+func TestPreviewSignalProcess(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping process integration test")
+	}
+	if site := os.Getenv("CRESS_TEST_PREVIEW_SITE"); site != "" {
+		cmd := command.NewCommand(command.Deps{Version: "dev", Output: os.Stdout, Errors: os.Stderr})
+		if err := cmd.Run(context.Background(), []string{"cress", "site", "preview", "--port", "0", site}); err != nil {
+			t.Fatal(err)
+		}
+		return
+	}
+	site := t.TempDir()
+	if err := os.Mkdir(filepath.Join(site, "content"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(site, "content/index.md"), []byte("+++\ntitle = 'Home'\n+++"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	process := exec.Command(os.Args[0], "-test.run=^TestPreviewSignalProcess$")
+	process.Env = append(os.Environ(), "CRESS_TEST_PREVIEW_SITE="+site)
+	var stderr bytes.Buffer
+	process.Stderr = &stderr
+	stdout, err := process.StdoutPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := process.Start(); err != nil {
+		t.Fatal(err)
+	}
+	waited := false
+	defer func() {
+		if !waited {
+			if err := process.Process.Kill(); err != nil {
+				t.Error(err)
+			}
+			if err := process.Wait(); err == nil {
+				t.Error("expected killed process to fail")
+			}
+		}
+	}()
+	ready := make(chan bool, 1)
+	go func() {
+		scanner := bufio.NewScanner(stdout)
+		for scanner.Scan() {
+			if strings.Contains(scanner.Text(), "Preview http://127.0.0.1:") {
+				ready <- true
+				return
+			}
+		}
+		ready <- false
+	}()
+	select {
+	case ok := <-ready:
+		if !ok {
+			t.Fatal("preview exited before readiness")
+		}
+	case <-time.After(10 * time.Second):
+		t.Fatal("preview never became ready")
+	}
+	if err := process.Process.Signal(syscall.SIGTERM); err != nil {
+		t.Fatal(err)
+	}
+	done := make(chan error, 1)
+	go func() { done <- process.Wait() }()
+	select {
+	case err := <-done:
+		waited = true
+		if err != nil {
+			t.Fatalf("SIGTERM did not shut down cleanly: %v\n%s", err, stderr.String())
+		}
+	case <-time.After(10 * time.Second):
+		if err := process.Process.Kill(); err != nil {
+			t.Error(err)
+		}
+		if err := <-done; err == nil {
+			t.Error("expected killed preview to fail")
+		}
+		waited = true
+		t.Fatal("SIGTERM did not stop preview")
+	}
 }
 
 func TestWarningFailurePreservesBuildError(t *testing.T) {

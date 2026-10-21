@@ -5,11 +5,11 @@ responsibilities, data flow, and failure boundaries. The
 [PRD](PRD.md) owns product behavior. The [ADRs](adr/) own decision
 rationale. This guide links to both instead of repeating them.
 
-Status: agreed target structure, with phases 1 through 6 implemented.
+Status: agreed target structure, with phases 1 through 7 implemented.
 The current build handles site contracts, metadata, navigation, ordinary
 and landing pages, lists, assets, source references, captions, syntax highlighting,
 canonical URLs, a sitemap, robots output, local theme packages, and
-recoverable output replacement. Preview and built-in themes below
+recoverable output replacement and isolated local preview. Built-in themes below
 remain target behavior. Package layouts and interfaces emerge with
 implementation.
 
@@ -153,6 +153,9 @@ manual-recovery guidance.
 Preview reuses the full build flow for every rebuild; incremental
 rendering is not required.
 
+- `cress site preview` fixes draft visibility for the running session.
+  Native fsnotify events cover the configuration and source trees, not
+  deployable output or private writer state.
 - Each session owns a private temporary output directory and a fixed
   draft choice. Sessions never share output or touch deployable output.
 - The session serves its last verified output. A failed rebuild keeps
@@ -169,6 +172,37 @@ rendering is not required.
 
 See [ADR 0010](adr/0010-staged-output-and-ownership.md) and
 [the maintainer workflow](PRD.md#maintainer-workflow).
+
+### Preview implementation
+
+`internal/output.Session` creates owner-only targets in a private registry
+under OS temporary storage. The registry name includes the user ID and a
+hash of the canonical site path. Each randomly named session carries a
+site-bound identity record and an OS advisory lifetime lock. Registry
+changes and reclamation happen under the shared site writer lock. Only
+recognized, inactive sessions with verified output/recovery state are
+removed; unknown or ambiguous evidence is preserved and reported.
+
+A preview build takes the same site writer lock as a normal build, but
+opens only its session's output state, not deployable recovery state.
+Generation prepares the same pages, assets, and templates, with an explicit
+draft visibility setting. Writer outcomes include a verified output token
+so a failed attempt can distinguish restored or confirmed output from an
+unusable target. Output errors remain errors even when a token is usable.
+
+`internal/preview` owns loopback HTTP serving, watcher lifetime, and rebuild
+scheduling. Directory watches detect atomic saves and are updated when
+source directories are created, moved, or removed. A buffered dirty signal
+retains changes during a synchronous build. Debouncing coalesces edits;
+busy writers schedule timed retries, while other failures await an edit.
+Watcher failure stops rather than silently losing edits.
+
+An HTTP read gate prevents requests from using output while publication
+or restoration runs. Serving holds no site writer lock. A changed output
+token reopens the verified root; restored output retains the old root.
+Serving honors the configured deployment prefix, hides the ownership
+marker, and disables directory listings. Signal cancellation stops the
+watcher and server before verified session cleanup.
 
 ## Failure and trust boundaries
 
@@ -200,6 +234,7 @@ follow the responsibilities above:
 | `internal/render` | Theme-template parsing and page composition. |
 | `internal/theme` | Package discovery, manifests, compatibility, labels, public assets, and offline initialization. |
 | `internal/output` | Destination checks, confined staging, ownership, OS writer locking, replacement, and verified recovery. |
+| `internal/preview` | Loopback serving, native source watching, serialized rebuilds, retries, and preview lifecycle coordination. |
 
 Dependencies point from the CLI and generator toward content preparation,
 rendering, and output handling. The renderer depends only on the render

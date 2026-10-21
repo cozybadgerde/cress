@@ -318,8 +318,8 @@ exact-language labels, asset namespaces, and non-overwriting initialization
 are implemented with schema/runtime and filesystem coverage. Go modules'
 semantic-version helper has reviewed BSD-3-Clause notices.
 
-No commit or push was performed. Suggested phase message:
-`feat: add local theme packages and branding`.
+Phases 5 and 6 are committed together as `5dd386c`.
+Push confirmation remains with the maintainer.
 
 The two named built-in themes remain phase 8 work; currently selected names
 resolve locally or fail explicitly. Unconfigured builds retain the embedded
@@ -352,18 +352,16 @@ Unit-only mode, race checks, and both Linux cross-builds pass alongside
 the repository checks/build. No dependency was needed for output safety.
 CI continues to use the same local tasks; no CI run was required.
 
-No commit or push was performed. Suggested phase message:
-`feat: add staged output ownership and recovery`.
-If keeping phases 5 and 6 together, use:
-`feat: add local themes and safe output publication`.
+Phases 5 and 6 are committed together as `5dd386c`
+(`feat: add local themes and safe output publication`).
+Push confirmation remains with the maintainer.
 
 - [ ] Before the next manual playground build, inspect and remove only
   the pre-ownership `.local/site/public/` once. Its existing files are left
   untouched; subsequent builds retain `.cress/` and replace owned output.
-- [ ] Before phase 7, clarify preview CLI/draft choices, session ownership,
+- [x] Before phase 7, clarify preview CLI/draft choices, session ownership,
   watch/retry scheduling, and cleanup. Extend the writer with explicit
-  session targets and verified-usable-output reporting for preview errors;
-  current builds intentionally target only deployable `public/`.
+  session targets and verified-usable-output reporting for preview errors.
 - [ ] In phase 8, include private `.cress/` state in initialized sites'
   Git ignore rules.
 
@@ -375,13 +373,54 @@ command or power-loss durability guarantee is introduced.
 
 ### Phase 7: Preview
 
-- [ ] Serve isolated private preview sessions with an explicit draft
+Clarified before implementation: loopback-only
+`cress site preview [directory] --drafts --port N`, default port 8080,
+explicit free-port selection with `--port 0`, unchanged public origin and
+deployment prefix, native fsnotify events with a short debounce, and
+private temporary sessions with lock-verified reclamation. Included drafts
+require publishable metadata. No cleanup commit is required first.
+The existing unowned playground output stays untouched.
+
+- [x] Serve isolated private preview sessions with an explicit draft
   choice and no effect on deployable output [7].
-- [ ] Rebuild on source edits without losing edits made during a rebuild,
+- [x] Rebuild on source edits without losing edits made during a rebuild,
   keep the last verified output on failure, and retry blocked rebuilds
   [8].
-- [ ] Stop unsuccessfully when no verified output remains, clean up on
+- [x] Stop unsuccessfully when no verified output remains, clean up on
   shutdown, and reclaim only verifiably inactive sessions [8, 9].
+
+#### Phase 7 handoff and leftovers
+
+Preview implementation is complete. The writer now separates the shared
+site lock from target recovery, so previews never require or mutate
+deployable output. Included drafts use normal metadata, rendering, source
+resolution, assets, lists, and publication preparation.
+
+Coverage includes concurrent draft-free and draft-inclusive sessions,
+prefix serving and updates, invalid-edit preservation, edits during
+rebuilding, contention retries without another edit, nested source edits,
+atomic configuration saves, generated-output event exclusion, publication
+and cleanup failure usability, fatal unverified output, inactive-session
+reclamation, changed identities, and signal shutdown. Local checks/build,
+unit-only mode, race checks, and supported Linux cross-builds pass.
+CI remains aligned through the existing tasks; no CI execution was required.
+
+New runtime dependencies are fsnotify and its Go system bindings, with
+reviewed BSD-3-Clause notices and the Go patent grant.
+No commit or push was performed. Suggested commit message:
+`feat: add isolated live previews`.
+
+- [ ] Before phase 8, clarify the two built-in themes' names, presentation
+  contracts and defaults, site-init CLI and scaffold contents, and the
+  complete-page accessibility review scope. Revisit existing playground
+  and site-ignore leftovers first; no separate cleanup commit is required.
+
+Built-in themes, site initialization, playground retirement, generated
+site ignore rules, and complete-theme accessibility assessment remain
+phase 8 work. The old playground `public/` is still untouched; preview
+works independently, while the first deployable rebuild still requires
+the documented one-time migration. Native-watch filesystem limitations
+and manual ambiguous-recovery handling are documented in the user reference.
 
 ### Phase 8: Built-in themes and site initialization
 

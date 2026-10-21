@@ -75,7 +75,7 @@ func Load(ctx context.Context, site string, config Config) (prepared Prepared, w
 			return err
 		}
 		owners[strings.TrimSuffix(name, ".md")+".assets"] = item
-		if !item.Draft {
+		if !item.Draft || config.IncludeDrafts {
 			prepared.Pages = append(prepared.Pages, item)
 			files[name] = reference{url: item.Data.URL, page: true}
 		}
@@ -93,7 +93,7 @@ func Load(ctx context.Context, site string, config Config) (prepared Prepared, w
 		if err != nil {
 			return prepared, warnings, err
 		}
-		if !owner.Draft {
+		if !owner.Draft || config.IncludeDrafts {
 			prepared.Assets = append(prepared.Assets, assets...)
 		}
 	}
@@ -127,7 +127,7 @@ func Load(ctx context.Context, site string, config Config) (prepared Prepared, w
 			return prepared, warnings, err
 		}
 	}
-	warnings = append(warnings, prepareLists(prepared.Pages)...)
+	warnings = append(warnings, prepareLists(prepared.Pages, config)...)
 	publication, diagnostics, err := preparePublication(prepared.Pages, config)
 	warnings = append(warnings, diagnostics...)
 	if err != nil {

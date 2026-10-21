@@ -24,6 +24,9 @@ func TestCommands(t *testing.T) {
 		{name: "theme", args: []string{"theme"}, want: "Theme development"},
 		{name: "theme help", args: []string{"theme", "--help"}, want: "Theme development"},
 		{name: "build help", args: []string{"site", "build", "--help"}, want: "[directory]"},
+		{name: "preview help", args: []string{"site", "preview", "--help"}, want: "--drafts"},
+		{name: "preview too many directories", args: []string{"site", "preview", "one", "two"}, wantError: true},
+		{name: "preview invalid port", args: []string{"site", "preview", "--port", "-1"}, wantError: true},
 		{name: "unknown root command", args: []string{"unknown"}, wantError: true},
 		{name: "unknown site command", args: []string{"site", "unknown"}, wantError: true},
 		{name: "unknown theme command", args: []string{"theme", "unknown"}, wantError: true},
@@ -43,9 +46,6 @@ func TestCommands(t *testing.T) {
 			}
 			if test.want != "" && !strings.Contains(stdout.String(), test.want) {
 				t.Errorf("output = %q, want %q", stdout.String(), test.want)
-			}
-			if !test.wantError && strings.Contains(stdout.String(), "preview") {
-				t.Error("help advertises an unimplemented command")
 			}
 		})
 	}

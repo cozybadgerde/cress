@@ -18,12 +18,13 @@ import (
 
 // Config contains validated site settings and prepared shared presentation data.
 type Config struct {
-	Site        page.Site
-	Description string
-	Image       *page.Image
-	Host        string
-	Highlight   bool
-	Theme       string
+	Site          page.Site
+	Description   string
+	Image         *page.Image
+	Host          string
+	Highlight     bool
+	Theme         string
+	IncludeDrafts bool
 }
 
 // ParseConfig validates TOML site configuration and resolves shared URLs.

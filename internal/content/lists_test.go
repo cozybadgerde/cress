@@ -102,7 +102,7 @@ func TestPreparedLists(t *testing.T) {
 						makePage("blog/archive/old.md", "title = 'Deep'"),
 						makePage("outside.md", "title = 'Outside'"),
 					}
-					warnings := prepareLists(pages)
+					warnings := prepareLists(pages, Config{})
 					want := []string{"/company/blog/a/", "/company/blog/b/", "/company/blog/c/"}
 					if order == "title" {
 						want = []string{"/company/blog/b/", "/company/blog/c/", "/company/blog/undated/", "/company/blog/a/"}
@@ -139,7 +139,7 @@ func TestPreparedLists(t *testing.T) {
 			makePage("about/index.md", "title = 'About'"),
 			makePage("nested/child.md", "title = 'Deep'"),
 		}
-		prepareLists(pages)
+		prepareLists(pages, Config{})
 		if len(pages[0].Data.Entries) != 1 || pages[0].Data.Entries[0].URL != "/company/about/" {
 			t.Fatalf("%s selected incorrect logical scope: %+v", source, pages[0].Data.Entries)
 		}
@@ -157,7 +157,7 @@ func TestTitleOrderingAndEmptyLists(t *testing.T) {
 		{Destination: "c/index.html", Data: page.Page{Type: page.Ordinary, Title: "Straße", URL: "/c/"}},
 		{Destination: "d/index.html", Data: page.Page{Type: page.Ordinary, Title: "STRASSE", URL: "/d/"}},
 	}
-	prepareLists(pages)
+	prepareLists(pages, Config{})
 	var urls []string
 	for _, entry := range pages[0].Data.Entries {
 		urls = append(urls, entry.URL)
@@ -170,7 +170,7 @@ func TestTitleOrderingAndEmptyLists(t *testing.T) {
 		t.Fatalf("prepared entry metadata changed: %+v", entry)
 	}
 	empty := []Page{{Data: page.Page{Type: page.List}, Destination: "index.html"}}
-	if warnings := prepareLists(empty); len(warnings) != 0 || len(empty[0].Data.Entries) != 0 {
+	if warnings := prepareLists(empty, Config{}); len(warnings) != 0 || len(empty[0].Data.Entries) != 0 {
 		t.Fatalf("empty list failed: %+v, %v", empty, warnings)
 	}
 }

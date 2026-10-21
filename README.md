@@ -40,7 +40,8 @@ Cress is in early development. The current build supports site
 configuration, inherited metadata, navigation, ordinary, landing, and list
 Markdown pages, assets, resolved source links, captions, syntax highlighting,
 publication metadata, branding, local themes, theme initialization, draft
-exclusion, and staged output replacement with ownership and recovery.
+exclusion, staged output replacement with ownership and recovery, and
+isolated local preview with automatic rebuilding.
 An embedded developer skeleton
 is used when no theme is selected. Implementation follows the
 [work plan](TODO.md); there is no published release yet.

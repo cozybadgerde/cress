@@ -28,7 +28,7 @@ type Page struct {
 // Prepare validates a content-relative Markdown source and prepares its page.
 func Prepare(name string, source []byte, config Config) (Page, []string, error) {
 	prepared, warnings, err := prepareMetadata(name, source, config)
-	if err != nil || prepared.Draft {
+	if err != nil || (prepared.Draft && !config.IncludeDrafts) {
 		return prepared, warnings, err
 	}
 	if err := renderContent(&prepared, config, nil); err != nil {
@@ -117,7 +117,7 @@ func prepareMetadata(name string, source []byte, config Config) (Page, []string,
 			return prepared, warnings, err
 		}
 	}
-	if prepared.Draft {
+	if prepared.Draft && !config.IncludeDrafts {
 		return prepared, warnings, nil
 	}
 	if prepared.Data.Title == "" {

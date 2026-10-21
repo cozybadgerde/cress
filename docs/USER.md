@@ -12,6 +12,7 @@ cress --version
 cress site --help
 cress theme --help
 cress site build
+cress site preview --port 0
 ```
 
 `cress site build [directory]` builds the selected site directory, defaulting
@@ -25,7 +26,68 @@ embedded skeleton; the site directory defaults to `.`. The target must not
 exist. Partial initialization failures leave files for inspection, not
 automatic removal or overwriting. The command does not change `cress.toml`.
 Select the result with `[theme] name = "<name>"`.
-Site initialization and preview arrive in later phases.
+Site initialization arrives in phase 8.
+
+## Local preview
+
+```sh
+cress site preview
+cress site preview --drafts --port 0 .local/site
+```
+
+`cress site preview [directory]` defaults to the current directory and port
+8080. It generates its own private temporary output, never requiring or
+modifying deployable `public/`. Multiple sessions keep separate outputs.
+The server binds only to `127.0.0.1`; `--port 0` chooses a free port and
+prints it. An occupied port fails rather than silently selecting another.
+There is no remote-binding flag or automatic browser launch.
+
+Drafts are excluded unless `--drafts` is explicitly supplied. This choice
+belongs to the running session and is preserved on every rebuild, including
+draft assets and list membership. Included drafts need a title and other
+publishable metadata; Cress does not invent missing values. Normal builds
+always exclude drafts. The terminal prints the session's draft mode.
+
+Open the printed URL. Preview preserves `site.path`, serving only beneath
+that prefix and redirecting `/` to it. Canonicals and sitemap URLs retain
+the configured `site.host`, not the local server origin. A successful
+change to `site.path` prints the new preview URL. No authored HTML or copied
+asset contents are rewritten. Trust local preview content just as you
+would published content; raw HTML and theme templates remain trusted.
+
+Native filesystem events watch `cress.toml`, `content/`, `static/`, and
+`themes/`, including nested and newly created directories. Atomic editor
+saves are supported. Generated `public/` and `.cress/` files do not trigger
+rebuilds. A short debounce coalesces edits; edits made during a build queue
+another full build. Native watching requires a filesystem that provides
+events; network and virtual filesystems may not do so. Watcher failures,
+including event overflow, stop unsuccessfully rather than silently losing
+edits. No polling fallback is provided.
+
+Rebuild outcomes appear in the terminal. Refresh the browser manually.
+No reload client or error overlay is injected. Invalid inputs leave the
+last verified preview available and watching continues. A rebuild blocked
+by another site writer stays pending and retries about every 500 ms without
+needing another edit. Other failures are reported but do not automatically
+retry. Explicit builds and initial preview startup remain fail-fast.
+Read-only serving does not hold the site writer lock. During a rebuild,
+HTTP requests may wait until publication or restoration finishes.
+
+Verified previous output remains available after a failed publication
+that restores it. Confirmed new output remains available after cleanup
+failure. Both rebuilds are reported as unsuccessful. If usable output
+cannot be verified, preview stops serving and exits unsuccessfully,
+preserving evidence and naming its temporary session directory.
+
+Ctrl-C or SIGTERM shuts down the server and cleans verified session output.
+Each session has owner-only temporary storage, a site-bound identity, and
+an OS lifetime lock. On startup, Cress reclaims only recognized sessions for
+the same canonical site whose lifetime lock can be acquired. Active sessions
+and unrelated entries are preserved. Ambiguous recovery state is preserved
+and reported, not guessed away. Cleanup errors fail the command and may
+leave a session for later inspection or verified reclamation.
+Do not delete session locks to force cleanup. There is no persistent
+preview cache or guarantee against OS temporary-storage cleanup.
 
 ## Writing pages
 

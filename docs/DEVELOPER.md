@@ -116,6 +116,7 @@ highlighting. Its SVG formatter and embedded font are not linked.
 Go text provides portable output-name comparison
 and language-tag validation. Go modules supplies the semantic-version helper
 for theme runtime compatibility.
+fsnotify supplies native source-change events, using Go system bindings.
 Schema tests use a test-only JSON Schema validator. Reviewed licenses and
 redistribution notices live in
 [third-party notices](THIRD-PARTY-NOTICES.md).
@@ -136,18 +137,19 @@ mise run build
 ./bin/cress site build .local/site
 ```
 
-Serve the generated files with a local static server. For example, if
-Python 3 is installed:
+Preview the fixture without changing its deployable output:
 
 ```sh
-python3 -m http.server 8000 --bind 127.0.0.1 --directory .local/site/public
+./bin/cress site preview --port 0 .local/site
 ```
 
-Open `http://127.0.0.1:8000/` and stop the server with Ctrl-C. The fixture
+Open the printed URL and stop the server with Ctrl-C. The fixture
 uses `site.path = "/"` so it works at the server root. It exercises ordinary
 and landing pages, both source layouts, navigation, metadata overrides,
 captions, code highlighting, page-owned assets, and shared static files.
 Draft pages, draft-owned assets, and non-asset content files stay private.
+Use `--drafts` only when intentionally previewing draft content. Included
+drafts need titles; add them to any untitled draft before using that mode.
 
 For output created before phase 6, inspect and remove only the old
 `.local/site/public/` once. Subsequent builds replace recognized output;

@@ -67,17 +67,17 @@ func (input fields) readList(pageType page.Type) (listOptions, error) {
 	return options, nil
 }
 
-func prepareLists(pages []Page) []string {
+func prepareLists(pages []Page, config Config) []string {
 	var warnings []string
 	for index := range pages {
 		list := &pages[index]
-		if list.Draft || list.Data.Type != page.List {
+		if (list.Draft && !config.IncludeDrafts) || list.Data.Type != page.List {
 			continue
 		}
 		section := path.Dir(path.Dir(list.Destination))
 		var entries []page.Entry
 		for _, candidate := range pages {
-			if candidate.Draft || candidate.Data.Type != page.Ordinary ||
+			if (candidate.Draft && !config.IncludeDrafts) || candidate.Data.Type != page.Ordinary ||
 				candidate.Destination == list.Destination ||
 				path.Dir(candidate.Destination) == section ||
 				path.Dir(path.Dir(candidate.Destination)) != section {
