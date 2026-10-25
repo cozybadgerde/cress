@@ -21,6 +21,17 @@ type pageServer struct {
 
 type publishedFS struct{ source fs.FS }
 
+// replaceRoot requires the caller to hold mu through publication and replacement.
+func (server *pageServer) replaceRoot(directory string) error {
+	next, err := os.OpenRoot(directory)
+	if err != nil {
+		return err
+	}
+	old := server.root
+	server.root = next
+	return old.Close()
+}
+
 func (files publishedFS) Open(name string) (fs.File, error) {
 	if strings.EqualFold(name, ".cress-output.json") {
 		return nil, fs.ErrNotExist

@@ -7,14 +7,15 @@ appropriate pipeline; resource ownership has a few avoidable coupling points.
 
 The baseline commit is `86aaf05`; findings refer to the working tree, not
 only that commit. This is a design audit, not a security or release-readiness
-assessment. No implementation changes are included.
+assessment. The original findings and line references describe that snapshot;
+the follow-up section records subsequent fixes against commit `567f6b6`.
 
 ## Summary
 
 | # | Category | Finding | Severity (1-10) | Location | Effort | Status |
 |---|----------|---------|-----------------|----------|--------|--------|
-| 1 | Architecture | Writer combines site-lock ownership with a mutable output target | 4 | `internal/output/session.go:185-218` | M | Open |
-| 2 | SOLID | Preview replaces a resource before acquiring its replacement | 3 | `internal/preview/preview.go:159-170` | S | Open |
+| 1 | Architecture | Writer combines site-lock ownership with a mutable output target | 4 | `internal/output/session.go:185-218` | M | Done |
+| 2 | SOLID | Preview replaces a resource before acquiring its replacement | 3 | `internal/preview/preview.go:159-170` | S | Done |
 | 3 | Architecture | Theme loading reads private files into the generation snapshot | 3 | `internal/theme/theme.go:115-173` | M | Open |
 | 4 | Design Patterns | Scaffold specialization depends on unchecked text matches | 2 | `internal/scaffold/scaffold.go:79-81`, `internal/theme/init.go:77-80` | S | Open |
 
@@ -288,6 +289,30 @@ removes.
 | LSP | There is no inheritance hierarchy to audit. The filesystem and HTTP adapters implement library interfaces, with explicit errors for intentionally unavailable files. No additional substitution issue was identified in the reviewed paths. |
 | ISP | Standard interfaces and the private build function are narrow. No oversized application interfaces were found. Concrete packages are not, by themselves, ISP violations. |
 | DIP | Stable prepared data and `fs.FS` keep useful boundaries. Concrete orchestration and constructors are reasonable for one runtime implementation. Function-valued filesystem hooks enable failure tests without requiring a broad filesystem interface. |
+
+## Follow-up: findings #2 and #1
+
+Finding #2 was fixed first. `pageServer.replaceRoot` opens the replacement
+before changing the owned root, retaining deterministic deferred cleanup
+when opening fails. Focused filesystem regression coverage checks failed
+replacement, successful replacement, and replacement of an already-closed
+root. Repository checks and build passed before work on finding #1 began.
+
+Finding #1 is resolved with a private concrete `siteLock` and a shared
+target-bound writer constructor. Preview holds the site lock separately
+and constructs a writer directly against the session root; no target or
+filesystem callbacks are rebound. Normal builds retain lock ownership
+through `Writer.Close`. Session verification and cleanup also use the same
+writer constructor rather than partial writer values.
+The recovery state machine and on-disk formats are unchanged.
+
+Additional session coverage verifies lock contention during generation and
+lock release after generation or target-validation errors. Existing output
+recovery, session isolation, and preview tests remain in place.
+No interfaces, dependencies, or packages were added.
+
+Findings #3 and #4 remain open and outside this follow-up's approved scope.
+The original rating is retained as the audit's snapshot assessment.
 
 ## Evidence and limits
 

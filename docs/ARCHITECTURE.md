@@ -126,9 +126,12 @@ can be tested with a hand-built render model.
 
 ### Output transaction
 
-`internal/output.Writer` holds a confined site root and an OS `flock` on
-the persistent `.cress/writer.lock` file. Canonical site aliases share that
-inode. A private versioned record pairs the current output token with
+`internal/output.Writer` binds to one confined output target at construction.
+A separate private site-lock owner holds an OS `flock` on the persistent
+`.cress/writer.lock` file. Normal builds retain that lock with their writer;
+preview attempts retain it separately while writing to their session target.
+Canonical site aliases share that inode.
+A private versioned record pairs the current output token with
 `public/.cress-output.json`; the marker's path is reserved by the collision
 checker. New and empty destinations need no previous ownership token.
 

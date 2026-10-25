@@ -158,12 +158,7 @@ func run(ctx context.Context, options Options, build buildFunc) (runErr error) {
 			}
 			previousPrefix := pages.prefix
 			if next.Token != token {
-				old := pages.root
-				pages.root, err = os.OpenRoot(filepath.Join(session.Directory(), "public"))
-				if err == nil {
-					err = old.Close()
-				}
-				if err != nil {
+				if err := pages.replaceRoot(filepath.Join(session.Directory(), "public")); err != nil {
 					pages.mu.Unlock()
 					return err
 				}

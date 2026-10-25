@@ -190,6 +190,67 @@ func TestSessionBusyAttemptRetainsVerifiedOutput(t *testing.T) {
 	}
 }
 
+func TestSessionAttemptReleasesSiteLockOnFailure(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping filesystem integration test")
+	}
+	for _, failure := range []string{"generation", "target"} {
+		t.Run(failure, func(t *testing.T) {
+			site := t.TempDir()
+			session := newTestSession(t, site)
+			if failure == "target" {
+				recordPath := filepath.Join(session.directory, sessionRecord)
+				record, err := os.ReadFile(recordPath)
+				if err != nil {
+					t.Fatal(err)
+				}
+				t.Cleanup(func() {
+					if err := os.WriteFile(recordPath, record, privateFileMode); err != nil {
+						t.Error(err)
+					}
+				})
+				if err := os.WriteFile(recordPath, []byte("{}"), privateFileMode); err != nil {
+					t.Fatal(err)
+				}
+			}
+			token, err := session.Attempt(context.Background(), func(writer *Writer) error {
+				if failure == "target" {
+					t.Fatal("generation ran against an invalid session target")
+				}
+				other, err := Acquire(context.Background(), site)
+				if err == nil {
+					t.Error("session generation did not hold the site lock")
+					if err := other.Close(); err != nil {
+						t.Error(err)
+					}
+				} else if !errors.Is(err, ErrBusy) {
+					t.Fatalf("unexpected contention error: %v", err)
+				}
+				if err := writer.Write(context.Background(), []File{preparedFile("index.html", "preview")}); err != nil {
+					t.Fatal(err)
+				}
+				return errInjected
+			})
+			if err == nil {
+				t.Fatal("attempt failure was hidden")
+			}
+			if failure == "generation" {
+				if !errors.Is(err, errInjected) || !validToken(token) {
+					t.Fatalf("generation error lost verified output: %s, %v", token, err)
+				}
+				assertFile(t, session.directory, "public/index.html", "preview")
+			} else if token != "" {
+				t.Fatal("invalid target reported usable output")
+			}
+			writer := acquireWriter(t, site)
+			if err := writer.Write(context.Background(), []File{preparedFile("index.html", "deployable")}); err != nil {
+				t.Fatal(err)
+			}
+			assertFile(t, site, "public/index.html", "deployable")
+		})
+	}
+}
+
 func TestChangedSessionIdentityAndMissingOutputArePreserved(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping filesystem integration test")

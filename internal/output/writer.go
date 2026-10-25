@@ -47,21 +47,36 @@ type state struct {
 	Pending *transaction `json:"pending,omitempty"`
 }
 
-// Writer holds site-wide OS ownership through preparation, publication and recovery.
+type siteLock struct {
+	root *os.Root
+	file *os.File
+}
+
+// Writer manages transactions against one fixed output target.
 type Writer struct {
 	root      *os.Root
-	lock      *os.File
+	lock      *siteLock
 	state     state
 	rename    func(string, string) error
 	removeAll func(string) error
 }
 
+func newWriter(root *os.Root) *Writer {
+	return &Writer{root: root, rename: root.Rename, removeAll: root.RemoveAll}
+}
+
 // Acquire fails fast on contention and recovers only verified transactions.
 func Acquire(ctx context.Context, site string) (_ *Writer, acquireErr error) {
-	writer, err := acquireSite(ctx, site)
+	lock, err := acquireSiteLock(ctx, site)
 	if err != nil {
 		return nil, err
 	}
+	root, err := lock.root.OpenRoot(".")
+	if err != nil {
+		return nil, errors.Join(fmt.Errorf("open output target: %w", err), lock.Close())
+	}
+	writer := newWriter(root)
+	writer.lock = lock
 	defer func() {
 		if acquireErr != nil {
 			acquireErr = errors.Join(acquireErr, writer.Close())
@@ -73,7 +88,7 @@ func Acquire(ctx context.Context, site string) (_ *Writer, acquireErr error) {
 	return writer, nil
 }
 
-func acquireSite(ctx context.Context, site string) (_ *Writer, acquireErr error) {
+func acquireSiteLock(ctx context.Context, site string) (_ *siteLock, acquireErr error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -85,10 +100,10 @@ func acquireSite(ctx context.Context, site string) (_ *Writer, acquireErr error)
 	if err != nil {
 		return nil, fmt.Errorf("open writer site: %w", err)
 	}
-	writer := &Writer{root: root, rename: root.Rename, removeAll: root.RemoveAll}
+	lock := &siteLock{root: root}
 	defer func() {
 		if acquireErr != nil {
-			acquireErr = errors.Join(acquireErr, writer.Close())
+			acquireErr = errors.Join(acquireErr, lock.Close())
 		}
 	}()
 	if err := ensurePrivate(root, stateDirectory); err != nil {
@@ -99,21 +114,37 @@ func acquireSite(ctx context.Context, site string) (_ *Writer, acquireErr error)
 	} else if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return nil, fmt.Errorf("inspect writer lock: %w", err)
 	}
-	writer.lock, err = root.OpenFile(lockPath, os.O_CREATE|os.O_RDWR|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, privateFileMode)
+	lock.file, err = root.OpenFile(lockPath, os.O_CREATE|os.O_RDWR|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, privateFileMode)
 	if err != nil {
 		return nil, fmt.Errorf("open writer lock: %w", err)
 	}
-	info, err := writer.lock.Stat()
+	info, err := lock.file.Stat()
 	if err != nil || !info.Mode().IsRegular() {
 		return nil, fmt.Errorf("writer lock must be a regular file: %w", errors.Join(err, fs.ErrInvalid))
 	}
-	if err := syscall.Flock(int(writer.lock.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+	if err := syscall.Flock(int(lock.file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
 		if errors.Is(err, syscall.EWOULDBLOCK) || errors.Is(err, syscall.EAGAIN) {
 			return nil, fmt.Errorf("%w; another Cress build holds %s", ErrBusy, lockPath)
 		}
 		return nil, fmt.Errorf("acquire site writer lock: %w", err)
 	}
-	return writer, nil
+	return lock, nil
+}
+
+func (lock *siteLock) Close() error {
+	var err error
+	if lock.root != nil {
+		err = lock.root.Close()
+		lock.root = nil
+	}
+	if lock.file != nil {
+		err = errors.Join(err, lock.file.Close())
+		lock.file = nil
+	}
+	if err != nil {
+		return fmt.Errorf("close site writer lock: %w", err)
+	}
+	return nil
 }
 
 func ensurePrivate(root *os.Root, name string) error {
@@ -143,16 +174,16 @@ func (writer *Writer) prepare() error {
 	return nil
 }
 
-// Close releases OS ownership without deleting the persistent lock file.
+// Close closes the target and releases any site lock owned by this writer.
 func (writer *Writer) Close() error {
 	var err error
-	if writer.lock != nil {
-		err = writer.lock.Close()
-		writer.lock = nil
-	}
 	if writer.root != nil {
-		err = errors.Join(err, writer.root.Close())
+		err = writer.root.Close()
 		writer.root = nil
+	}
+	if writer.lock != nil {
+		err = errors.Join(err, writer.lock.Close())
+		writer.lock = nil
 	}
 	if err != nil {
 		return fmt.Errorf("close site writer: %w", err)

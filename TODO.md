@@ -520,9 +520,12 @@ Setup documentation points to mise.toml and go.mod rather than maintaining
 duplicate tool versions or dependency inventories. Compatibility baselines
 and release-tag examples remain where they explain required behavior.
 
-- [ ] Review the four scoped findings in the
-  [software design audit](audits/software-design-2026-10-25.md) and agree
-  which to address; the report does not make them automatic release blockers.
+- [x] Review the [software design audit](audits/software-design-2026-10-25.md)
+  and fix #2 before #1: preserve preview root ownership on replacement failure,
+  then separate the site lock from target-bound writers without changing
+  recovery behavior. Keep both fixes in one pending combined commit.
+- [ ] Revisit audit #3 (private theme-file reads) and #4 (unchecked scaffold
+  substitutions) separately; neither is an automatic release blocker.
 
 External release blockers remain:
 
@@ -534,8 +537,10 @@ External release blockers remain:
   results before approving a release tag.
 - [ ] After an explicitly approved first release, record real keyless
   signing and negative verification evidence; snapshots cannot provide it.
-- [ ] Maintainer confirms phase 8/9 commits and any push. No repository
-  write to GitHub was performed.
+- [x] Maintainer confirms phases 8/9 and scaffold updates committed as
+  `567f6b6` (`feat: add themes, init and docs`).
+- [ ] Maintainer confirms the audit-fix commit and any push. No repository
+  write to GitHub was performed during the audit follow-up.
 
 Suggested phase 9 commit: `build: prepare signed releases and refresh docs`.
 For a combined phase 8/9 commit:

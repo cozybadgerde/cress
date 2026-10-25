@@ -56,11 +56,11 @@ func NewSession(ctx context.Context, site string) (created *Session, warnings []
 	if err != nil {
 		return nil, nil, err
 	}
-	writer, err := acquireSite(ctx, site)
+	lock, err := acquireSiteLock(ctx, site)
 	if err != nil {
 		return nil, nil, err
 	}
-	defer func() { sessionErr = errors.Join(sessionErr, writer.Close()) }()
+	defer func() { sessionErr = errors.Join(sessionErr, lock.Close()) }()
 	base, err := os.OpenRoot(os.TempDir())
 	if err != nil {
 		return nil, nil, fmt.Errorf("open temporary storage: %w", err)
@@ -149,7 +149,7 @@ func openSession(registry *os.Root, name, site string) (opened *Session, openErr
 		return nil, err
 	}
 	defer func() { openErr = errors.Join(openErr, root.Close()) }()
-	writer := &Writer{root: root}
+	writer := newWriter(root)
 	data, err := writer.readRegular(sessionRecord)
 	if err != nil {
 		return nil, err
@@ -186,21 +186,18 @@ func (session *Session) Attempt(ctx context.Context, generate func(*Writer) erro
 	if session.lease == nil {
 		return "", fmt.Errorf("preview session is closed")
 	}
-	writer, err := acquireSite(ctx, session.site)
+	lock, err := acquireSiteLock(ctx, session.site)
 	if err != nil {
 		token, verifyErr := session.Verify()
 		return token, errors.Join(err, verifyErr)
 	}
-	defer func() { attemptErr = errors.Join(attemptErr, writer.Close()) }()
+	defer func() { attemptErr = errors.Join(attemptErr, lock.Close()) }()
 	root, err := session.openRoot()
 	if err != nil {
 		return "", err
 	}
-	if err := writer.root.Close(); err != nil {
-		return "", errors.Join(err, root.Close())
-	}
-	writer.root = root
-	writer.rename, writer.removeAll = root.Rename, root.RemoveAll
+	writer := newWriter(root)
+	defer func() { attemptErr = errors.Join(attemptErr, writer.Close()) }()
 	if err := ensurePrivate(root, stateDirectory); err != nil {
 		return "", err
 	}
@@ -244,7 +241,7 @@ func (session *Session) Verify() (token string, verifyErr error) {
 	if err != nil || !info.IsDir() || info.Mode().Perm()&0o077 != 0 {
 		return "", fmt.Errorf("preview state is not a private real directory: %w", errors.Join(err, fs.ErrInvalid))
 	}
-	writer := &Writer{root: root}
+	writer := newWriter(root)
 	if err := writer.loadState(); err != nil {
 		return "", err
 	}
@@ -260,11 +257,11 @@ func (session *Session) Close() (closeErr error) {
 		closeErr = errors.Join(closeErr, session.lease.Close())
 		session.lease = nil
 	}()
-	writer, err := acquireSite(context.Background(), session.site)
+	lock, err := acquireSiteLock(context.Background(), session.site)
 	if err != nil {
 		return fmt.Errorf("preview cleanup blocked; preserved %s: %w", session.directory, err)
 	}
-	defer func() { closeErr = errors.Join(closeErr, writer.Close()) }()
+	defer func() { closeErr = errors.Join(closeErr, lock.Close()) }()
 	return session.remove()
 }
 
@@ -283,7 +280,7 @@ func (session *Session) remove() (removeErr error) {
 			return fmt.Errorf("preserved %s: unrecognized file %s", session.directory, entry.Name())
 		}
 	}
-	writer := &Writer{root: root, rename: root.Rename, removeAll: root.RemoveAll}
+	writer := newWriter(root)
 	if _, err := root.Lstat(stateDirectory); err == nil {
 		if err := ensurePrivate(root, stateDirectory); err != nil {
 			return err
@@ -330,7 +327,7 @@ func (session *Session) openRoot() (_ *os.Root, openErr error) {
 			openErr = errors.Join(openErr, root.Close())
 		}
 	}()
-	writer := &Writer{root: root}
+	writer := newWriter(root)
 	data, err := writer.readRegular(sessionRecord)
 	if err != nil {
 		return nil, err
