@@ -70,6 +70,54 @@ func TestBuildCommand(t *testing.T) {
 	}
 }
 
+func TestSiteInitCommand(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping filesystem integration test")
+	}
+	for _, mode := range []string{"current directory", "empty directory", "new directory", "flags after directory"} {
+		t.Run(mode, func(t *testing.T) {
+			site := t.TempDir()
+			args := []string{"cress", "site", "init"}
+			name := "poppy"
+			switch mode {
+			case "current directory":
+				t.Chdir(site)
+			case "empty directory":
+				args = append(args, site)
+			case "new directory":
+				site = filepath.Join(site, "new site")
+				name = "clover"
+				args = append(args, "--theme", name, site)
+			case "flags after directory":
+				name = "clover"
+				args = append(args, site, "--theme", name)
+			}
+			var stdout, stderr bytes.Buffer
+			cmd := command.NewCommand(command.Deps{Version: "dev", Output: &stdout, Errors: &stderr})
+			if err := cmd.Run(context.Background(), args); err != nil {
+				t.Fatal(err)
+			}
+			config, err := os.ReadFile(filepath.Join(site, "cress.toml"))
+			if err != nil || !strings.Contains(string(config), `name = "`+name+`"`) {
+				t.Fatalf("selected theme: %s, %v", config, err)
+			}
+			if !strings.Contains(stdout.String(), "Created site in") {
+				t.Fatalf("missing initialization message: %s", stdout.String())
+			}
+			for _, path := range []string{"public", ".cress", ".git"} {
+				if _, err := os.Lstat(filepath.Join(site, path)); !errors.Is(err, os.ErrNotExist) {
+					t.Fatalf("initialization created %s or inspection failed: %v", path, err)
+				}
+			}
+			stdout.Reset()
+			cmd = command.NewCommand(command.Deps{Version: "dev", Output: &stdout, Errors: &stderr})
+			if err := cmd.Run(context.Background(), args); err == nil || stdout.Len() != 0 {
+				t.Fatalf("existing target accepted or reported success: %v, %s", err, stdout.String())
+			}
+		})
+	}
+}
+
 func TestThemeInitCommand(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping filesystem integration test")

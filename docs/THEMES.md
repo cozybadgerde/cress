@@ -1,8 +1,9 @@
 # Theme development
 
-Themes are complete local packages. The embedded skeleton exercises all
+Themes are complete embedded or local packages. The embedded skeleton exercises all
 page types and supplies offline initialization; it is not a selectable third
-built-in theme. The two named built-in themes arrive in phase 8.
+built-in theme. Poppy is the default; clover is the other built-in.
+See [built-in presentation and labels](USER.md#built-in-themes).
 
 ## Package contract
 
@@ -43,8 +44,8 @@ use the explicit `1.0.0` baseline with a warning, not a compatibility bypass.
 Unknown manifest fields warn; invalid known fields fail. See the
 [manifest schema](../schemas/theme.schema.json).
 
-Only a missing local package permits built-in lookup; no built-in names
-exist yet. Unreadable, invalid, incompatible, or incomplete local packages
+Only a missing local package permits built-in lookup for poppy or clover.
+Unreadable, invalid, incompatible, or incomplete local packages
 never fall back. No package files merge. Symlinks and special files anywhere
 inside a selected package are rejected.
 
@@ -70,6 +71,34 @@ locale must parse as a string map even when unused. Private files, manifests,
 templates, and locale sources never publish. Public files copy unchanged
 into the theme namespace, including nested paths, with normal collision
 checks. CSS URLs are not rewritten.
+
+## Testing a theme
+
+Start with a disposable site containing every page type and the content
+tour, then add a local theme:
+
+```sh
+cress site init theme-test
+cress theme init my-theme theme-test
+```
+
+In `theme-test/cress.toml`, change the existing `[theme]` table's name to
+`"my-theme"`. Build and preview:
+
+```sh
+cress site build theme-test
+cress site preview --port 0 theme-test
+```
+
+Edit files under `theme-test/themes/my-theme/`; preview rebuilds when they
+change. Refresh the browser manually. Review the home landing page, journal
+list, ordinary pages, and `/tour/` for typography, images, captions, and code.
+The initialized theme is a minimal skeleton, not a copy of poppy or clover.
+
+When working in the Cress repository, use `./bin/cress` after
+`mise run build` and put the site under ignored `tmp/`, for example
+`tmp/theme-test`; create `tmp/` first.
+See [developer test sites](DEVELOPER.md#test-sites) for the shared workflow.
 
 ## Prepared render model
 
@@ -114,8 +143,10 @@ Entries do not contain page bodies, nested entries, raw source paths, or
 selection settings. Themes must preserve membership and order.
 
 The public origin is not needed for browsing and is not exposed as raw
-configuration. No template receives draft pages, raw source metadata, or
-the unfiltered content tree. Custom data remains ordinary data, not trusted
+configuration. Templates receive only pages visible in the current build
+or preview, including drafts only in explicit draft-inclusive preview.
+They receive no raw source metadata or unfiltered content tree.
+Custom data remains ordinary data, not trusted
 HTML; the developer skeleton does not interpret it.
 
 Content preparation alone marks the rendered body as trusted HTML.
@@ -142,4 +173,15 @@ links use a list; main links use a navigation landmark.
 Minimal inline styles keep code readable without browser JavaScript.
 Canonical links are included only when the prepared URL is nonempty.
 
-Phase 8 supplies and assesses the two selectable built-in themes.
+## Built-in packages
+
+`internal/theme/builtin/poppy/` and `clover/` each contain their own complete
+templates, public CSS, manifest, and exact `en`/`de` labels. They do not
+merge with the skeleton or with each other. Neither consumes custom keys.
+Same-name local packages replace them completely.
+
+Their stable manifest baseline is Cress 1.0.0. Embedded packages ship with
+the executable and are tested together; local packages undergo runtime
+compatibility checks, including during prerelease development.
+See the [accessibility assessment](ACCESSIBILITY.md) for automated evidence
+and the pending complete-page human review.

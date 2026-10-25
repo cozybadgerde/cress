@@ -15,7 +15,8 @@ These documents explain what Cress should do and why:
 - [Work plan](../TODO.md): implementation phases and their definition of
   done.
 
-Much of the agreed behavior is not implemented yet. The
+Generator capabilities are implemented; external release evidence and
+human accessibility review remain outstanding in the work plan. The
 [contribution notes](../README.md#contributing) explain how to propose a
 change.
 
@@ -26,16 +27,9 @@ change.
 - [mise](https://mise.jdx.dev/getting-started.html), which installs every
   other development tool.
 
-mise installs these pinned versions from `mise.toml`:
-
-| Tool | Version | Purpose |
-|------|---------|---------|
-| Go | 1.27.2 | Build and test. |
-| golangci-lint | 2.15.0 | Lint Go code. |
-| gomarklint | 3.3.1 | Lint Markdown. |
-| typos | 1.51.1 | Check spelling. |
-| Taplo | 0.10.0 | Format and check TOML. |
-| GoReleaser | 2.18.3 | Validate release packaging. |
+[`mise.toml`](../mise.toml) defines the development tools, pinned versions,
+and tasks. Use `mise install` as described below rather than installing
+each tool separately.
 
 No C toolchain is required; Cress builds with `CGO_ENABLED=0` for releases.
 
@@ -57,7 +51,9 @@ mise install
 ```
 
 If mise asks you to trust `mise.toml`, review it first. Installing tools
-needs network access. Go dependencies live in `go.mod` and `go.sum`.
+needs network access. [`go.mod`](../go.mod) declares Go dependencies;
+[`go.sum`](../go.sum) records their checksums. Go commands download required
+modules automatically.
 
 ## Project layout
 
@@ -69,8 +65,8 @@ needs network access. Go dependencies live in `go.mod` and `go.sum`.
 | `docs/` | Product requirements, architecture guide, and this guide. |
 | `docs/adr/` | Architectural decision records. |
 | `mise.toml` | Pinned tools and developer tasks. |
-| `.github/workflows/` | CI workflow. |
-| `.goreleaser.yml` | Release packaging scaffold. |
+| `.github/workflows/` | CI and version-tag release workflows. |
+| `.goreleaser.yml` | Archive, dependency-report, checksum, and signing configuration. |
 
 New packages follow the responsibilities in the
 [architecture guide](ARCHITECTURE.md#responsibilities) as code arrives.
@@ -108,53 +104,47 @@ go run ./cmd/cress site build /path/to/site
 Replace `/path/to/site` with a site directory containing `content/`.
 The [user reference](USER.md) documents the current authoring contract and
 output ownership and recovery workflow. The
-[theme reference](THEMES.md) documents the initial prepared render model.
+[theme reference](THEMES.md) documents the prepared render model.
 
-The CLI uses urfave/cli v3, TOML parsing uses go-toml v2, and Markdown
-conversion uses goldmark, with Chroma's HTML formatter for build-time
-highlighting. Its SVG formatter and embedded font are not linked.
-Go text provides portable output-name comparison
-and language-tag validation. Go modules supplies the semantic-version helper
-for theme runtime compatibility.
-fsnotify supplies native source-change events, using Go system bindings.
-Schema tests use a test-only JSON Schema validator. Reviewed licenses and
-redistribution notices live in
-[third-party notices](THIRD-PARTY-NOTICES.md).
+See the [architecture guide](ARCHITECTURE.md#responsibilities) for component
+responsibilities and [third-party notices](THIRD-PARTY-NOTICES.md) for
+generated dependency reports and redistribution notices.
 
 Use `mise tasks ls` to list all tasks. The tasks call ordinary tools, so
 native Go commands remain usable directly.
 
-### Local playground
+### Test sites
 
-An optional `.local/site/` directory can hold a reusable manual test site
-until `site init` arrives. The entire `.local/` tree is gitignored, including
-sources and generated output; it is not supplied by a fresh clone.
-
-If the local fixture is present, build it from the repository root:
+Create fresh test sites with `site init`. The repository's `/tmp/` tree is
+gitignored, including sources and generated output:
 
 ```sh
 mise run build
-./bin/cress site build .local/site
+mkdir -p tmp
+./bin/cress site init tmp/poppy
+./bin/cress site build tmp/poppy
+./bin/cress site preview --port 0 tmp/poppy
 ```
 
-Preview the fixture without changing its deployable output:
+Open the printed URL and stop preview with Ctrl-C. To compare clover:
 
 ```sh
-./bin/cress site preview --port 0 .local/site
+./bin/cress site init --theme clover tmp/clover
+./bin/cress site preview --port 0 tmp/clover
 ```
 
-Open the printed URL and stop the server with Ctrl-C. The fixture
-uses `site.path = "/"` so it works at the server root. It exercises ordinary
-and landing pages, both source layouts, navigation, metadata overrides,
-captions, code highlighting, page-owned assets, and shared static files.
-Draft pages, draft-owned assets, and non-asset content files stay private.
-Use `--drafts` only when intentionally previewing draft content. Included
-drafts need titles; add them to any untitled draft before using that mode.
+Initialization requires a new or completely empty target with an existing
+parent directory. Reuse an initialized site by editing its sources and
+rebuilding; choose another new directory for a fresh scaffold.
+The sample covers every page type and includes a content tour and commented
+configuration. Add test-specific content, drafts, or shared `static/` assets
+as needed. Use preview's `--drafts` flag to inspect unfinished pages.
+Preview does not change deployable `public/` output.
 
-For output created before phase 6, inspect and remove only the old
-`.local/site/public/` once. Subsequent builds replace recognized output;
-retain the private `.local/site/.cress/` ownership state and source files.
-This playground is not a replacement for automated tests.
+Theme authors can use the same scaffold with a
+[local development theme](THEMES.md#testing-a-theme).
+Publishers can follow [testing-a-site guidance](USER.md#testing-a-site)
+with an installed executable. Manual test sites do not replace automated tests.
 
 ## Building
 
@@ -172,11 +162,10 @@ publishing:
 mise run check:goreleaser
 ```
 
-The GoReleaser configuration is a packaging scaffold for the three agreed
-targets, not a release-ready pipeline. Signing, release-specific component
-inventories, review enforcement, and release automation remain in the work
-plan. The archive already includes the required notices for current runtime
-dependencies.
+The release configuration packages the three agreed targets with notices,
+installation guidance, per-target CSV license reports, and signed checksums.
+See [release maintenance](RELEASE.md) for review, snapshot validation, and
+the external evidence still required before publishing.
 
 ## Testing and checks
 
@@ -190,7 +179,7 @@ mise run check
 |---------|---------|
 | `mise run check` | Run every check below and the tests. |
 | `mise run check:go-format` | Check Go formatting. |
-| `mise run check:go-lint` | Lint Go with golangci-lint's standard set. |
+| `mise run check:go-lint` | Lint Go using the repository configuration. |
 | `mise run check:markdown` | Lint Markdown without external link checks. |
 | `mise run check:spelling` | Check spelling with typos. |
 | `mise run check:toml-format` | Check TOML formatting. |
@@ -211,14 +200,16 @@ Run `go test -short ./...` to skip filesystem integration tests. Schema
 tests compare representative parsed TOML values with runtime validation
 without downloading schemas or using an external validation service.
 
-CI runs `mise run check` and `mise run build` with the same pinned tools on
+CI runs `mise run check`, `mise run build`, and `mise run check:goreleaser`
+with the same pinned tools on
 pushes to `trunk` and on pull requests. These tasks automatically include
 the configuration/frontmatter schema tests and filesystem integration
 tests. Current phase-completion and commit/push coordination live in the
 [work plan](../TODO.md#phase-workflow).
 
-EditorConfig supplies basic editor defaults. Schema associations for Taplo
-will be added when authoring contracts exist.
+EditorConfig supplies basic editor defaults. External schema validation is
+documented in the [user reference](USER.md#external-schema-validation);
+no editor-specific integration is required.
 
 ## Troubleshooting
 

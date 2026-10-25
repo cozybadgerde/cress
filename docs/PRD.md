@@ -1,7 +1,8 @@
 # Cress product requirements
 
-Status: approved product direction; walking skeleton and site contracts
-implemented, remaining generator capabilities planned.
+Status: approved product direction; generator capabilities implemented.
+Release preparation and outstanding acceptance evidence are tracked in the
+[work plan](../TODO.md).
 
 Target release: 1.0.0.
 

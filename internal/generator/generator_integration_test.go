@@ -75,7 +75,7 @@ func TestBuildSite(t *testing.T) {
 		t.Fatal(err)
 	}
 	slices.Sort(published)
-	if !slices.Equal(published, []string{".cress-output.json", "about/index.html", "blog/first/index.html", "index.html", "robots.txt", "shared.txt"}) {
+	if !slices.Equal(published, []string{".cress-output.json", "about/index.html", "blog/first/index.html", "index.html", "robots.txt", "shared.txt", "themes/poppy/site.css"}) {
 		t.Fatalf("unexpected published files: %v", published)
 	}
 	home, err := os.ReadFile(filepath.Join(site, "public", "index.html"))
@@ -238,8 +238,8 @@ func TestBuildWithNoPublishedPages(t *testing.T) {
 				t.Fatalf("result = %+v, error = %v", result, err)
 			}
 			entries, err := os.ReadDir(filepath.Join(site, "public"))
-			if err != nil || len(entries) != 2 ||
-				entries[0].Name() != ".cress-output.json" || entries[1].Name() != "robots.txt" {
+			if err != nil || len(entries) != 3 ||
+				entries[0].Name() != ".cress-output.json" || entries[1].Name() != "robots.txt" || entries[2].Name() != "themes" {
 				t.Fatalf("unpublished output = %v, error = %v", entries, err)
 			}
 

@@ -15,8 +15,14 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
-//go:embed skeleton
+//go:embed skeleton builtin
 var embedded embed.FS
+
+// DefaultName selects the freelancer theme when no name is configured.
+const DefaultName = "poppy"
+
+// IsBuiltin reports which complete themes ship with the executable.
+func IsBuiltin(name string) bool { return name == "poppy" || name == "clover" }
 
 // Request selects a package and prepares its language and deployment URLs.
 type Request struct {
@@ -44,7 +50,7 @@ type Package struct {
 	assetURLs map[string]string
 }
 
-// Skeleton loads the unconfigured development skeleton, not a named built-in.
+// Skeleton loads development scaffolding, not a selectable built-in.
 func Skeleton() (Package, error) {
 	source, err := fs.Sub(embedded, "skeleton")
 	if err != nil {
@@ -58,8 +64,7 @@ func Skeleton() (Package, error) {
 // Load resolves a complete local package without merging or invalid-source fallback.
 func Load(ctx context.Context, request Request) (pkg Package, warnings []string, loadErr error) {
 	if request.Name == "" {
-		pkg, err := Skeleton()
-		return pkg, nil, err
+		request.Name = DefaultName
 	}
 	if !ValidName(request.Name) {
 		return pkg, nil, fmt.Errorf("invalid theme name %q", request.Name)
@@ -72,7 +77,15 @@ func Load(ctx context.Context, request Request) (pkg Package, warnings []string,
 	for _, name := range []string{"themes", path.Join("themes", request.Name)} {
 		info, err := root.Lstat(name)
 		if errors.Is(err, fs.ErrNotExist) {
-			return pkg, nil, fmt.Errorf("theme %q is absent locally and no built-in theme has that name", request.Name)
+			if !IsBuiltin(request.Name) {
+				return pkg, nil, fmt.Errorf("theme %q is absent locally and no built-in theme has that name", request.Name)
+			}
+			source, err := fs.Sub(embedded, "builtin/"+request.Name)
+			if err != nil {
+				return pkg, nil, err
+			}
+			pkg, warnings, err = loadPackage(ctx, source, request)
+			return pkg, warnings, err
 		}
 		if err != nil {
 			return pkg, nil, fmt.Errorf("inspect %s: %w", name, err)

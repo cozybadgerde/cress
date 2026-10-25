@@ -21,7 +21,7 @@ func TestBuildConfiguredSite(t *testing.T) {
 title = "<Business>"
 description = 'Shared "description"'
 copyright = "<Copyright>"
-language = "de-CH"
+language = "de"
 host = "https://publication.example.org"
 path = "/company/"
 [site.image]
@@ -63,7 +63,7 @@ private = "not raw configuration for templates"
 	}
 	home := readPage("")
 	for _, expected := range []string{
-		`<html lang="de-CH">`, `<a href="/company/">&lt;Business&gt;</a>`,
+		`<html lang="de">`, `href="/company/">&lt;Business&gt;</a>`,
 		`content="Shared &#34;description&#34;"`, `href="/company/first/"`,
 		`href="/company/second/?a=1&amp;b=2#team"`, `>&lt;Second&gt;</a>`,
 		`href="https://example.net/"`, `src="https://images.example.org/team.jpg"`,
@@ -80,8 +80,8 @@ private = "not raw configuration for templates"
 		!strings.Contains(home, `<link rel="canonical" href="https://publication.example.org/company/">`) {
 		t.Fatal("canonical identity or hostname-independent browsing is incorrect")
 	}
-	if !strings.Contains(readPage("landing"), "<section>") ||
-		strings.Contains(home, "<section>") {
+	if !strings.Contains(readPage("landing"), `class="hero"`) ||
+		strings.Contains(home, `class="hero"`) {
 		t.Fatal("page types did not select distinct templates")
 	}
 	clear := readPage("clear")

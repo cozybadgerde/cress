@@ -1,8 +1,9 @@
 # Using Cress
 
-Cress currently provides a development walking skeleton, not the complete
-1.0 feature set. It builds ordinary, landing, and list pages through an embedded
-developer theme skeleton. That skeleton is not a selectable built-in theme.
+Cress builds ordinary, landing, and list pages offline using the built-in
+`poppy` and `clover` themes or complete local theme packages. Poppy is the
+default when no theme is selected. Release readiness and human accessibility
+review are tracked in the [work plan](../TODO.md).
 
 ## Commands
 
@@ -11,6 +12,7 @@ cress --help
 cress --version
 cress site --help
 cress theme --help
+cress site init my-site
 cress site build
 cress site preview --port 0
 ```
@@ -26,13 +28,83 @@ embedded skeleton; the site directory defaults to `.`. The target must not
 exist. Partial initialization failures leave files for inspection, not
 automatic removal or overwriting. The command does not change `cress.toml`.
 Select the result with `[theme] name = "<name>"`.
-Site initialization arrives in phase 8.
+
+`cress site init [directory] [--theme poppy|clover]` creates a small English
+sample site in a new or completely empty directory; the default is `.`.
+The parent directory must exist. Targets that are files, symlinks, or
+nonempty directories are refused, including hidden files. No merge, Git
+initialization, automatic build, or network access occurs. Partial failures
+are reported and left for inspection.
+
+```sh
+cress site init my-site
+cress site build my-site
+cress site preview --port 0 my-site
+```
+
+The scaffold includes `cress.toml`, `.gitignore` for `public/` and `.cress/`,
+seven example pages covering all page types, and an original local SVG.
+The generated configuration documents every supported site setting, with
+commented examples for optional images, branding, and theme customizations.
+Uncomment optional tables and their fields together when needed.
+The content tour's frontmatter holds the main authoring hints; other sample
+pages explain only distinct features, such as list settings.
+The footer links to this tour of Markdown, captions, title images, and metadata;
+compare its preview with `content/tour.md`. Remove that page and its footer
+link when you no longer need the reference.
+Edit the sample identity, content, contact details, and navigation before
+publication. Set `site.host` to your public HTTP/HTTPS origin for canonicals
+and sitemap output; it is intentionally unset initially and causes a warning.
+Use `--theme clover` during initialization for the small-business layout.
+
+## Testing a site
+
+Use the same initialization command for a disposable test site as for a
+real project. From a directory where you keep projects, choose a new name:
+
+```sh
+cress site init test-site
+cress site build test-site
+cress site preview --port 0 test-site
+```
+
+Open the printed URL and compare the content tour with `content/tour.md`.
+Edit `test-site/cress.toml` and the sample content to try your own settings.
+Preview rebuilds on changes; refresh the browser manually. Stop with Ctrl-C.
+Omitting `site.host` is fine for local testing; the warning reminds you to
+set it before publishing.
+
+To test the other built-in, initialize another new directory with
+`cress site init --theme clover test-clover`. Initialization never resets
+or overwrites an existing nonempty project. Keep real project sources
+outside disposable directories, and deploy only their built `public/` output.
+
+## Built-in themes
+
+Poppy uses a warm background, dark green palette, serif headings, and
+generous spacing for freelancer sites. Clover uses a white/slate and dark
+blue system-sans layout for small businesses. Both use system fonts, local
+CSS, no scripts, and no remote assets. Both support all page types and
+captioned content. Landing pages have a wider hero treatment.
+
+Select a theme with `[theme] name = "poppy"` or `"clover"`. A complete
+same-name local package takes priority, including over the default poppy.
+Invalid local packages never fall back. The embedded development skeleton
+is used only by `theme init`, not as a third theme.
+
+Built-in labels support exact `en` and `de`. Regional tags such as `en-US`
+or `de-CH` do not fall back; use a local theme with the matching locale.
+Page content is not automatically translated. Neither built-in consumes
+`theme.custom` keys. Brand color supplies browser metadata, not unchecked
+contrast-sensitive CSS colors. See the
+[accessibility assessment](ACCESSIBILITY.md) for review status and publisher
+responsibilities.
 
 ## Local preview
 
 ```sh
 cress site preview
-cress site preview --drafts --port 0 .local/site
+cress site preview --drafts --port 0 my-site
 ```
 
 `cress site preview [directory]` defaults to the current directory and port
@@ -165,8 +237,9 @@ A list selects visible ordinary pages directly beneath its containing
 logical section. For `blog/list.md` or `blog/list/index.md`, the section
 is `/blog/`; for `blog.md` or `blog/index.md`, it is `/`. A list at `/`
 selects direct children of `/`. Exclude the section's
-own root, the list itself, landing pages, other lists, drafts, and deeper
-descendants. Equivalent source layouts select the same entries.
+own root, the list itself, landing pages, other lists, excluded drafts,
+and deeper descendants. Explicit draft-inclusive preview includes eligible
+draft entries. Equivalent source layouts select the same entries.
 
 Chronological lists warn about and omit eligible pages without
 `published_at`; those pages still publish normally. Title-ordered lists
@@ -175,8 +248,8 @@ ordering.
 
 The Markdown body appears above the prepared entries. Each entry exposes
 its title, URL, description, image/caption, dates, and optional excerpt,
-but not its body. The developer skeleton renders linked titles, explicit
-dates, and excerpts. Empty lists preserve their introduction without
+but not its body. Both built-ins render linked titles, supplied images,
+explicit dates, and excerpts. Empty lists preserve their introduction without
 prescribed empty-state wording.
 
 ## Publication metadata
@@ -229,7 +302,7 @@ label = "Partner"
 url = "https://example.net/"
 
 [theme.custom]
-# Theme-specific data; not interpreted by the developer skeleton.
+# Theme-specific data; neither built-in consumes custom keys.
 ```
 
 | Site field | Default | Meaning |
@@ -237,7 +310,7 @@ url = "https://example.net/"
 | `title` | Omitted | Optional site identity, distinct from required page titles; supplied values must contain non-whitespace text. |
 | `description` | `""` | Default page description; explicit page values override it. |
 | `copyright` | `""` | Plain-text footer line; no inferred year or legal wording. |
-| `language` | `"en"` | Valid BCP 47 language tag; preserve spelling for future exact theme-label matching. |
+| `language` | `"en"` | Valid BCP 47 language tag; preserve spelling for exact theme-label matching. Built-ins support `en` and `de`. |
 | `host` | Omitted | Public origin, including HTTP/HTTPS scheme and optional port; not merely a hostname. |
 | `path` | `"/"` | Web URL prefix, not a filesystem destination or deployment operation. |
 | `image` | Omitted | Default title image, using the same complete-table contract as frontmatter. |
@@ -292,16 +365,16 @@ preserved. Logo and favicon URLs are site-root or HTTP/HTTPS references.
 They receive the site URL prefix like navigation; targets are not checked.
 A logo requires explicit string `src` and `alt`; `alt = ""` is decorative.
 Omit optional settings instead of supplying empty colors or asset URLs.
-Themes choose how to present brand data. The skeleton renders the logo,
-favicon, and theme-color metadata.
+Themes choose how to present brand data. Both built-ins render the logo,
+favicon, and theme-color metadata. Color does not override their CSS palette.
 
 Theme names start with a lowercase ASCII letter and contain only lowercase
 letters, digits, and hyphens. A selected `themes/<name>/` must be a complete,
 readable package. Invalid local packages fail without merging or fallback.
 Only designated `public/` files publish, under `themes/<name>/` in output;
-all outputs share collision checks. No named built-in themes exist yet.
-With no selection, the current embedded development skeleton remains in use;
-it is not selectable by name.
+all outputs share collision checks. Only a genuinely absent local package
+permits built-in lookup for `poppy` or `clover`. No selection means `poppy`,
+including a same-name complete local override.
 
 Named themes declare runtime compatibility in `theme.json`. Development
 builds reporting `dev` check against an explicit `1.0.0` compatibility
@@ -316,7 +389,9 @@ frontmatter before applying them. Normalize TOML local dates to date-only
 strings; enable date-format assertions for calendar validation.
 Unknown fields are permitted by schemas;
 Cress reports their warnings. Runtime also validates URL semantics and
-language tags. Schemas are versioned with source and will track releases.
+language tags. Schemas are versioned with source; select them from the same
+release tag as the executable, not from a moving branch. See
+[external schema validation](#external-schema-validation).
 
 ## Routes
 
@@ -331,7 +406,8 @@ The last two `about` layouts are alternatives, not two distinct pages.
 Duplicate output files and file/directory conflicts fail with both sources
 named. Collision checks use Unicode case folding and canonical equivalence
 to conservatively reject names that can alias across Linux and macOS.
-They do not change the emitted names. Drafts do not claim output destinations.
+They do not change the emitted names. Excluded drafts do not claim output
+destinations; explicitly included preview drafts do.
 
 Names retain their case and are not slugified. URL path segments are
 escaped separately from filesystem paths. Empty page names, backslashes,
@@ -359,7 +435,8 @@ Use explicit page-owned asset directories named after the source
 stem: `about.md` owns `about.assets/`; `about/index.md` owns
 `about/index.assets/`. Publish these beside the owning page's `index.html`,
 omitting the `.assets` directory name. Preserve nested asset paths and
-contents. Orphan asset directories fail. Draft-owned assets stay private.
+contents. Orphan asset directories fail. Excluded draft-owned assets stay
+private; draft-inclusive preview publishes them only inside its session.
 Files in asset directories are opaque assets, not content pages.
 
 Shared `static/` files publish without the `static/` prefix. Files outside
@@ -482,5 +559,34 @@ the output markers; restore only a verified backup. Do not simply delete
 
 Replacement can briefly interrupt readers; it is not a universally atomic
 switch. Cress does not promise durability through power loss.
+
+## External schema validation
+
+Use a JSON Schema Draft 2020-12 validator with the schemas in `schemas/`
+from the same Cress source tag. Keep all three schema files together:
+configuration references the frontmatter schema by relative path.
+
+Parse `cress.toml` into an object before applying `site.schema.json`.
+Extract only the TOML between the initial standalone `+++` delimiters of
+a Markdown file and parse it before applying `frontmatter.schema.json`.
+When frontmatter is absent, validate an empty object. Convert TOML local
+dates to `YYYY-MM-DD` strings, and enable the validator's date-format
+assertions. Apply `theme.schema.json` directly to parsed `theme.json`.
+
+For example, the parsed site input can look like:
+
+```json
+{
+  "site": { "title": "Example business", "language": "en" },
+  "theme": { "name": "poppy" }
+}
+```
+
+Schemas allow unknown fields and open custom data. Cress itself emits
+unknown-field warnings and checks runtime-only conditions, including
+language tags, URL semantics, theme compatibility, source references,
+collisions, and output ownership. Always run a real build as well.
+No particular editor, validation service, or separate Cress validation
+command is required.
 
 For local source setup, see the [developer guide](DEVELOPER.md).

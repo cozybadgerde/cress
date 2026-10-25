@@ -5,13 +5,10 @@ responsibilities, data flow, and failure boundaries. The
 [PRD](PRD.md) owns product behavior. The [ADRs](adr/) own decision
 rationale. This guide links to both instead of repeating them.
 
-Status: agreed target structure, with phases 1 through 7 implemented.
-The current build handles site contracts, metadata, navigation, ordinary
-and landing pages, lists, assets, source references, captions, syntax highlighting,
-canonical URLs, a sitemap, robots output, local theme packages, and
-recoverable output replacement and isolated local preview. Built-in themes below
-remain target behavior. Package layouts and interfaces emerge with
-implementation.
+Status: implemented generator structure. Poppy and clover, site/theme
+initialization, complete generation, recoverable output replacement, and
+isolated preview are available. Release tooling is separate from the
+offline executable; outstanding release evidence lives in the work plan.
 
 ## System context
 
@@ -112,7 +109,9 @@ cleanup errors after confirmed publication leave the new result in place.
 
 Current content preparation first inventories pages and designated assets,
 then resolves visible sources through a complete source-to-public-URL map.
-Drafts and their assets never enter that map. Only after resolution and
+Excluded drafts and their assets never enter that map. Explicit
+draft-inclusive preview prepares included drafts normally.
+Only after resolution and
 Markdown preparation does the generator compose pages and submit all page
 and asset destinations to the output collision checker.
 
@@ -235,6 +234,7 @@ follow the responsibilities above:
 | `internal/theme` | Package discovery, manifests, compatibility, labels, public assets, and offline initialization. |
 | `internal/output` | Destination checks, confined staging, ownership, OS writer locking, replacement, and verified recovery. |
 | `internal/preview` | Loopback serving, native source watching, serialized rebuilds, retries, and preview lifecycle coordination. |
+| `internal/scaffold` | Non-overwriting site initialization from embedded example sources. |
 
 Dependencies point from the CLI and generator toward content preparation,
 rendering, and output handling. The renderer depends only on the render
@@ -242,10 +242,16 @@ model, not on content preparation internals. Interfaces appear at a real
 test seam or a second implementation.
 
 Prefer the Go standard library, including `html/template` for rendering.
-The theme skeleton is embedded in the executable; built-in themes follow
-in phase 8. The [user reference](USER.md) describes current limitations,
-and the [theme reference](THEMES.md) owns the initial render-model fields.
+The theme skeleton, both complete built-in packages, and site scaffold are
+embedded in the executable. The [user reference](USER.md) describes usage,
+and the [theme reference](THEMES.md) owns the render-model fields.
 See the [developer guide](DEVELOPER.md) for commands and layout.
+
+Release hooks use go-licenses to generate CSV dependency-license reports
+and notice text. Outputs are release artifacts, not checked-in catalogues
+or application code. Cosign signs the checksum manifest covering archives
+and reports.
+See [release maintenance](RELEASE.md).
 
 ## Architecture decision records
 

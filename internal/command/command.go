@@ -13,6 +13,7 @@ import (
 
 	"github.com/cozybadgerde/cress/internal/generator"
 	"github.com/cozybadgerde/cress/internal/preview"
+	"github.com/cozybadgerde/cress/internal/scaffold"
 	"github.com/cozybadgerde/cress/internal/theme"
 )
 
@@ -35,9 +36,14 @@ func NewCommand(deps Deps) *cli.Command {
 		Commands: []*cli.Command{
 			{
 				Name:   "site",
-				Usage:  "Build a site",
+				Usage:  "Initialize, build, and preview a site",
 				Action: showScopeHelp,
 				Commands: []*cli.Command{
+					{
+						Name: "init", Usage: "Create a new sample site in a new or empty directory",
+						ArgsUsage: "[directory]", Action: initSite,
+						Flags: []cli.Flag{&cli.StringFlag{Name: "theme", Value: theme.DefaultName, Usage: "Built-in theme: poppy or clover"}},
+					},
 					{
 						Name:      "build",
 						Usage:     "Build pages into public",
@@ -72,6 +78,23 @@ func showScopeHelp(ctx context.Context, command *cli.Command) error {
 		return fmt.Errorf("unknown command %q for %s", command.Args().First(), command.FullName())
 	}
 	return cli.ShowSubcommandHelp(command)
+}
+
+func initSite(ctx context.Context, command *cli.Command) error {
+	if command.Args().Len() > 1 {
+		return fmt.Errorf("site init accepts at most one directory")
+	}
+	directory := "."
+	if command.Args().Present() {
+		directory = command.Args().First()
+	}
+	if err := scaffold.Init(ctx, directory, command.String("theme")); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintf(command.Root().Writer, "Created site in %s.\nEdit its cress.toml and content/, then run: cress site build %q\n", directory, directory); err != nil {
+		return fmt.Errorf("report site initialization: %w", err)
+	}
+	return nil
 }
 
 func previewSite(ctx context.Context, command *cli.Command) error {

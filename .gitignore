@@ -1,5 +1,6 @@
+/audit/
 /bin/
 /dist/
-/.local/
+/tmp/
 .cress/
 .DS_Store

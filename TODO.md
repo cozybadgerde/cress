@@ -232,9 +232,9 @@ Phase 3 and the local-playground follow-up are committed as `23e2e09` and
 `05d0fe3`. Push confirmation remains with the maintainer. No separate
 cleanup commit is currently required.
 
-- [x] Create a gitignored `.local/site/` playground for manual validation
-  while site initialization is unavailable.
-- [ ] When `site init` arrives in phase 8, replace the temporary playground
+- [x] Create a temporary gitignored playground for manual validation
+  before site initialization was available; retired after phase 8.
+- [x] When `site init` arrives in phase 8, replace the temporary playground
   setup guidance with the supported initialization workflow.
 - [x] Before phase 4, review the remaining list and publication-metadata
   work and clarify date formats, list configuration and render data,
@@ -321,11 +321,12 @@ semantic-version helper has reviewed BSD-3-Clause notices.
 Phases 5 and 6 are committed together as `5dd386c`.
 Push confirmation remains with the maintainer.
 
-The two named built-in themes remain phase 8 work; currently selected names
+At the phase 5 handoff, the two named built-in themes remained phase 8 work;
+selected names
 resolve locally or fail explicitly. Unconfigured builds retain the embedded
-development skeleton. No separate cleanup commit is needed before phase 6.
+development skeleton. No separate cleanup commit was needed before phase 6.
 Site initialization, temporary-playground retirement, and complete-theme
-accessibility assessment stay in phase 8.
+accessibility assessment were assigned to phase 8.
 
 ### Phase 6: Output safety
 
@@ -356,13 +357,12 @@ Phases 5 and 6 are committed together as `5dd386c`
 (`feat: add local themes and safe output publication`).
 Push confirmation remains with the maintainer.
 
-- [ ] Before the next manual playground build, inspect and remove only
-  the pre-ownership `.local/site/public/` once. Its existing files are left
-  untouched; subsequent builds retain `.cress/` and replace owned output.
+- [x] Retire the old playground entirely after site initialization arrives;
+  no pre-ownership output migration remains necessary for that fixture.
 - [x] Before phase 7, clarify preview CLI/draft choices, session ownership,
   watch/retry scheduling, and cleanup. Extend the writer with explicit
   session targets and verified-usable-output reporting for preview errors.
-- [ ] In phase 8, include private `.cress/` state in initialized sites'
+- [x] In phase 8, include private `.cress/` state in initialized sites'
   Git ignore rules.
 
 No separate cleanup commit is required. Preview/session behavior remains
@@ -379,7 +379,7 @@ explicit free-port selection with `--port 0`, unchanged public origin and
 deployment prefix, native fsnotify events with a short debounce, and
 private temporary sessions with lock-verified reclamation. Included drafts
 require publishable metadata. No cleanup commit is required first.
-The existing unowned playground output stays untouched.
+The unowned playground output was preserved during phase 7 and later retired.
 
 - [x] Serve isolated private preview sessions with an explicit draft
   choice and no effect on deployable output [7].
@@ -407,39 +407,138 @@ CI remains aligned through the existing tasks; no CI execution was required.
 
 New runtime dependencies are fsnotify and its Go system bindings, with
 reviewed BSD-3-Clause notices and the Go patent grant.
-No commit or push was performed. Suggested commit message:
-`feat: add isolated live previews`.
+Phase 7 is committed as `86aaf05`; push confirmation remains with the
+maintainer.
 
-- [ ] Before phase 8, clarify the two built-in themes' names, presentation
+- [x] Before phase 8, clarify the two built-in themes' names, presentation
   contracts and defaults, site-init CLI and scaffold contents, and the
   complete-page accessibility review scope. Revisit existing playground
   and site-ignore leftovers first; no separate cleanup commit is required.
 
-Built-in themes, site initialization, playground retirement, generated
-site ignore rules, and complete-theme accessibility assessment remain
-phase 8 work. The old playground `public/` is still untouched; preview
-works independently, while the first deployable rebuild still requires
-the documented one-time migration. Native-watch filesystem limitations
+At the phase 7 handoff, built-in themes, site initialization, playground
+retirement, generated site ignore rules, and complete-theme accessibility
+assessment remained phase 8 work. The temporary playground has since been
+retired in favor of initialized test sites. Native-watch filesystem limitations
 and manual ambiguous-recovery handling are documented in the user reference.
 
 ### Phase 8: Built-in themes and site initialization
 
-- [ ] Build the coach/freelancer and corporate small-business themes
+Clarified: `poppy` (freelancer and default) and `clover` (small business),
+system fonts and local CSS only, exact English/German labels, no initial
+custom keys, non-overwriting site init into a new/empty directory, and an
+English sample scaffold. Human accessibility assessment remains an explicit
+release blocker; no automated-browser scope or AA claim is added.
+
+- [x] Build the coach/freelancer and corporate small-business themes
   with all page types, captions, and navigation [1, 2, 20].
-- [ ] Add `cress site init` for a ready-to-build site without overwriting
+- [x] Add `cress site init` for a ready-to-build site without overwriting
   files [1, 11].
 - [ ] Assess default pages against WCAG 2.2 AA with automated checks and
   manual review, and record scope, environments, results, and
   limitations [12].
 
+#### Phase 8 handoff and leftovers
+
+Embedded themes and site initialization are implemented. Both themes build
+the seven-page scaffold offline; local override and invalid-local failure,
+unsafe-target refusal, output preservation, complete-page structure, and
+default palette contrast have automated coverage. No dependencies or
+third-party assets were added.
+
+The generated `cress.toml` documents all supported settings in place,
+including defaults and commented optional examples. Both theme selections
+retain ready-to-build defaults; optional examples are parsing-tested.
+The footer-linked content tour owns the main frontmatter hints; other pages
+document only distinct features, such as list settings. The tour demonstrates
+CommonMark, tables, captions, title images, and authored HTML.
+Both themes have build coverage for the tour. No new leftovers were added.
+
+The remaining accessibility task is intentionally unchecked:
+[the assessment record](docs/ACCESSIBILITY.md) records automated evidence
+and a complete A/AA human-review matrix without claiming hands-on results.
+Complete that review before release. The old playground is removed entirely;
+developers use initialized sites under ignored `/tmp/`. Developer, theme-author,
+and publisher guides document fresh test-site initialization.
+
+Suggested commit message: `feat: add poppy and clover themes and site init`.
+No commit or push was performed. Phase 9 follows after its clarification
+gate, including review of every repository Markdown file and honest
+documentation of external release blockers.
+
 ### Phase 9: Documentation and release
 
-- [ ] Complete author, maintainer, and theme-development references,
+Clarified: `v*` tag-triggered GitHub Actions with strict full SemVer,
+checks before publication, the three agreed targets, explicit version
+injection, and keyless Cosign checksum signing. Pin external Actions by
+reviewed commit. The maintainer clarified that the requested inventory is
+machine-readable output only: generate CSV reports with go-licenses.
+No added license checks, CycloneDX tooling, custom release executable,
+or checked-in generated inventory. Generate notice text with the same tool
+and ship a short install/verify reference. Audit every
+repository Markdown document, including ADRs and scaffold content.
+No tag, publication, commit, or push is authorized by this phase.
+
+- [x] Complete author, maintainer, and theme-development references,
   including schema-based validation guidance [6, 11].
-- [ ] Review all components and licenses, ship required notices, and
-  publish release SBOMs [14].
-- [ ] Release from version tags through GitHub Actions and GoReleaser,
+- [x] Generate release-specific CSV dependency-license reports and archive
+  notice text with go-licenses [14].
+- [x] Prepare version-tag GitHub Actions and GoReleaser automation,
   with Cosign keyless signing and documented verification [13].
+- [ ] Publish an explicitly approved release and verify its real signature
+  bundle, expected identity/issuer, archive and report digests, and rejection
+  of tampered files and an unexpected identity [13, 14].
 - [ ] Confirm all acceptance criteria on the supported targets.
+
+#### Phase 9 handoff and leftovers
+
+Release preparation and the documentation audit are implemented, not a
+claim that 1.0 is ready or published. The
+[release reference](docs/RELEASE.md) owns the concrete maintainer procedure;
+the [install reference](docs/INSTALL.md) ships in every archive.
+
+The Markdown audit covers root guidance/README/work plan, all guides,
+all 16 ADRs, notices, the accessibility record, and all seven scaffold pages.
+Accepted ADR rationale remains unchanged. Current references now describe
+site initialization, poppy/clover and local-first selection, exact labels,
+explicit draft-inclusive preview, current schemas, and release tooling
+instead of the old walking-skeleton status.
+
+GoReleaser invokes go-licenses report for CSV output and generated notice
+text. The custom helper, generated approval inventory, license policy
+checks, scanner exceptions, and CycloneDX tooling are removed.
+The third-party reference points to generated artifacts and go.mod rather
+than duplicating a dependency/license catalogue. ADRs remain untouched.
+
+The workflow's strict SemVer guard accepts valid versions and rejects
+shortened, malformed, and leading-zero versions.
+Tags use `v1.0.0` or `v1.0.0-pre.0`, never `v-1.0.0-pre.0`.
+GoReleaser automatically marks suffix-bearing versions as GitHub prereleases.
+
+Local Markdown links and internal anchors are checked; scaffold Markdown
+is reviewed and built as content, not linted as a guide.
+Setup documentation points to mise.toml and go.mod rather than maintaining
+duplicate tool versions or dependency inventories. Compatibility baselines
+and release-tag examples remain where they explain required behavior.
+
+- [ ] Review the four scoped findings in the
+  [software design audit](audits/software-design-2026-10-25.md) and agree
+  which to address; the report does not make them automatic release blockers.
+
+External release blockers remain:
+
+- [ ] Complete the human accessibility matrix for both themes and all
+  default page types; fix and retest every applicable A/AA failure.
+- [ ] Record native Linux amd64 and Linux arm64 acceptance results.
+  Cross-builds and local macOS execution do not prove native Linux behavior.
+- [ ] Complete the supported-target/product acceptance review and record
+  results before approving a release tag.
+- [ ] After an explicitly approved first release, record real keyless
+  signing and negative verification evidence; snapshots cannot provide it.
+- [ ] Maintainer confirms phase 8/9 commits and any push. No repository
+  write to GitHub was performed.
+
+Suggested phase 9 commit: `build: prepare signed releases and refresh docs`.
+For a combined phase 8/9 commit:
+`feat: add bundled themes, site init, and release preparation`.
 
 Ideas beyond 1.0 are welcome as separate proposals.

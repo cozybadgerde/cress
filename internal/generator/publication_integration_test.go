@@ -65,7 +65,7 @@ func TestBuildListsAndPublication(t *testing.T) {
 					t.Errorf("missing %q in %s", want, list)
 				}
 			}
-			if strings.Index(list, "Journal intro") > strings.Index(list, "<ul>") ||
+			if strings.Index(list, "Journal intro") > strings.Index(list, `<ul class="entries">`) ||
 				strings.Index(list, "&lt;First&gt;</a>") > strings.Index(list, ">Second</a>") {
 				t.Fatalf("intro or chronological order changed: %s", list)
 			}

@@ -1,0 +1,5 @@
+{
+  "name": "poppy",
+  "version": "1.0.0",
+  "cress": { "minimum": "1.0.0", "major": 1 }
+}

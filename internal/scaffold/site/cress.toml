@@ -1,0 +1,67 @@
+# Site-wide settings for this project. Edit these alongside content/.
+# Optional examples are commented out; uncomment their table and fields together.
+
+[site]
+# Site identity, separate from each page's required frontmatter title.
+title = "Your business"
+# Default page description; a page can override it or clear it with "".
+description = "Practical help, thoughtfully delivered."
+# Optional plain-text footer line; no year or wording is added automatically.
+# copyright = "Copyright Your business"
+# One language per site. Built-in labels support exactly "en" and "de".
+# Changing this does not translate your content.
+language = "en"
+# Public HTTP/HTTPS origin, with no subpath, credentials, query, or fragment.
+# Set before publishing for canonical URLs and sitemap.xml; omit while unknown.
+# host = "https://example.org"
+# URL prefix, not an output directory: "/" or, for example, "/company/".
+# Start and end with "/"; keep internal URLs below relative to the site root.
+path = "/"
+
+# Optional default title image; pages replace the whole table or clear its src.
+# Put shared files in static/images/ to publish them at /images/.
+# [site.image]
+# src = "/images/team.jpg"
+# alt = "Our team" # Describe the image, or use "" for a decorative image.
+# caption = "Meet our team. [Photo credit](https://example.org/credits/)"
+
+[theme]
+# Built-ins: "poppy" (default) or "clover"; also accepts a local theme name.
+# A complete themes/<name>/ overrides a built-in; invalid packages fail.
+name = "poppy"
+
+# Optional theme-defined TOML data. Neither built-in uses custom keys.
+# Add only keys documented by your chosen local theme.
+# [theme.custom]
+
+[navigation]
+# Flat lists, shown in this order. Use [] to hide a group.
+# URLs are site-root paths or absolute HTTP/HTTPS links, not Markdown filenames.
+main = [
+  { label = "Home", url = "/" },
+  { label = "Services", url = "/services/" },
+  { label = "About", url = "/about/" },
+  { label = "Journal", url = "/journal/list/" },
+]
+footer = [
+  { label = "Contact", url = "/contact/" },
+  { label = "Content tour", url = "/tour/" },
+]
+# External link example: { label = "Partner", url = "https://example.org/" }
+
+[markdown]
+# Highlight recognized fenced code languages at build time; no browser scripts.
+# Set false for plain code. Untagged and unknown languages are always plain.
+highlight = true
+
+# Optional branding. Omit unused fields rather than setting empty asset URLs.
+# Asset URLs can also be absolute HTTP/HTTPS URLs; Cress does not fetch them.
+# [brand]
+# color = "#346b38" # Browser theme-color metadata, not the built-in CSS palette.
+# favicon = "/images/favicon.svg"
+
+# Optional logo. Place the file in static/images/ and provide both fields.
+# Both built-ins render it; alt can be "" for a decorative image.
+# [brand.logo]
+# src = "/images/logo.svg"
+# alt = "Your business"

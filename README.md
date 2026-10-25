@@ -20,7 +20,7 @@ working with Cress feel cozy for publishers and maintainers alike.
 
 ## Description
 
-Cress is planned to provide:
+Cress provides:
 
 - Ordinary content pages, landing pages, and list pages.
 - Free-form content folders with clean, portable URLs.
@@ -36,18 +36,24 @@ deployment tools you already use. The
 
 ## Getting started
 
-Cress is in early development. The current build supports site
-configuration, inherited metadata, navigation, ordinary, landing, and list
-Markdown pages, assets, resolved source links, captions, syntax highlighting,
-publication metadata, branding, local themes, theme initialization, draft
-exclusion, staged output replacement with ownership and recovery, and
-isolated local preview with automatic rebuilding.
-An embedded developer skeleton
-is used when no theme is selected. Implementation follows the
-[work plan](TODO.md); there is no published release yet.
+Cress is in development; no release has been published yet. Build from
+source using the [developer guide](docs/DEVELOPER.md), then create a site:
 
-To build it from source, follow the [developer guide](docs/DEVELOPER.md).
-The [user reference](docs/USER.md) explains the supported development slice.
+```sh
+./bin/cress site init my-site
+./bin/cress site preview --port 0 my-site
+```
+
+Open the printed loopback URL. Stop preview with Ctrl-C, edit the sample
+content and identity, and build deployable output with
+`./bin/cress site build my-site`. Deployment stays external.
+Poppy is the default freelancer theme; use `site init --theme clover`
+for the small-business theme. Both are embedded and work offline.
+
+The [user reference](docs/USER.md) documents authoring and output safety.
+The [installation reference](docs/INSTALL.md) covers future release archives.
+Release readiness, including pending human accessibility assessment, is
+tracked in the [work plan](TODO.md).
 
 ## Documentation
 
@@ -59,7 +65,9 @@ The [user reference](docs/USER.md) explains the supported development slice.
   rationale, listed in the [decision index](docs/PRD.md#decision-records).
 - [Developer guide](docs/DEVELOPER.md): set up, build, and test the source.
 - [User reference](docs/USER.md): commands, authoring, and current limitations.
-- [Theme reference](docs/THEMES.md): initial prepared render model.
+- [Theme reference](docs/THEMES.md): packages and prepared render model.
+- [Accessibility assessment](docs/ACCESSIBILITY.md): evidence and blockers.
+- [Release maintenance](docs/RELEASE.md): inventory, packaging, and signing.
 - [Work plan](TODO.md): implementation phases.
 
 ## Contributing

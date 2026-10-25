@@ -30,7 +30,8 @@ func TestCommands(t *testing.T) {
 		{name: "unknown root command", args: []string{"unknown"}, wantError: true},
 		{name: "unknown site command", args: []string{"site", "unknown"}, wantError: true},
 		{name: "unknown theme command", args: []string{"theme", "unknown"}, wantError: true},
-		{name: "unimplemented site init", args: []string{"site", "init"}, wantError: true},
+		{name: "site init help", args: []string{"site", "init", "--help"}, want: "--theme"},
+		{name: "invalid init theme", args: []string{"site", "init", "--theme", "unknown"}, wantError: true},
 		{name: "unknown option", args: []string{"--unknown"}, wantError: true},
 		{name: "too many directories", args: []string{"site", "build", "one", "two"}, wantError: true},
 	}
