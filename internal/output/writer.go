@@ -232,15 +232,27 @@ func (record state) validate() error {
 	if record.Version != stateVersion || (record.Current != "" && !validToken(record.Current)) {
 		return fmt.Errorf("invalid output ownership version or token")
 	}
-	pending := record.Pending
-	if pending != nil && (!validToken(pending.Token) || (pending.Previous != "" && !validToken(pending.Previous)) ||
-		pending.Token == pending.Previous || (!pending.HadPublic && pending.Previous != "") ||
-		(pending.Phase != "staging" && pending.Phase != "ready" && pending.Phase != "published") ||
-		(pending.Phase == "published" && record.Current != pending.Token) ||
-		(pending.Phase != "published" && pending.Previous != record.Current)) {
+	if pending := record.Pending; pending != nil && !pending.consistentWith(record.Current) {
 		return fmt.Errorf("invalid output transaction record")
 	}
 	return nil
+}
+
+// consistentWith checks tokens, ownership, phase, and the current token.
+func (pending transaction) consistentWith(current string) bool {
+	if !validToken(pending.Token) || (pending.Previous != "" && !validToken(pending.Previous)) {
+		return false
+	}
+	if pending.Token == pending.Previous || (!pending.HadPublic && pending.Previous != "") {
+		return false
+	}
+	switch pending.Phase {
+	case "published":
+		return current == pending.Token
+	case "staging", "ready":
+		return pending.Previous == current
+	}
+	return false
 }
 
 func (writer *Writer) readRegular(name string) ([]byte, error) {
@@ -425,57 +437,102 @@ func (writer *Writer) recover() error {
 	if err != nil {
 		return writer.guidance(err)
 	}
-	previous := pending.Previous
-	if previous == "" {
-		previous = "empty"
-	}
-	if stage != "absent" && stage != pending.Token && (pending.Phase != "staging" || stage != "empty") {
-		return writer.guidance(fmt.Errorf("stage ownership mismatch"))
-	}
-	if backup != "absent" && (!pending.HadPublic || backup != previous) {
-		return writer.guidance(fmt.Errorf("backup ownership mismatch"))
+	if err := pending.checkOwnership(backup, stage); err != nil {
+		return writer.guidance(err)
 	}
 	if public == pending.Token {
-		if stage != "absent" || pending.Phase == "staging" ||
-			(pending.Phase == "ready" && pending.HadPublic && backup == "absent") {
-			return writer.guidance(fmt.Errorf("ambiguous published transaction"))
-		}
-		if pending.Phase != "published" {
-			writer.state.Current = pending.Token
-			pending.Phase = "published"
-			if err := writer.saveState(); err != nil {
-				return writer.guidance(fmt.Errorf("new output is published; record publication state: %w", err))
-			}
-		}
-		if backup != "absent" {
-			if err := writer.removeAll(pending.backup()); err != nil {
-				return writer.guidance(fmt.Errorf("new output is published; backup cleanup failed: %w", err))
-			}
-		}
+		err = writer.recoverPublished(pending, backup, stage)
 	} else {
-		if pending.Phase == "published" {
-			return writer.guidance(fmt.Errorf("confirmed public output cannot be verified"))
-		}
-		switch {
-		case public == "absent" && pending.HadPublic && backup == previous && pending.Phase == "ready":
-			if err := writer.rename(pending.backup(), "public"); err != nil {
-				return writer.guidance(fmt.Errorf("restore previous output failed: %w", err))
-			}
-		case public == previous && pending.HadPublic && backup == "absent":
-		case public == "absent" && !pending.HadPublic && backup == "absent":
-		default:
-			return writer.guidance(fmt.Errorf("ambiguous previous-output transaction"))
-		}
-		if stage != "absent" {
-			if err := writer.removeAll(pending.stage()); err != nil {
-				return writer.guidance(fmt.Errorf("previous output restored or unchanged; stage cleanup failed: %w", err))
-			}
-		}
+		err = writer.recoverPrevious(pending, public, backup, stage)
+	}
+	if err != nil {
+		return writer.guidance(err)
 	}
 	writer.state.Pending = nil
 	if err := writer.saveState(); err != nil {
 		writer.state.Pending = pending
 		return writer.guidance(err)
+	}
+	return nil
+}
+
+func (pending transaction) previous() string {
+	if pending.Previous == "" {
+		return "empty"
+	}
+	return pending.Previous
+}
+
+// checkOwnership rejects stage or backup evidence the transaction does not own.
+func (pending transaction) checkOwnership(backup, stage string) error {
+	if stage != "absent" && stage != pending.Token && (pending.Phase != "staging" || stage != "empty") {
+		return fmt.Errorf("stage ownership mismatch")
+	}
+	if backup != "absent" && (!pending.HadPublic || backup != pending.previous()) {
+		return fmt.Errorf("backup ownership mismatch")
+	}
+	return nil
+}
+
+// checkPublished rejects states where new output cannot be shown as published.
+func (pending transaction) checkPublished(backup, stage string) error {
+	if stage != "absent" || pending.Phase == "staging" ||
+		(pending.Phase == "ready" && pending.HadPublic && backup == "absent") {
+		return fmt.Errorf("ambiguous published transaction")
+	}
+	return nil
+}
+
+// checkPrevious reports whether the previous output must be restored from the
+// backup, or is already intact or originally absent.
+func (pending transaction) checkPrevious(public, backup string) (restore bool, err error) {
+	if pending.Phase == "published" {
+		return false, fmt.Errorf("confirmed public output cannot be verified")
+	}
+	switch {
+	case public == "absent" && pending.HadPublic && backup == pending.previous() && pending.Phase == "ready":
+		return true, nil
+	case public == pending.previous() && pending.HadPublic && backup == "absent":
+	case public == "absent" && !pending.HadPublic && backup == "absent":
+	default:
+		return false, fmt.Errorf("ambiguous previous-output transaction")
+	}
+	return false, nil
+}
+
+func (writer *Writer) recoverPublished(pending *transaction, backup, stage string) error {
+	if err := pending.checkPublished(backup, stage); err != nil {
+		return err
+	}
+	if pending.Phase != "published" {
+		writer.state.Current = pending.Token
+		pending.Phase = "published"
+		if err := writer.saveState(); err != nil {
+			return fmt.Errorf("new output is published; record publication state: %w", err)
+		}
+	}
+	if backup != "absent" {
+		if err := writer.removeAll(pending.backup()); err != nil {
+			return fmt.Errorf("new output is published; backup cleanup failed: %w", err)
+		}
+	}
+	return nil
+}
+
+func (writer *Writer) recoverPrevious(pending *transaction, public, backup, stage string) error {
+	restore, err := pending.checkPrevious(public, backup)
+	if err != nil {
+		return err
+	}
+	if restore {
+		if err := writer.rename(pending.backup(), "public"); err != nil {
+			return fmt.Errorf("restore previous output failed: %w", err)
+		}
+	}
+	if stage != "absent" {
+		if err := writer.removeAll(pending.stage()); err != nil {
+			return fmt.Errorf("previous output restored or unchanged; stage cleanup failed: %w", err)
+		}
 	}
 	return nil
 }

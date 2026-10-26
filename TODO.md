@@ -528,9 +528,8 @@ and release-tag examples remain where they explain required behavior.
 - [ ] Revisit audit #3 (private theme-file reads) and #4 (unchecked scaffold
   substitutions) separately; neither is an automatic release blocker.
 - [ ] Review the code quality audit (local `audits/code-quality-2026-10-26.md`)
-  before approving cleanup of recovery predicates (#3), content loading (#4),
-  or output-file organization (#5, optional, not approved). Preview
-  orchestration (#1) and Markdown preparation (#2) are done. Findings are
+  before approving output-file organization (#5, optional, not approved).
+  Findings #1 to #4 (preview, Markdown, recovery, content loading) are done. Findings are
   proposals, not new release blockers.
 
 External release blockers remain:

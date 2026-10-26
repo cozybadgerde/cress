@@ -30,6 +30,15 @@ type assetRoot struct {
 	destination string
 }
 
+// inventory is the filesystem discovery result; files maps every source to its
+// reference target so rendering can resolve links before any page is rendered.
+type inventory struct {
+	pages    []Page
+	assets   []Asset
+	files    map[string]reference
+	warnings []string
+}
+
 // Load discovers local sources before resolving and rendering visible content.
 func Load(ctx context.Context, site string, config Config) (prepared Prepared, warnings []string, loadErr error) {
 	root, err := os.OpenRoot(site)
@@ -48,10 +57,60 @@ func Load(ctx context.Context, site string, config Config) (prepared Prepared, w
 	if !info.IsDir() {
 		return prepared, nil, fmt.Errorf("content must be a real directory, not a symlink or file")
 	}
+	found, err := discover(ctx, root, config)
+	prepared.Pages, prepared.Assets, warnings = found.pages, found.assets, found.warnings
+	if err != nil {
+		return prepared, warnings, err
+	}
+	for index := range prepared.Pages {
+		if err := ctx.Err(); err != nil {
+			return prepared, warnings, err
+		}
+		if err := renderContent(&prepared.Pages[index], config, found.files); err != nil {
+			return prepared, warnings, err
+		}
+	}
+	warnings = append(warnings, prepareLists(prepared.Pages, config)...)
+	publication, diagnostics, err := preparePublication(prepared.Pages, config)
+	warnings = append(warnings, diagnostics...)
+	if err != nil {
+		return prepared, warnings, err
+	}
+	prepared.Assets = append(prepared.Assets, publication...)
+	return prepared, warnings, nil
+}
+
+// discover reads pages and assets from the confined site root. On failure it
+// still returns what was found, so warnings stay visible.
+func discover(ctx context.Context, root *os.Root, config Config) (inventory, error) {
+	found := inventory{files: make(map[string]reference)}
+	owners, assetRoots, err := discoverPages(ctx, root, config, &found)
+	if err != nil {
+		return found, err
+	}
+	if err := loadPageAssets(ctx, root, config, owners, assetRoots, &found); err != nil {
+		return found, err
+	}
+	if err := loadStatic(ctx, root, &found); err != nil {
+		return found, err
+	}
+	slices.SortFunc(found.assets, func(first, second Asset) int {
+		return strings.Compare(first.Source, second.Source)
+	})
+	for _, asset := range found.assets {
+		found.files[asset.Source] = reference{
+			url: strings.TrimSuffix(config.Site.URL, "/") + (&url.URL{Path: "/" + asset.Destination}).EscapedPath(),
+		}
+	}
+	return found, nil
+}
+
+// discoverPages also returns every page, drafts included, by its asset
+// directory so draft assets and metadata are still validated.
+func discoverPages(ctx context.Context, root *os.Root, config Config, found *inventory) (map[string]Page, []string, error) {
 	owners := make(map[string]Page)
 	var assetRoots []string
-	files := make(map[string]reference)
-	loadErr = fs.WalkDir(root.FS(), "content", func(name string, entry fs.DirEntry, walkErr error) error {
+	err := fs.WalkDir(root.FS(), "content", func(name string, entry fs.DirEntry, walkErr error) error {
 		if err := checkEntry(ctx, name, entry, walkErr); err != nil {
 			return err
 		}
@@ -70,71 +129,54 @@ func Load(ctx context.Context, site string, config Config) (prepared Prepared, w
 			return fmt.Errorf("read %s: %w", name, err)
 		}
 		item, diagnostics, err := prepareMetadata(strings.TrimPrefix(name, "content/"), source, config)
-		warnings = append(warnings, diagnostics...)
+		found.warnings = append(found.warnings, diagnostics...)
 		if err != nil {
 			return err
 		}
 		owners[strings.TrimSuffix(name, ".md")+".assets"] = item
 		if !item.Draft || config.IncludeDrafts {
-			prepared.Pages = append(prepared.Pages, item)
-			files[name] = reference{url: item.Data.URL, page: true}
+			found.pages = append(found.pages, item)
+			found.files[name] = reference{url: item.Data.URL, page: true}
 		}
 		return nil
 	})
-	if loadErr != nil {
-		return prepared, warnings, loadErr
-	}
+	return owners, assetRoots, err
+}
+
+func loadPageAssets(ctx context.Context, root *os.Root, config Config, owners map[string]Page, assetRoots []string, found *inventory) error {
 	for _, name := range assetRoots {
 		owner, exists := owners[name]
 		if !exists {
-			return prepared, warnings, fmt.Errorf("%s: orphan asset directory has no owning Markdown page", name)
+			return fmt.Errorf("%s: orphan asset directory has no owning Markdown page", name)
 		}
 		assets, err := loadAssets(ctx, root, assetRoot{source: name, destination: path.Dir(owner.Destination)})
 		if err != nil {
-			return prepared, warnings, err
+			return err
 		}
 		if !owner.Draft || config.IncludeDrafts {
-			prepared.Assets = append(prepared.Assets, assets...)
+			found.assets = append(found.assets, assets...)
 		}
 	}
-	info, err = root.Lstat("static")
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
-		return prepared, warnings, fmt.Errorf("inspect static: %w", err)
+	return nil
+}
+
+func loadStatic(ctx context.Context, root *os.Root, found *inventory) error {
+	info, err := root.Lstat("static")
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
 	}
-	if err == nil {
-		if !info.IsDir() {
-			return prepared, warnings, fmt.Errorf("static must be a real directory, not a symlink or file")
-		}
-		assets, err := loadAssets(ctx, root, assetRoot{source: "static", destination: "."})
-		if err != nil {
-			return prepared, warnings, err
-		}
-		prepared.Assets = append(prepared.Assets, assets...)
-	}
-	slices.SortFunc(prepared.Assets, func(first, second Asset) int {
-		return strings.Compare(first.Source, second.Source)
-	})
-	for _, asset := range prepared.Assets {
-		files[asset.Source] = reference{
-			url: strings.TrimSuffix(config.Site.URL, "/") + (&url.URL{Path: "/" + asset.Destination}).EscapedPath(),
-		}
-	}
-	for index := range prepared.Pages {
-		if err := ctx.Err(); err != nil {
-			return prepared, warnings, err
-		}
-		if err := renderContent(&prepared.Pages[index], config, files); err != nil {
-			return prepared, warnings, err
-		}
-	}
-	warnings = append(warnings, prepareLists(prepared.Pages, config)...)
-	publication, diagnostics, err := preparePublication(prepared.Pages, config)
-	warnings = append(warnings, diagnostics...)
 	if err != nil {
-		return prepared, warnings, err
+		return fmt.Errorf("inspect static: %w", err)
 	}
-	prepared.Assets = append(prepared.Assets, publication...)
-	return prepared, warnings, nil
+	if !info.IsDir() {
+		return fmt.Errorf("static must be a real directory, not a symlink or file")
+	}
+	assets, err := loadAssets(ctx, root, assetRoot{source: "static", destination: "."})
+	if err != nil {
+		return err
+	}
+	found.assets = append(found.assets, assets...)
+	return nil
 }
 
 func checkEntry(ctx context.Context, name string, entry fs.DirEntry, walkErr error) error {

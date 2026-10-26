@@ -77,3 +77,80 @@ func TestStateValidation(t *testing.T) {
 		}
 	}
 }
+
+func TestTransactionEvidenceChecks(t *testing.T) {
+	token, previous := strings.Repeat("b", tokenBytes*2), strings.Repeat("a", tokenBytes*2)
+	pending := func(phase string, hadPublic bool) transaction {
+		transaction := transaction{Token: token, Phase: phase, HadPublic: hadPublic}
+		if hadPublic {
+			transaction.Previous = previous
+		}
+		return transaction
+	}
+	ownership := []struct {
+		name          string
+		pending       transaction
+		backup, stage string
+		invalid       bool
+	}{
+		{"nothing", pending("ready", true), "absent", "absent", false},
+		{"own stage", pending("ready", true), "absent", token, false},
+		{"empty stage while staging", pending("staging", true), "absent", "empty", false},
+		{"empty stage when ready", pending("ready", true), "absent", "empty", true},
+		{"foreign stage", pending("ready", true), "absent", previous, true},
+		{"previous backup", pending("ready", true), previous, "absent", false},
+		{"foreign backup", pending("ready", true), token, "absent", true},
+		{"backup without previous public", pending("ready", false), "empty", "absent", true},
+		{"empty backup of empty previous", transaction{Token: token, Phase: "ready", HadPublic: true}, "empty", "absent", false},
+	}
+	for _, test := range ownership {
+		t.Run("ownership/"+test.name, func(t *testing.T) {
+			if err := test.pending.checkOwnership(test.backup, test.stage); (err != nil) != test.invalid {
+				t.Fatalf("error = %v, want invalid %v", err, test.invalid)
+			}
+		})
+	}
+	published := []struct {
+		name          string
+		pending       transaction
+		backup, stage string
+		invalid       bool
+	}{
+		{"staging", pending("staging", true), previous, "absent", true},
+		{"stage remains", pending("ready", true), previous, token, true},
+		{"ready without backup", pending("ready", true), "absent", "absent", true},
+		{"ready without previous", pending("ready", false), "absent", "absent", false},
+		{"ready with backup", pending("ready", true), previous, "absent", false},
+		{"published without backup", pending("published", true), "absent", "absent", false},
+	}
+	for _, test := range published {
+		t.Run("published/"+test.name, func(t *testing.T) {
+			if err := test.pending.checkPublished(test.backup, test.stage); (err != nil) != test.invalid {
+				t.Fatalf("error = %v, want invalid %v", err, test.invalid)
+			}
+		})
+	}
+	previousOutput := []struct {
+		name           string
+		pending        transaction
+		public, backup string
+		restore        bool
+		invalid        bool
+	}{
+		{"restore backup", pending("ready", true), "absent", previous, true, false},
+		{"backup not restorable while staging", pending("staging", true), "absent", previous, false, true},
+		{"previous intact", pending("staging", true), previous, "absent", false, false},
+		{"previously absent", pending("staging", false), "absent", "absent", false, false},
+		{"unverifiable public", pending("ready", true), "unknown", "absent", false, true},
+		{"previous and backup both present", pending("ready", true), previous, previous, false, true},
+		{"confirmed publication unverifiable", pending("published", true), "absent", "absent", false, true},
+	}
+	for _, test := range previousOutput {
+		t.Run("previous/"+test.name, func(t *testing.T) {
+			restore, err := test.pending.checkPrevious(test.public, test.backup)
+			if (err != nil) != test.invalid || restore != test.restore {
+				t.Fatalf("restore = %v, error = %v; want restore %v, invalid %v", restore, err, test.restore, test.invalid)
+			}
+		})
+	}
+}
