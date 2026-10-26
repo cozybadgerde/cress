@@ -520,12 +520,18 @@ Setup documentation points to mise.toml and go.mod rather than maintaining
 duplicate tool versions or dependency inventories. Compatibility baselines
 and release-tag examples remain where they explain required behavior.
 
-- [x] Review the [software design audit](audits/software-design-2026-10-25.md)
+- [x] Review the software design audit (local `audits/software-design-2026-10-25.md`)
   and fix #2 before #1: preserve preview root ownership on replacement failure,
   then separate the site lock from target-bound writers without changing
-  recovery behavior. Keep both fixes in one pending combined commit.
+  recovery behavior. Committed together as `35a9e6c`
+  (`fix: clarify preview and writer resource ownership`).
 - [ ] Revisit audit #3 (private theme-file reads) and #4 (unchecked scaffold
   substitutions) separately; neither is an automatic release blocker.
+- [ ] Review the code quality audit (local `audits/code-quality-2026-10-26.md`)
+  before approving cleanup of recovery predicates (#3), content loading (#4),
+  or output-file organization (#5, optional, not approved). Preview
+  orchestration (#1) and Markdown preparation (#2) are done. Findings are
+  proposals, not new release blockers.
 
 External release blockers remain:
 
@@ -539,8 +545,9 @@ External release blockers remain:
   signing and negative verification evidence; snapshots cannot provide it.
 - [x] Maintainer confirms phases 8/9 and scaffold updates committed as
   `567f6b6` (`feat: add themes, init and docs`).
-- [ ] Maintainer confirms the audit-fix commit and any push. No repository
-  write to GitHub was performed during the audit follow-up.
+- [x] Audit resource-ownership fixes are committed as `35a9e6c`.
+- [ ] Maintainer confirms any push. No repository write to GitHub was
+  performed during the audit follow-up.
 
 Suggested phase 9 commit: `build: prepare signed releases and refresh docs`.
 For a combined phase 8/9 commit:

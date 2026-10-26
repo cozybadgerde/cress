@@ -55,20 +55,8 @@ func (markupRenderer) RegisterFuncs(register renderer.NodeRendererFuncRegisterer
 func renderContent(prepared *Page, config Config, files map[string]reference) error {
 	references := references{prefix: config.Site.URL, source: prepared.Source, files: files}
 	if prepared.pageImage && prepared.Data.Image != nil {
-		image := prepared.Data.Image
-		resolved, err := references.resolveImage(image.URL)
-		if err != nil {
-			return fmt.Errorf("%s: image.src: %w", prepared.Source, err)
-		}
-		image.URL = resolved
-		for index := range image.Caption {
-			if image.Caption[index].URL != "" {
-				resolved, err := references.resolve(image.Caption[index].URL)
-				if err != nil {
-					return fmt.Errorf("%s: image.caption: %w", prepared.Source, err)
-				}
-				image.Caption[index].URL = resolved
-			}
+		if err := resolvePageImage(prepared, references); err != nil {
+			return err
 		}
 	}
 	captions := &imageCaptionParser{captions: make(map[*ast.Image]string)}
@@ -115,8 +103,48 @@ func renderContent(prepared *Page, config Config, files map[string]reference) er
 	if err != nil {
 		return fmt.Errorf("%s: resolve Markdown: %w", prepared.Source, err)
 	}
+	if err := replaceCaptionedImages(prepared, markdown, images, captions.captions, references); err != nil {
+		return err
+	}
+	for _, block := range blocks {
+		rendered, err := renderCode(block, prepared.body, codeOptions{highlight: config.Highlight, references: references})
+		if err != nil {
+			return fmt.Errorf("%s: code block: %w", prepared.Source, err)
+		}
+		block.Parent().ReplaceChild(block.Parent(), block, &markup{value: rendered})
+	}
+	var rendered bytes.Buffer
+	if err := markdown.Renderer().Render(&rendered, prepared.body, document); err != nil {
+		return fmt.Errorf("%s: render Markdown: %w", prepared.Source, err)
+	}
+	prepared.Data.Body = template.HTML(rendered.String())
+	return nil
+}
+
+func resolvePageImage(prepared *Page, references references) error {
+	image := prepared.Data.Image
+	resolved, err := references.resolveImage(image.URL)
+	if err != nil {
+		return fmt.Errorf("%s: image.src: %w", prepared.Source, err)
+	}
+	image.URL = resolved
+	for index := range image.Caption {
+		if image.Caption[index].URL != "" {
+			resolved, err := references.resolve(image.Caption[index].URL)
+			if err != nil {
+				return fmt.Errorf("%s: image.caption: %w", prepared.Source, err)
+			}
+			image.Caption[index].URL = resolved
+		}
+	}
+	return nil
+}
+
+// replaceCaptionedImages keeps image indexes stable because inline caption
+// IDs derive from them.
+func replaceCaptionedImages(prepared *Page, markdown goldmark.Markdown, images []*ast.Image, captions map[*ast.Image]string, references references) error {
 	for index, image := range images {
-		caption, exists := captions.captions[image]
+		caption, exists := captions[image]
 		if !exists || caption == "" {
 			continue
 		}
@@ -149,18 +177,6 @@ func renderContent(prepared *Page, config Config, files map[string]reference) er
 			})
 		}
 	}
-	for _, block := range blocks {
-		rendered, err := renderCode(block, prepared.body, codeOptions{highlight: config.Highlight, references: references})
-		if err != nil {
-			return fmt.Errorf("%s: code block: %w", prepared.Source, err)
-		}
-		block.Parent().ReplaceChild(block.Parent(), block, &markup{value: rendered})
-	}
-	var rendered bytes.Buffer
-	if err := markdown.Renderer().Render(&rendered, prepared.body, document); err != nil {
-		return fmt.Errorf("%s: render Markdown: %w", prepared.Source, err)
-	}
-	prepared.Data.Body = template.HTML(rendered.String())
 	return nil
 }
 

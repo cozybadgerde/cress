@@ -125,7 +125,7 @@ func run(ctx context.Context, options Options, build buildFunc) (runErr error) {
 	if _, err := fmt.Fprintf(options.Output, "Preview %s%s (%s). Refresh manually; Ctrl-C to stop.\n", address, pages.prefix, mode); err != nil {
 		return err
 	}
-	token := result.Token
+	rebuilder := &rebuilder{build: build, request: request, pages: pages, directory: filepath.Join(session.Directory(), "public"), token: result.Token}
 	timer := time.NewTimer(debounceDelay)
 	timer.Stop()
 	defer timer.Stop()
@@ -144,28 +144,12 @@ func run(ctx context.Context, options Options, build buildFunc) (runErr error) {
 			due = timer.C
 		case <-due:
 			due = nil
-			pages.mu.Lock()
-			next, buildErr := build(ctx, request)
-			if ctx.Err() != nil {
-				pages.mu.Unlock()
-				return nil
+			outcome := rebuilder.rebuild(ctx)
+			if outcome.stopped {
+				return outcome.err
 			}
-			if next.Token == "" {
-				closeErr := pages.root.Close()
-				pages.root = nil
-				pages.mu.Unlock()
-				return errors.Join(fmt.Errorf("preview stopped: no verified usable output: %w", buildErr), closeErr)
-			}
-			previousPrefix := pages.prefix
-			if next.Token != token {
-				if err := pages.replaceRoot(filepath.Join(session.Directory(), "public")); err != nil {
-					pages.mu.Unlock()
-					return err
-				}
-				pages.prefix, token = next.Prefix, next.Token
-			}
-			pages.mu.Unlock()
-			if pages.prefix != previousPrefix {
+			next, buildErr := outcome.result, outcome.err
+			if outcome.prefixChanged {
 				if _, err := fmt.Fprintf(options.Output, "Preview URL changed: %s%s (%s).\n", address, pages.prefix, mode); err != nil {
 					return errors.Join(buildErr, err)
 				}
@@ -188,6 +172,47 @@ func run(ctx context.Context, options Options, build buildFunc) (runErr error) {
 			}
 		}
 	}
+}
+
+// rebuildOutcome reports one rebuild. When stopped, err is the run result;
+// otherwise err is the build error and the verified output stays served.
+type rebuildOutcome struct {
+	result        generator.Result
+	err           error
+	stopped       bool
+	prefixChanged bool
+}
+
+type rebuilder struct {
+	build     buildFunc
+	request   generator.PreviewRequest
+	pages     *pageServer
+	directory string
+	token     string
+}
+
+// rebuild generates and adopts new output under the page write lock, because
+// the served filesystem's lifetime depends on it.
+func (r *rebuilder) rebuild(ctx context.Context) rebuildOutcome {
+	r.pages.mu.Lock()
+	defer r.pages.mu.Unlock()
+	next, buildErr := r.build(ctx, r.request)
+	if ctx.Err() != nil {
+		return rebuildOutcome{stopped: true}
+	}
+	if next.Token == "" {
+		closeErr := r.pages.root.Close()
+		r.pages.root = nil
+		return rebuildOutcome{stopped: true, err: errors.Join(fmt.Errorf("preview stopped: no verified usable output: %w", buildErr), closeErr)}
+	}
+	previousPrefix := r.pages.prefix
+	if next.Token != r.token {
+		if err := r.pages.replaceRoot(r.directory); err != nil {
+			return rebuildOutcome{stopped: true, err: err}
+		}
+		r.pages.prefix, r.token = next.Prefix, next.Token
+	}
+	return rebuildOutcome{result: next, err: buildErr, prefixChanged: r.pages.prefix != previousPrefix}
 }
 
 func reportWarnings(writer io.Writer, warnings []string) error {
