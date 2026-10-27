@@ -543,6 +543,13 @@ and release-tag examples remain where they explain required behavior.
   cross-browser keyboard/touch and screen-reader review remain pending
   in the human accessibility matrix.
 
+- [ ] Follow up on the local landing-page design critique
+  (`audits/landing-design-critique-2026-10-27.md`): demonstrate a
+  Services-first, offer-first scaffold journey and explore distinct
+  Poppy/Clover landing compositions using existing prepared data.
+  The maintainer approved that direction; concrete designs and any
+  contract changes still need agreement. No new release blockers.
+
 External release blockers remain:
 
 - [ ] Complete the human accessibility matrix for both themes and all
