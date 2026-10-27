@@ -53,6 +53,7 @@ pre .k, pre .kd, pre .kn, pre .kp, pre .kr, pre .kt { color: #005a9c; }
 pre .s, pre .s1, pre .s2, pre .sb, pre .sc, pre .sd { color: #7d2300; }
 pre .c, pre .c1, pre .cm, pre .cp, pre .cs { color: #525252; }
 code { overflow-wrap: anywhere; }
-table { border-collapse: collapse; width: 100%; }
+.table-wrapper { overflow-x: auto; margin-block: 1.5rem; }
+table { border-collapse: collapse; width: 100%; overflow-wrap: normal; }
 th, td { border: 1px solid var(--border); padding: .6rem; text-align: start; vertical-align: top; }
 blockquote { border-inline-start: 3px solid var(--border); margin-inline: 0; padding-inline-start: 1rem; }

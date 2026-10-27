@@ -529,8 +529,18 @@ and release-tag examples remain where they explain required behavior.
   substitutions) separately; neither is an automatic release blocker.
 - [ ] Review the code quality audit (local `audits/code-quality-2026-10-26.md`)
   before approving output-file organization (#5, optional, not approved).
-  Findings #1 to #4 (preview, Markdown, recovery, content loading) are done. Findings are
-  proposals, not new release blockers.
+  Findings #1 to #4 (preview, Markdown, recovery, content loading) are done.
+  Findings are proposals, not new release blockers.
+- [x] Fix the two P2 findings from the local theme design audit
+  (`audits/theme-design-2026-10-26.md`): lazy-load list-entry images and
+  style focusable Markdown table wrappers for horizontal scrolling.
+  Keep page title images eager and leave authored HTML unchanged.
+- [ ] Review the remaining theme P3 suggestions: main focus-ring weight,
+  outer layout alignment, and syntax/inline-code styling.
+  Image dimensions are not modeled; layout-shift prevention remains
+  outside this change. Firefox screenshots cover 320px and 1280px layouts;
+  cross-browser keyboard/touch and screen-reader review remain pending
+  in the human accessibility matrix.
 
 External release blockers remain:
 

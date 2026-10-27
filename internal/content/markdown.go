@@ -16,6 +16,7 @@ import (
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/extension"
+	extensionast "github.com/yuin/goldmark/extension/ast"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer"
 	goldhtml "github.com/yuin/goldmark/renderer/html"
@@ -77,6 +78,7 @@ func renderContent(prepared *Page, config Config, files map[string]reference) er
 	}
 	var images []*ast.Image
 	var blocks []*ast.FencedCodeBlock
+	var tables []*extensionast.Table
 	err := ast.Walk(document, func(node ast.Node, entering bool) (ast.WalkStatus, error) {
 		if !entering {
 			return ast.WalkContinue, nil
@@ -97,6 +99,8 @@ func renderContent(prepared *Page, config Config, files map[string]reference) er
 			images = append(images, node)
 		case *ast.FencedCodeBlock:
 			blocks = append(blocks, node)
+		case *extensionast.Table:
+			tables = append(tables, node)
 		}
 		return ast.WalkContinue, nil
 	})
@@ -112,6 +116,15 @@ func renderContent(prepared *Page, config Config, files map[string]reference) er
 			return fmt.Errorf("%s: code block: %w", prepared.Source, err)
 		}
 		block.Parent().ReplaceChild(block.Parent(), block, &markup{value: rendered})
+	}
+	for _, table := range tables {
+		var rendered bytes.Buffer
+		if err := markdown.Renderer().Render(&rendered, prepared.body, table); err != nil {
+			return fmt.Errorf("%s: render table: %w", prepared.Source, err)
+		}
+		table.Parent().ReplaceChild(table.Parent(), table, &markup{
+			value: "<div class=\"table-wrapper\" tabindex=\"0\">\n" + rendered.String() + "</div>\n",
+		})
 	}
 	var rendered bytes.Buffer
 	if err := markdown.Renderer().Render(&rendered, prepared.body, document); err != nil {

@@ -21,6 +21,17 @@ func TestBuiltinCompletePageStructure(t *testing.T) {
 		if err := scaffold.Init(context.Background(), site, name); err != nil {
 			t.Fatal(err)
 		}
+		for _, fixture := range []struct{ file, metadata string }{
+			{"journal/list.md", "type = 'list'\n[list]\norder = 'title'\n"},
+			{"journal/welcome.md", ""},
+		} {
+			source := "+++\ntitle = 'Journal image'\n" +
+				"image = { src = '../index.assets/seedling.svg', alt = 'Seedling', caption = 'Image credit' }\n" +
+				fixture.metadata + "+++\n"
+			if err := os.WriteFile(filepath.Join(site, "content", fixture.file), []byte(source), 0o644); err != nil {
+				t.Fatal(err)
+			}
+		}
 		if _, err := generator.Build(context.Background(), site); err != nil {
 			t.Fatal(err)
 		}
@@ -41,6 +52,17 @@ func TestBuiltinCompletePageStructure(t *testing.T) {
 			if strings.Count(html, "<h1") != 1 || strings.Count(html, "<main ") != 1 ||
 				strings.Contains(html, "<script") {
 				t.Errorf("%s/%s invalid landmarks/headings or unexpected scripts", name, file)
+			}
+			if strings.HasPrefix(file, "journal/") {
+				lazy := strings.Count(html, `loading="lazy" decoding="async"`)
+				wantLazy := 0
+				if file == "journal/list/index.html" {
+					wantLazy = 1
+				}
+				if lazy != wantLazy || strings.Count(html, `alt="Seedling">`) != 1 ||
+					strings.Count(html, "<figcaption>Image credit</figcaption>") != wantLazy+1 {
+					t.Errorf("%s/%s: incorrect image loading or lost caption: %s", name, file, html)
+				}
 			}
 		}
 		if err := theme.Init(context.Background(), site, name); err != nil {

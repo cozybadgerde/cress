@@ -15,6 +15,36 @@ func prepareBody(t *testing.T, body string) (string, error) {
 	return string(prepared.Data.Body), err
 }
 
+func TestMarkdownTableWrapper(t *testing.T) {
+	for _, test := range []struct{ name, prefix string }{
+		{"standalone", ""}, {"blockquote", "> "},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			body := test.prefix + "| Name | Link |\n" + test.prefix + "|:-----|-----:|\n" +
+				test.prefix + "| Team & friends | [Contact](/contact/) |\n"
+			rendered, err := prepareBody(t, body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, want := range []string{
+				"<div class=\"table-wrapper\" tabindex=\"0\">\n<table>",
+				`<th style="text-align:left">Name</th>`,
+				`<td style="text-align:left">Team &amp; friends</td>`,
+				`<td style="text-align:right"><a href="/contact/">Contact</a></td>`,
+				"</table>\n</div>",
+			} {
+				if !strings.Contains(rendered, want) {
+					t.Errorf("missing %q in %s", want, rendered)
+				}
+			}
+		})
+	}
+	rendered, err := prepareBody(t, "<table><tr><td>Authored HTML</td></tr></table>")
+	if err != nil || strings.Contains(rendered, "table-wrapper") {
+		t.Fatalf("authored table changed: %s, %v", rendered, err)
+	}
+}
+
 func TestImageCaptions(t *testing.T) {
 	tests := []struct {
 		name, body string

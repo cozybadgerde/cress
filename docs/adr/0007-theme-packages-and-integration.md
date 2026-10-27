@@ -55,6 +55,11 @@ is distributed, not its role or access to generator internals.
 [The rendering boundary](0008-rendering-and-template-trust-boundary.md)
 defines generator and presentation ownership.
 
+Themes own styling, including responsive layout and overflow behavior.
+Content preparation supplies semantic HTML and useful class hooks without
+prescribing presentation or injecting styles. Structural wrappers may
+provide keyboard access; themes decide how to present them.
+
 Ordinary site and brand settings remain separate from the open theme
 customization area established by the shared contract policy.
 Themes explicitly consume and document the custom values they support.

@@ -35,6 +35,14 @@
   {{end}}
 {{end}}
 
+{{define "entry-image"}}
+  {{with .Image}}
+  <figure class="title-image"><img src="{{.URL}}" alt="{{.Alt}}" loading="lazy" decoding="async">
+    {{with .Caption}}<figcaption>{{range .}}{{if .URL}}<a href="{{.URL}}">{{.Text}}</a>{{else}}{{.Text}}{{end}}{{end}}</figcaption>{{end}}
+  </figure>
+  {{end}}
+{{end}}
+
 {{define "dates"}}
   {{with .PublishedAt}}<p class="date">{{label "published"}} <time datetime="{{.}}">{{.}}</time></p>{{end}}
   {{with .UpdatedAt}}<p class="date">{{label "updated"}} <time datetime="{{.}}">{{.}}</time></p>{{end}}

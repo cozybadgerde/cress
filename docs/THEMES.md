@@ -152,6 +152,12 @@ HTML; the developer skeleton does not interpret it.
 Content preparation alone marks the rendered body as trusted HTML.
 Ordinary strings must not be converted to trusted HTML.
 
+Markdown tables retain their table markup inside a
+`<div class="table-wrapper" tabindex="0">`. This wrapper provides a styling
+hook and keyboard focus target. Themes own overflow handling, spacing, and
+focus styling; Cress supplies no table layout styles. Authored HTML tables
+remain unchanged.
+
 The renderer receives no raw configuration, source tree, or generator
 internals. It neither discovers pages nor resolves routes. The skeleton
 uses `html/template` with no filesystem, network, environment, or shell
