@@ -535,8 +535,9 @@ and release-tag examples remain where they explain required behavior.
   (`audits/theme-design-2026-10-26.md`): lazy-load list-entry images and
   style focusable Markdown table wrappers for horizontal scrolling.
   Keep page title images eager and leave authored HTML unchanged.
-- [ ] Review the remaining theme P3 suggestions: main focus-ring weight,
-  outer layout alignment, and syntax/inline-code styling.
+- [x] Apply the theme P3 refinements: a thinner inset main focus ring,
+  shared outer measures for header/content/footer, syntax color tokens,
+  and inline-code styling kept separate from fenced code.
   Image dimensions are not modeled; layout-shift prevention remains
   outside this change. Firefox screenshots cover 320px and 1280px layouts;
   cross-browser keyboard/touch and screen-reader review remain pending

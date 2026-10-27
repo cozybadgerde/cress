@@ -39,8 +39,7 @@ func TestBuiltinPackagesAndExactLabels(t *testing.T) {
 }
 
 func TestBuiltinDefaultPaletteContrast(t *testing.T) {
-	variable := regexp.MustCompile(`--([a-z]+):\s*(#[0-9a-f]{6})`)
-	color := regexp.MustCompile(`color:\s*(#[0-9a-f]{6})`)
+	variable := regexp.MustCompile(`--([a-z-]+):\s*(#[0-9a-f]{6})`)
 	for _, name := range []string{"poppy", "clover"} {
 		data, err := embedded.ReadFile("builtin/" + name + "/public/site.css")
 		if err != nil {
@@ -60,8 +59,8 @@ func TestBuiltinDefaultPaletteContrast(t *testing.T) {
 				t.Errorf("%s boundary contrast %.2f < 3", name, ratio)
 			}
 		}
-		for _, match := range color.FindAllStringSubmatch(string(data), -1) {
-			if ratio := contrast(match[1], palette["surface"]); ratio < 4.5 {
+		for _, token := range []string{"syntax-keyword", "syntax-string", "syntax-comment"} {
+			if ratio := contrast(palette[token], palette["surface"]); ratio < 4.5 {
 				t.Errorf("%s syntax contrast %.2f < 4.5", name, ratio)
 			}
 		}
