@@ -543,12 +543,12 @@ and release-tag examples remain where they explain required behavior.
   cross-browser keyboard/touch and screen-reader review remain pending
   in the human accessibility matrix.
 
-- [ ] Follow up on the local landing-page design critique
+- [x] Follow up on the local landing-page design critique
   (`audits/landing-design-critique-2026-10-27.md`): demonstrate a
   Services-first, offer-first scaffold journey and explore distinct
   Poppy/Clover landing compositions using existing prepared data.
-  The maintainer approved that direction; concrete designs and any
-  contract changes still need agreement. No new release blockers.
+  Done: Services-first scaffold journey, distinct Poppy/Clover landing
+  compositions, consistent site frame, brand accent, and title-image band.
 - [x] Prepare persona content fixtures under the gitignored
   `tmp/theme-exploration/`: coach with Poppy and cleaning with Clover.
   Both demonstrate an offer-first, Services-first journey and secondary
@@ -572,8 +572,10 @@ and release-tag examples remain where they explain required behavior.
 - [x] Crop landing title images to a 5:2 band so the introduction and
   primary link stay near the first screen. Clover renders the image below
   its title block instead of inside it.
-- [ ] Loose threads: Poppy's cream background lowers brand contrast slightly,
-  so colors just above the white threshold may fall just short on it;
+- [x] Replace Poppy's cream background with a chalk off-white
+  (`#fbfbf9`, surface `#f0f0ec`).
+- [ ] Loose threads: Poppy's off-white background lowers brand contrast slightly
+  (a 4.5:1 color on white is about 4.34:1 on it);
   the 5:2 landing crop is checked only with the placeholder, not real
   photos; a `[site.image]` default also fills every landing hero; CSS ignores
   text nodes, so a paragraph with text around a single link right after the

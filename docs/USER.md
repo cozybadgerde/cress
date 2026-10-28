@@ -81,7 +81,7 @@ outside disposable directories, and deploy only their built `public/` output.
 
 ## Built-in themes
 
-Poppy uses a warm background, dark green palette, calm sans headings,
+Poppy uses a chalk off-white background, dark green palette, calm sans headings,
 and generous single-column spacing for freelancer sites. Clover uses a
 white/slate and dark blue layout with a solid title block and heavy
 section headings for small businesses. Both use system fonts, local
