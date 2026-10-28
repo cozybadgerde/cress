@@ -9,6 +9,7 @@
   {{with .Site.Brand.Favicon}}<link rel="icon" href="{{.}}">{{end}}
   {{with .Site.Brand.Color}}<meta name="theme-color" content="{{.}}">{{end}}
   <link rel="stylesheet" href="{{asset "site.css"}}">
+  {{with .Site.Brand.Color}}<style>:root { --link: {{.}}; }</style>{{end}}
 </head>
 <body>
   <a class="skip-link" href="#main">{{label "skip"}}</a>

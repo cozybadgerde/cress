@@ -2,6 +2,8 @@ package content
 
 import (
 	"encoding/hex"
+	"fmt"
+	"math"
 
 	"github.com/cozybadgerde/cress/internal/page"
 )
@@ -21,8 +23,14 @@ func (input fields) readBrand(prefix string) (page.Brand, error) {
 		if len(brand.Color) != 7 || brand.Color[0] != '#' {
 			return brand, table.invalidField("color", "must be a six-digit #RRGGBB color")
 		}
-		if _, err := hex.DecodeString(brand.Color[1:]); err != nil {
+		rgb, err := hex.DecodeString(brand.Color[1:])
+		if err != nil {
 			return brand, table.invalidField("color", "must be a six-digit #RRGGBB color")
+		}
+		if ratio := contrastWithWhite(rgb); ratio < 4.5 {
+			*input.warnings = append(*input.warnings, fmt.Sprintf(
+				"%s: %scolor %s has contrast %.2f:1 against white; text in this color or on it may be hard to read (4.5:1 recommended)",
+				input.source, table.prefix, brand.Color, ratio))
 		}
 	}
 	if _, exists := table.values["favicon"]; exists {
@@ -61,4 +69,17 @@ func (input fields) readBrand(prefix string) (page.Brand, error) {
 		brand.Logo = &page.Image{URL: url, Alt: alt}
 	}
 	return brand, nil
+}
+
+// contrastWithWhite returns the WCAG 2 contrast ratio of an sRGB color against white.
+func contrastWithWhite(rgb []byte) float64 {
+	linear := func(component byte) float64 {
+		channel := float64(component) / 255
+		if channel <= 0.04045 {
+			return channel / 12.92
+		}
+		return math.Pow((channel+0.055)/1.055, 2.4)
+	}
+	luminance := .2126*linear(rgb[0]) + .7152*linear(rgb[1]) + .0722*linear(rgb[2])
+	return 1.05 / (luminance + .05)
 }

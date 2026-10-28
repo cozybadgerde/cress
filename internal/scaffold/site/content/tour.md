@@ -16,9 +16,9 @@ excerpt = "Explore headings, links, images, tables, code, and captions."
 # An image replaces the whole site default; image = { src = "" } clears it.
 # Put that clearing example above [image] if you use it instead of this table.
 [image]
-src = "index.assets/seedling.svg"
-alt = "Two green leaves growing from one stem"
-caption = "An original illustration from the [home page](index.md)."
+src = "index.assets/placeholder.svg"
+alt = "Placeholder for a photo"
+caption = "A placeholder image from the [home page](index.md)."
 +++
 
 ## A guide you can edit
@@ -112,14 +112,14 @@ Tables extend CommonMark. Colons choose left, center, or right alignment.
 Use meaningful alternative text; captions are separate visible context.
 This ordinary image has a hover title but no caption:
 
-![Two green leaves growing from one stem](index.assets/seedling.svg "A small beginning")
+![Placeholder for a photo](index.assets/placeholder.svg "A placeholder")
 
 Add an immediate caption attribute to create a figure:
 
-![Two green leaves growing from one stem](index.assets/seedling.svg){caption="A local image with a [link to its page](index.md)."}
+![Placeholder for a photo](index.assets/placeholder.svg){caption="A local image with a [link to its page](index.md)."}
 
 Inline images work too:
-![Two green leaves](index.assets/seedling.svg){caption="A small inline illustration."}
+![Placeholder](index.assets/placeholder.svg){caption="A small inline image."}
 stays within this paragraph.
 
 The title image uses the frontmatter `[image]` table. Captions support

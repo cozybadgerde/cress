@@ -8,7 +8,7 @@ Replace this sample with an introduction to your business.
 
 [Explore our services](services.md)
 
-![Two green leaves growing from one stem](index.assets/seedling.svg){caption="An original Cress illustration. Replace it with your own image and credit."}
+![Placeholder for a photo](index.assets/placeholder.svg){caption="Placeholder image. Replace it with your own photo and credit."}
 
 ## How we can help
 

@@ -174,6 +174,24 @@ site = { nonsense = 1 }
 	}
 }
 
+func TestBrandColorContrastWarning(t *testing.T) {
+	tests := []struct {
+		color string
+		warn  bool
+	}{{"#164b81", false}, {"#767676", false}, {"#777777", true}, {"#F5D000", true}}
+	for _, test := range tests {
+		t.Run(test.color, func(t *testing.T) {
+			config, warnings, err := content.ParseConfig([]byte("[brand]\ncolor = '" + test.color + "'"))
+			if err != nil || config.Site.Brand.Color != test.color {
+				t.Fatalf("color = %q, error = %v", config.Site.Brand.Color, err)
+			}
+			if warned := len(warnings) == 1 && strings.Contains(warnings[0], "brand.color "+test.color+" has contrast"); warned != test.warn || len(warnings) > 1 {
+				t.Fatalf("warnings = %v, want warning %v", warnings, test.warn)
+			}
+		})
+	}
+}
+
 func TestSupportedLanguagesAndOrigins(t *testing.T) {
 	for _, tag := range []string{"en", "de-DE", "zh-Hant-TW", "EN-us", "x-private", "sr-Latn"} {
 		t.Run(tag, func(t *testing.T) {

@@ -62,6 +62,10 @@ provide keyboard access; themes decide how to present them.
 
 Ordinary site and brand settings remain separate from the open theme
 customization area established by the shared contract policy.
+Built-in themes use the brand color as their accent so operators can
+rebrand without copying a theme. Cress warns, without failing, when it has
+less than 4.5:1 contrast against white; built-ins keep accent-colored text
+on white or near-white backgrounds.
 Themes explicitly consume and document the custom values they support.
 
 ### Complete local-first selection

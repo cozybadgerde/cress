@@ -121,8 +121,10 @@ Supply useful image alternatives or an explicit empty alternative for
 decorative images. Captions are not replacements for alternatives.
 Review translations and language changes within content.
 
-Built-in brand color is emitted as browser theme metadata; it does not
-replace contrast-sensitive text colors. Arbitrary custom CSS, raw HTML,
+Built-in themes use the brand color as their accent for links, buttons,
+and Clover's title block. Cress warns when it has less than 4.5:1 contrast
+against white; Poppy's warm background lowers contrast slightly, so check
+colors near that limit. Arbitrary custom CSS, raw HTML,
 third-party themes, changed navigation/content, or brand assets need
 assessment of the resulting complete pages. Passing tests is not
 certification of a finished site.

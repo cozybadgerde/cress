@@ -21,12 +21,22 @@ func TestBuiltinCompletePageStructure(t *testing.T) {
 		if err := scaffold.Init(context.Background(), site, name); err != nil {
 			t.Fatal(err)
 		}
+		config, err := os.OpenFile(filepath.Join(site, "cress.toml"), os.O_APPEND|os.O_WRONLY, 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := config.WriteString("\n[brand]\ncolor = '#a8231a'\n"); err != nil {
+			t.Fatal(err)
+		}
+		if err := config.Close(); err != nil {
+			t.Fatal(err)
+		}
 		for _, fixture := range []struct{ file, metadata string }{
 			{"journal/list.md", "type = 'list'\n[list]\norder = 'title'\n"},
 			{"journal/welcome.md", ""},
 		} {
 			source := "+++\ntitle = 'Journal image'\n" +
-				"image = { src = '../index.assets/seedling.svg', alt = 'Seedling', caption = 'Image credit' }\n" +
+				"image = { src = '../index.assets/placeholder.svg', alt = 'Placeholder', caption = 'Image credit' }\n" +
 				fixture.metadata + "+++\n"
 			if err := os.WriteFile(filepath.Join(site, "content", fixture.file), []byte(source), 0o644); err != nil {
 				t.Fatal(err)
@@ -41,7 +51,7 @@ func TestBuiltinCompletePageStructure(t *testing.T) {
 				t.Fatal(err)
 			}
 			html := string(data)
-			for _, invariant := range []string{`<html lang="en">`, `href="#main"`, `id="main" tabindex="-1"`, `aria-label="Main"`, `aria-label="Footer"`} {
+			for _, invariant := range []string{`<html lang="en">`, `href="#main"`, `id="main" tabindex="-1"`, `aria-label="Main"`, `aria-label="Footer"`, `<style>:root { --link: #a8231a; }</style>`} {
 				if file == "index.html" && invariant == `id="main" tabindex="-1"` {
 					invariant = `id="main" class="landing" tabindex="-1"`
 				}
@@ -59,7 +69,7 @@ func TestBuiltinCompletePageStructure(t *testing.T) {
 				if file == "journal/list/index.html" {
 					wantLazy = 1
 				}
-				if lazy != wantLazy || strings.Count(html, `alt="Seedling">`) != 1 ||
+				if lazy != wantLazy || strings.Count(html, `alt="Placeholder">`) != 1 ||
 					strings.Count(html, "<figcaption>Image credit</figcaption>") != wantLazy+1 {
 					t.Errorf("%s/%s: incorrect image loading or lost caption: %s", name, file, html)
 				}

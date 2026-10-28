@@ -101,8 +101,7 @@ is used only by `theme init`, not as a third theme.
 Built-in labels support exact `en` and `de`. Regional tags such as `en-US`
 or `de-CH` do not fall back; use a local theme with the matching locale.
 Page content is not automatically translated. Neither built-in consumes
-`theme.custom` keys. Brand color supplies browser metadata, not unchecked
-contrast-sensitive CSS colors. See the
+`theme.custom` keys. Both use the brand color as their accent. See the
 [accessibility assessment](ACCESSIBILITY.md) for review status and publisher
 responsibilities.
 
@@ -372,7 +371,10 @@ They receive the site URL prefix like navigation; targets are not checked.
 A logo requires explicit string `src` and `alt`; `alt = ""` is decorative.
 Omit optional settings instead of supplying empty colors or asset URLs.
 Themes choose how to present brand data. Both built-ins render the logo,
-favicon, and theme-color metadata. Color does not override their CSS palette.
+favicon, and theme-color metadata, and use `color` as their accent for
+links, buttons, and Clover's title block. Cress warns when `color` has less
+than 4.5:1 contrast against white, because accent text or white text on it
+may be hard to read. The build continues; choose a darker color.
 
 Theme names start with a lowercase ASCII letter and contain only lowercase
 letters, digits, and hyphens. A selected `themes/<name>/` must be a complete,

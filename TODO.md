@@ -560,13 +560,20 @@ and release-tag examples remain where they explain required behavior.
   filled primary link. The primary link is a CSS convention (a lone-link
   paragraph after the first paragraph); no data fields or link classes.
   The scaffold now leads with a Services link. Firefox covers 320/1280px.
-- [ ] Loose threads from the composition work: Clover's seedling image keeps
-  Poppy's green palette; Clover's blue reads corporate for hospitality
-  (palette remains a local-theme choice); optional landing image layout
-  was not explored beyond the scaffold image; CSS ignores text nodes, so a
-  paragraph with text around a single link in that position is also styled
-  as the primary link. Polish and keyboard/screen-reader review belong to
-  the accessibility matrix.
+- [x] Keep header, navigation, and footer at one frame width on every page.
+  Landing pages no longer widen the frame; other pages align their readable
+  content measure with the frame's left edge.
+- [x] Use `[brand] color` as the built-in themes' accent (links, buttons,
+  Clover's title block). Cress warns below 4.5:1 against white and keeps
+  building; Clover's header/footer links use the text color. ADR 0007,
+  USER.md, and ACCESSIBILITY.md record the change. The scaffold seedling is
+  replaced by a neutral, labelled photo placeholder.
+- [ ] Loose threads: Poppy's cream background lowers brand contrast slightly,
+  so colors just above the white threshold may fall just short on it;
+  optional landing image layout with real photos is unexplored; CSS ignores
+  text nodes, so a paragraph with text around a single link right after the
+  first paragraph is also styled as the primary link. Keyboard and
+  screen-reader review belong to the accessibility matrix.
 
 External release blockers remain:
 

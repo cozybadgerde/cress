@@ -45,7 +45,7 @@ func TestInitializedSiteBuildsWithBothThemes(t *testing.T) {
 				"<em>emphasis</em>", "<strong>strong text</strong>",
 				"<h2>", "<h3>", "<h4>", "<h5>", "<h6>",
 				"<ul>", "<ol>", "<blockquote>", "<hr", "<br", "<table>",
-				`href="/services/"`, `href="/contact/"`, `src="/seedling.svg"`,
+				`href="/services/"`, `href="/contact/"`, `src="/placeholder.svg"`,
 				"<figcaption>", `class="captioned-image"`, `<span class="kn">import</span>`,
 				"&lt;p&gt;This is code", "<pre><code>cress site build",
 				`<abbr title="Frequently asked questions">FAQ</abbr>`,

@@ -57,7 +57,7 @@ highlight = true
 # Optional branding. Omit unused fields rather than setting empty asset URLs.
 # Asset URLs can also be absolute HTTP/HTTPS URLs; Cress does not fetch them.
 # [brand]
-# color = "#346b38" # Browser theme-color metadata, not the built-in CSS palette.
+# color = "#346b38" # Accent color for links and buttons; aim for 4.5:1 against white.
 # favicon = "/images/favicon.svg"
 
 # Optional logo. Place the file in static/images/ and provide both fields.
