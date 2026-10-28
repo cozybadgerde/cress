@@ -186,6 +186,10 @@ templates, public CSS, manifest, and exact `en`/`de` labels. They do not
 merge with the skeleton or with each other. Neither consumes custom keys.
 Same-name local packages replace them completely.
 
+Their landing CSS emphasizes the body's first paragraph and a directly
+following paragraph that contains only one link. This is a styling
+convention over the prepared body, not page data or a link class.
+
 Their stable manifest baseline is Cress 1.0.0. Embedded packages ship with
 the executable and are tested together; local packages undergo runtime
 compatibility checks, including during prerelease development.

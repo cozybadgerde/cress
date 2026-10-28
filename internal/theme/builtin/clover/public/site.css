@@ -33,8 +33,11 @@ main { max-width: var(--content-width); margin: auto; padding: 2.5rem var(--gutt
 h1, h2, h3 { line-height: 1.2; }
 h1 { font-size: clamp(2rem, 5vw, 3.25rem); margin: 0 0 1.25rem; }
 h2 { font-size: 1.6rem; margin-top: 2rem; }
-.hero { padding: clamp(1rem, 4vw, 3rem); background: var(--surface); border-inline-start: .3rem solid var(--link); margin-bottom: 2rem; }
-.hero h1 { max-width: 22ch; }
+.hero { padding: clamp(2rem, 6vw, 4.5rem) clamp(1.25rem, 5vw, 4rem); background: var(--link); color: var(--background); margin-bottom: clamp(2rem, 5vw, 3rem); }
+.hero > * + * { margin-top: 1.25rem; }
+.hero h1 { max-width: 16ch; margin: 0; font-size: clamp(2.4rem, 7vw, 4.75rem); font-weight: 800; letter-spacing: -.03em; line-height: 1.05; text-wrap: balance; }
+.hero a { color: var(--background); }
+.hero a:focus-visible { outline-color: var(--background); }
 img { max-width: 100%; height: auto; }
 figure { margin: 1.5rem 0; }
 figcaption, .image-caption, .date { font-size: 1rem; }
@@ -52,5 +55,11 @@ code { font-family: ui-monospace, monospace; font-size: .95em; overflow-wrap: an
 :not(pre) > code { padding: .1em .25em; background: var(--surface); color: var(--text); }
 .table-wrapper { overflow-x: auto; margin-block: 1.5rem; }
 table { border-collapse: collapse; width: 100%; overflow-wrap: normal; }
-th, td { border: 1px solid var(--border); padding: .6rem; text-align: start; vertical-align: top; }
+th, td { border: 1px solid var(--border); padding: .6rem; text-align: start; vertical-align: top; font-variant-numeric: tabular-nums; }
 blockquote { border-inline-start: 3px solid var(--border); margin-inline: 0; padding-inline-start: 1rem; }
+.landing .prose { max-width: 50rem; }
+.landing .prose > p:first-child { font-size: clamp(1.15rem, 2.2vw, 1.35rem); line-height: 1.55; max-width: 38em; margin-top: 0; }
+.landing .prose > p:first-child + p:has(> a:only-child) { margin-bottom: clamp(2rem, 5vw, 3rem); }
+.landing .prose > p:first-child + p:has(> a:only-child) a { display: inline-block; padding: .85rem 1.5rem; background: var(--link); color: var(--background); font-weight: 700; text-decoration: none; border-radius: .375rem; }
+.landing .prose > p:first-child + p:has(> a:only-child) a:hover { background: var(--text); }
+.landing .prose > h2 { font-size: clamp(1.6rem, 3.5vw, 2.1rem); font-weight: 800; letter-spacing: -.02em; text-wrap: balance; margin: clamp(2.5rem, 6vw, 4rem) 0 .75rem; padding-top: 1rem; border-top: .25rem solid var(--text); }

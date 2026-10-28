@@ -549,6 +549,24 @@ and release-tag examples remain where they explain required behavior.
   Poppy/Clover landing compositions using existing prepared data.
   The maintainer approved that direction; concrete designs and any
   contract changes still need agreement. No new release blockers.
+- [x] Prepare persona content fixtures under the gitignored
+  `tmp/theme-exploration/`: coach with Poppy and cleaning with Clover.
+  Both demonstrate an offer-first, Services-first journey and secondary
+  contact route. These are fictional design examples, not shipped scaffold
+  replacements or working booking, purchase, or newsletter services.
+- [x] Choose distinct landing compositions and check consultant and
+  restaurant fixtures. Poppy: calm single column, sans headings throughout,
+  outlined primary link. Clover: solid title block, heavy section rules,
+  filled primary link. The primary link is a CSS convention (a lone-link
+  paragraph after the first paragraph); no data fields or link classes.
+  The scaffold now leads with a Services link. Firefox covers 320/1280px.
+- [ ] Loose threads from the composition work: Clover's seedling image keeps
+  Poppy's green palette; Clover's blue reads corporate for hospitality
+  (palette remains a local-theme choice); optional landing image layout
+  was not explored beyond the scaffold image; CSS ignores text nodes, so a
+  paragraph with text around a single link in that position is also styled
+  as the primary link. Polish and keyboard/screen-reader review belong to
+  the accessibility matrix.
 
 External release blockers remain:
 

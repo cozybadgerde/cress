@@ -81,11 +81,17 @@ outside disposable directories, and deploy only their built `public/` output.
 
 ## Built-in themes
 
-Poppy uses a warm background, dark green palette, serif headings, and
-generous spacing for freelancer sites. Clover uses a white/slate and dark
-blue system-sans layout for small businesses. Both use system fonts, local
+Poppy uses a warm background, dark green palette, calm sans headings,
+and generous single-column spacing for freelancer sites. Clover uses a
+white/slate and dark blue layout with a solid title block and heavy
+section headings for small businesses. Both use system fonts, local
 CSS, no scripts, and no remote assets. Both support all page types and
-captioned content. Landing pages have a wider hero treatment.
+captioned content.
+
+On landing pages, both themes enlarge the first paragraph. The paragraph
+directly after it is shown as the primary action when its only element is
+one link: outlined in Poppy, filled in Clover. Keep that paragraph to the
+link alone; other links stay ordinary links.
 
 Select a theme with `[theme] name = "poppy"` or `"clover"`. A complete
 same-name local package takes priority, including over the default poppy.
