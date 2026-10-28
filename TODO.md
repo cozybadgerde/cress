@@ -561,8 +561,9 @@ and release-tag examples remain where they explain required behavior.
   paragraph after the first paragraph); no data fields or link classes.
   The scaffold now leads with a Services link. Firefox covers 320/1280px.
 - [x] Keep header, navigation, and footer at one frame width on every page.
-  Landing pages no longer widen the frame; other pages align their readable
-  content measure with the frame's left edge.
+  The frame is sized to the reading measure (Poppy 52rem, Clover 56rem
+  with 1.0625rem body text), so content fills it and shares both edges.
+  Clover's header and footer drop their borders; the surface tint separates.
 - [x] Use `[brand] color` as the built-in themes' accent (links, buttons,
   Clover's title block). Cress warns below 4.5:1 against white and keeps
   building; Clover's header/footer links use the text color. ADR 0007,

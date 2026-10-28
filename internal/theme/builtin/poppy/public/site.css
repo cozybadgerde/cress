@@ -8,7 +8,7 @@
   --syntax-keyword: #005a9c;
   --syntax-string: #7d2300;
   --syntax-comment: #525252;
-  --content-width: 76rem;
+  --content-width: 52rem;
   --gutter: clamp(1rem, 4vw, 4rem);
 }
 * { box-sizing: border-box; }
@@ -37,8 +37,6 @@ nav ul { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; padding: 0; margin: 
 nav a { display: inline-block; padding: .5rem .25rem; }
 [aria-current="page"] { font-weight: 700; text-decoration-thickness: .15em; }
 main { max-width: var(--content-width); margin: auto; padding: 2rem var(--gutter) 4rem; }
-main:not(.landing) > * { max-width: 48rem; }
-.prose { max-width: 44rem; }
 h1, h2, h3 { line-height: 1.2; font-weight: 650; letter-spacing: -.02em; text-wrap: balance; }
 h1 { font-size: clamp(2.25rem, 6vw, 4rem); margin: 0 0 1.5rem; }
 h2 { margin-top: 2rem; font-size: 1.8rem; }
@@ -63,7 +61,6 @@ code { font-family: ui-monospace, monospace; font-size: .95em; overflow-wrap: an
 table { border-collapse: collapse; width: 100%; overflow-wrap: normal; }
 th, td { border: 1px solid var(--border); padding: .6rem; text-align: start; vertical-align: top; font-variant-numeric: tabular-nums; }
 blockquote { border-inline-start: 3px solid var(--border); margin-inline: 0; padding-inline-start: 1rem; }
-.landing .prose { max-width: 42rem; }
 .landing .prose > p:first-child { font-size: clamp(1.2rem, 2.4vw, 1.4rem); line-height: 1.55; margin-top: 0; }
 .landing .prose > p:first-child + p:has(> a:only-child) { margin: 2rem 0 clamp(3rem, 8vw, 5rem); }
 .landing .prose > p:first-child + p:has(> a:only-child) a { display: inline-block; padding: .8rem 1.6rem; border: 2px solid var(--link); border-radius: 999px; font-weight: 600; text-decoration: none; }
