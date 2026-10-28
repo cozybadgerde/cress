@@ -93,6 +93,11 @@ directly after it is shown as the primary action when its only element is
 one link: outlined in Poppy, filled in Clover. Keep that paragraph to the
 link alone; other links stay ordinary links.
 
+A landing page's title image is cropped to a wide 5:2 band so the
+introduction stays near the top: below the title in Poppy, directly
+under the title block in Clover. Keep the subject near the centre. A
+`[site.image]` default also appears there unless the page overrides it.
+
 Select a theme with `[theme] name = "poppy"` or `"clover"`. A complete
 same-name local package takes priority, including over the default poppy.
 Invalid local packages never fall back. The embedded development skeleton

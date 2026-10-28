@@ -569,9 +569,13 @@ and release-tag examples remain where they explain required behavior.
   building; Clover's header/footer links use the text color. ADR 0007,
   USER.md, and ACCESSIBILITY.md record the change. The scaffold seedling is
   replaced by a neutral, labelled photo placeholder.
+- [x] Crop landing title images to a 5:2 band so the introduction and
+  primary link stay near the first screen. Clover renders the image below
+  its title block instead of inside it.
 - [ ] Loose threads: Poppy's cream background lowers brand contrast slightly,
   so colors just above the white threshold may fall just short on it;
-  optional landing image layout with real photos is unexplored; CSS ignores
+  the 5:2 landing crop is checked only with the placeholder, not real
+  photos; a `[site.image]` default also fills every landing hero; CSS ignores
   text nodes, so a paragraph with text around a single link right after the
   first paragraph is also styled as the primary link. Keyboard and
   screen-reader review belong to the accessibility matrix.

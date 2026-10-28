@@ -37,6 +37,10 @@ h2 { font-size: 1.6rem; margin-top: 2rem; }
 .hero h1 { max-width: 16ch; margin: 0; font-size: clamp(2.4rem, 7vw, 4.75rem); font-weight: 800; letter-spacing: -.03em; line-height: 1.05; text-wrap: balance; }
 .hero a { color: var(--background); }
 .hero a:focus-visible { outline-color: var(--background); }
+.hero > :last-child { margin-bottom: 0; }
+.hero:has(+ .title-image) { margin-bottom: 0; }
+.landing > .title-image { margin: 0 0 clamp(2rem, 5vw, 3rem); }
+.landing > .title-image img { display: block; width: 100%; aspect-ratio: 5 / 2; object-fit: cover; }
 img { max-width: 100%; height: auto; }
 figure { margin: 1.5rem 0; }
 figcaption, .image-caption, .date { font-size: 1rem; }

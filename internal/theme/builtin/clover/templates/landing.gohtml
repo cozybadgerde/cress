@@ -3,8 +3,8 @@
     <section class="hero" aria-labelledby="page-title">
       <h1 id="page-title">{{.Title}}</h1>
       {{template "dates" .}}
-      {{template "title-image" .}}
     </section>
+    {{template "title-image" .}}
     <div class="prose">{{.Body}}</div>
   </main>
 {{template "document-end" .}}

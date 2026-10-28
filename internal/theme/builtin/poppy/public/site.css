@@ -41,6 +41,8 @@ h1, h2, h3 { line-height: 1.2; font-weight: 650; letter-spacing: -.02em; text-wr
 h1 { font-size: clamp(2.25rem, 6vw, 4rem); margin: 0 0 1.5rem; }
 h2 { margin-top: 2rem; font-size: 1.8rem; }
 .hero h1 { max-width: 16ch; font-size: clamp(2.5rem, 7vw, 5rem); }
+/* A cropped banner keeps the introduction and lead link near the first screen. */
+.hero .title-image img { display: block; width: 100%; aspect-ratio: 5 / 2; object-fit: cover; }
 img { max-width: 100%; height: auto; }
 figure { margin: 1.5rem 0; }
 figcaption, .image-caption { font-size: 1rem; }
