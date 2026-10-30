@@ -19,7 +19,7 @@ var sources embed.FS
 // Init creates a ready-to-build site without adopting or overwriting files.
 func Init(ctx context.Context, directory, name string) (initErr error) {
 	if !theme.IsBuiltin(name) {
-		return fmt.Errorf("site init theme must be poppy or clover, got %q", name)
+		return fmt.Errorf("site init theme must be poppy, clover, or anemone, got %q", name)
 	}
 	if err := ctx.Err(); err != nil {
 		return err

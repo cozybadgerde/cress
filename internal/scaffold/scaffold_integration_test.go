@@ -13,11 +13,11 @@ import (
 	"github.com/cozybadgerde/cress/internal/scaffold"
 )
 
-func TestInitializedSiteBuildsWithBothThemes(t *testing.T) {
+func TestInitializedSiteBuildsWithAllThemes(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping filesystem integration test")
 	}
-	for _, name := range []string{"poppy", "clover"} {
+	for _, name := range []string{"poppy", "clover", "anemone"} {
 		t.Run(name, func(t *testing.T) {
 			site := filepath.Join(t.TempDir(), "site")
 			if err := scaffold.Init(context.Background(), site, name); err != nil {
@@ -55,6 +55,7 @@ func TestInitializedSiteBuildsWithBothThemes(t *testing.T) {
 				`<h4 id="a-smaller-topic">`, `<h5 id="a-detail">`, `<h6 id="the-smallest-heading">`,
 				`href="#heading-levels"`, `href="#links"`, `<h2 id="links">Links</h2>`,
 				"<ul>", "<ol>", "<blockquote>", "<hr", "<br", "<table>",
+				`class="align-left"`, `class="align-center"`, `class="align-right"`,
 				`href="/services/"`, `href="/contact/"`, `src="/placeholder.svg"`,
 				"<figcaption>", `class="captioned-image"`, `<span class="kn">import</span>`,
 				"&lt;p&gt;This is code", "<pre><code>cress site build",
@@ -89,7 +90,7 @@ func TestInitializedConfigOptionalExamples(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping filesystem integration test")
 	}
-	for _, name := range []string{"poppy", "clover"} {
+	for _, name := range []string{"poppy", "clover", "anemone"} {
 		t.Run(name, func(t *testing.T) {
 			site := filepath.Join(t.TempDir(), "site")
 			if err := scaffold.Init(context.Background(), site, name); err != nil {

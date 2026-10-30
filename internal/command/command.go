@@ -42,7 +42,7 @@ func NewCommand(deps Deps) *cli.Command {
 					{
 						Name: "init", Usage: "Create a new sample site in a new or empty directory",
 						ArgsUsage: "[directory]", Action: initSite,
-						Flags: []cli.Flag{&cli.StringFlag{Name: "theme", Value: theme.DefaultName, Usage: "Built-in theme: poppy or clover"}},
+						Flags: []cli.Flag{&cli.StringFlag{Name: "theme", Value: theme.DefaultName, Usage: "Built-in theme: poppy, clover, or anemone"}},
 					},
 					{
 						Name:      "build",

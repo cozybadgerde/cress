@@ -22,7 +22,7 @@ var embedded embed.FS
 const DefaultName = "poppy"
 
 // IsBuiltin reports which complete themes ship with the executable.
-func IsBuiltin(name string) bool { return name == "poppy" || name == "clover" }
+func IsBuiltin(name string) bool { return name == "poppy" || name == "clover" || name == "anemone" }
 
 // Request selects a package and prepares its language and deployment URLs.
 type Request struct {

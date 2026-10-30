@@ -86,7 +86,7 @@ func TestSiteInitCommand(t *testing.T) {
 				args = append(args, site)
 			case "new directory":
 				site = filepath.Join(site, "new site")
-				name = "clover"
+				name = "anemone"
 				args = append(args, "--theme", name, site)
 			case "flags after directory":
 				name = "clover"

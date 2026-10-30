@@ -2,6 +2,9 @@
 
 Status: accepted.
 
+The bundled-theme count is superseded by
+[ADR 0020](0020-third-bundled-theme.md). Other decisions remain unchanged.
+
 Date: 2026-10-15.
 
 Decision-maker: Daniel Schier, Product Owner of Cozy Badger.

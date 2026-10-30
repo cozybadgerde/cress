@@ -7,7 +7,7 @@ Level AA for complete default pages, not arbitrary customized sites.
 No conformance or legal-compliance claim is made.
 
 The assessment fixtures are the seven English pages created by `site init`
-with each of `poppy` and `clover`: home landing, services with a table,
+with each of `poppy`, `clover`, and `anemone`: home landing, services with a table,
 about, contact with opening hours, journal list, and dated article with
 captioned code, plus a content tour with Markdown and authored HTML examples.
 The tour also demonstrates automatic and explicit Markdown heading targets
@@ -30,9 +30,21 @@ skip target, labeled navigation, local assets, page types, and initialization.
 luminance: at least 4.5:1 for text, including syntax colors, and 3:1 for
 boundaries. These checks do not measure rendered pixels or browser behavior.
 
-No browser, operating-system accessibility tree, assistive technology,
-keyboard, touch, zoom, or user testing result is recorded yet.
-Browser automation remains outside the agreed scope.
+On 2026-10-30, Anemone passed the same automated palette, markup, localization,
+and initialized-site checks. Filesystem tests also cover image-free pages,
+an empty list, German dates, and a deployment prefix.
+
+A scoped visual review on macOS with Firefox 158.0.1 inspected Anemone at
+1280 and 320 CSS pixels: default landing and list pages, the content tour,
+image-free and title-image landings, long titles, links, code, and tables.
+Desktop inspection confirmed image-only rotation, upright captions, and
+the side masthead. Narrow screenshots confirmed stacked layout, unrotated
+images, wrapped long content, and table overflow contained in its wrapper.
+These one-off checks are not a complete-page accessibility assessment.
+
+No operating-system accessibility tree, assistive technology, keyboard,
+touch, zoom, or user testing result is recorded yet. A persistent browser
+automation suite remains outside the agreed scope.
 
 ## Human review procedure
 
@@ -41,10 +53,11 @@ Generate fresh fixtures using the current executable:
 ```sh
 cress site init --theme poppy poppy-review
 cress site init --theme clover clover-review
+cress site init --theme anemone anemone-review
 cress site preview --port 0 poppy-review
 ```
 
-Stop the first preview before reviewing clover with the equivalent command.
+Stop each preview before reviewing the next theme with the equivalent command.
 Use each printed URL. Also review German exact-language labels by changing
 `site.language` to `de`; sample page content itself remains English and
 must be translated or language-marked for a German-language assessment.
@@ -66,7 +79,7 @@ HTML and customizations separately when they are present.
 
 Every row remains pending human confirmation. "Not present" is a proposed
 applicability decision for these fixtures, not a universal exemption.
-Record a separate outcome for both themes and every affected page.
+Record a separate outcome for all three themes and every affected page.
 
 | Criteria | Current evidence or applicability to confirm |
 |----------|---------------------------------------------|
@@ -136,7 +149,9 @@ and Clover's title block. Cress warns when it has less than 4.5:1 contrast
 against white as a reference only, not an assessment of the selected theme.
 Dark or tinted themes may intentionally use colors with low contrast
 against white. Check actual text/background pairs whether or not a warning
-appears; Poppy's off-white background also changes the measured contrast.
+appears; Poppy's off-white and Anemone's paper backgrounds also change
+the measured contrast. In Anemone, inspect framed images at wide and narrow
+widths, unrotated captions, image-free pages, and side-masthead reading order.
 Arbitrary custom CSS, raw HTML,
 third-party themes, changed navigation/content, or brand assets need
 assessment of the resulting complete pages. Passing tests is not

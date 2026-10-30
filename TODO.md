@@ -239,7 +239,7 @@ cleanup commit is currently required.
 - [x] Before phase 4, review the remaining list and publication-metadata
   work and clarify date formats, list configuration and render data,
   excerpts, and origin-dependent generated files and warnings.
-- [ ] In phase 8, assess complete pages for both shipped themes against
+- [ ] Assess complete pages for all three shipped themes against
   WCAG 2.2 AA. Current tests cover generated markup and caption association,
   not complete-page accessibility or publisher-authored HTML.
 
@@ -492,12 +492,12 @@ No tag, publication, commit, or push is authorized by this phase.
 #### Phase 9.5: Markdown features and a third built-in theme
 
 Agreed scope: strikethrough, linkable Markdown headings, static task lists,
-and one paper/Scandi theme alongside poppy and clover. Three bundled themes
-are enough for this scope. Heading targets are approved under
-[ADR 0017](docs/adr/0017-markdown-heading-targets.md). Other interfaces and
-the visual design remain to be agreed before implementation.
+and Anemone, a paper/Scandi theme alongside Poppy and Clover. Three bundled
+themes are enough for this scope. Heading targets are approved under
+[ADR 0017](docs/adr/0017-markdown-heading-targets.md); the third theme under
+[ADR 0020](docs/adr/0020-third-bundled-theme.md).
 
-- [ ] Before implementation, update the owning product requirements and
+- [x] Before implementation, update the owning product requirements and
   decision records for the agreed scope, including the third bundled
   theme and its acceptance coverage.
 - [x] Agree heading-ID behavior: automatic IDs, explicit author overrides,
@@ -519,16 +519,17 @@ the visual design remain to be agreed before implementation.
   behavior and existing content interactions. Demonstrate and build both
   features with both bundled themes [23]. Human accessibility assessment
   remains part of the existing release gate.
-- [ ] Agree the paper/Scandi theme's presentation contract before building.
-  Aim for a playful, editorial alternative for makers, independent shops,
-  cafes, and creative businesses, distinct from poppy rather than another
-  off-white palette. Explore framed images, restrained rotation of image
-  frames, and subtle shadows without rotating text. Keep pages useful
-  without photographs.
-- [ ] Build only the selected third theme with all required page types,
-  content features, navigation, and labels. Update initialization and
-  references, and assess complete default pages against the existing
-  accessibility release baseline.
+- [x] Agree Anemone's presentation contract before building: a quiet editorial
+  alternative with serif headings, a desktop side masthead, framed images,
+  restrained image-only rotation, and subtle shadows. Text and captions
+  stay upright; narrow layouts drop rotation. Keep pages useful without
+  photographs. Record the contract in ADR 0020 and the theme/user references.
+- [x] Build Anemone with all required page types, content features,
+  navigation, and exact English/German labels. Update initialization,
+  references, and automated coverage for all three themes. Inspect Anemone
+  at 320px and 1280px, including image-free pages, title images, long text,
+  tables, code, captions, and the content tour. Keep the complete human
+  accessibility assessment as the separate release gate below.
 
 Deferred, not implementation commitments:
 
@@ -654,7 +655,7 @@ and release-tag examples remain where they explain required behavior.
 
 External release blockers remain:
 
-- [ ] Complete the human accessibility matrix for both themes and all
+- [ ] Complete the human accessibility matrix for all three themes and all
   default page types; fix and retest every applicable A/AA failure.
   Include table-wrapper keyboard behavior with and without overflow; its
   unconditional focus target is unchanged by the boundary review.

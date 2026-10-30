@@ -25,7 +25,7 @@ Cress provides:
 - Ordinary content pages, landing pages, and list pages.
 - Free-form content folders with clean, portable URLs.
 - Explicit main and footer navigation.
-- Two built-in themes and support for local third-party themes.
+- Three built-in themes and support for local third-party themes.
 - Site and theme initialization, static builds, and a local preview with
   automatic rebuilds.
 - JSON schemas and references for configuration and frontmatter.
@@ -48,7 +48,8 @@ Open the printed loopback URL. Stop preview with Ctrl-C, edit the sample
 content and identity, and build deployable output with
 `./bin/cress site build my-site`. Deployment stays external.
 Poppy is the default freelancer theme; use `site init --theme clover`
-for the small-business theme. Both are embedded and work offline.
+for the small-business theme or `site init --theme anemone` for the
+paper/Scandi editorial theme. All three are embedded and work offline.
 
 The [user reference](docs/USER.md) documents authoring and output safety.
 The [installation reference](docs/INSTALL.md) covers future release archives.

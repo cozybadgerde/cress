@@ -26,11 +26,11 @@ path = "/"
 # caption = "Meet our team. [Photo credit](https://example.org/credits/)"
 
 [theme]
-# Built-ins: "poppy" (default) or "clover"; also accepts a local theme name.
+# Built-ins: "poppy" (default), "clover", "anemone"; also accepts local names.
 # A complete themes/<name>/ overrides a built-in; invalid packages fail.
 name = "poppy"
 
-# Optional theme-defined TOML data. Neither built-in uses custom keys.
+# Optional theme-defined TOML data. No built-in uses custom keys.
 # Add only keys documented by your chosen local theme.
 # [theme.custom]
 
@@ -61,7 +61,7 @@ highlight = true
 # favicon = "/images/favicon.svg"
 
 # Optional logo. Place the file in static/images/ and provide both fields.
-# Both built-ins render it; alt can be "" for a decorative image.
+# All built-ins render it; alt can be "" for a decorative image.
 # [brand.logo]
 # src = "/images/logo.svg"
 # alt = "Your business"

@@ -1,0 +1,12 @@
+{{template "document-start" .}}
+  <main id="main" class="landing" tabindex="-1">
+    <section class="hero{{if .Image}} with-image{{end}}" aria-labelledby="page-title">
+      <div class="page-heading">
+        <h1 id="page-title">{{.Title}}</h1>
+        {{template "dates" .}}
+      </div>
+      {{template "title-image" .}}
+    </section>
+    <div class="prose">{{.Body}}</div>
+  </main>
+{{template "document-end" .}}

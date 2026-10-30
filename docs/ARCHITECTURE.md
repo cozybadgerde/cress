@@ -5,7 +5,7 @@ responsibilities, data flow, and failure boundaries. The
 [PRD](PRD.md) owns product behavior. The [ADRs](adr/) own decision
 rationale. This guide links to both instead of repeating them.
 
-Status: implemented generator structure. Poppy and clover, site/theme
+Status: implemented generator structure. Poppy, Clover, Anemone, site/theme
 initialization, complete generation, recoverable output replacement, and
 isolated preview are available. Release tooling is separate from the
 offline executable; outstanding release evidence lives in the work plan.
@@ -245,7 +245,7 @@ model, not on content preparation internals. Interfaces appear at a real
 test seam or a second implementation.
 
 Prefer the Go standard library, including `html/template` for rendering.
-The theme skeleton, both complete built-in packages, and site scaffold are
+The theme skeleton, all three complete built-in packages, and site scaffold are
 embedded in the executable. The [user reference](USER.md) describes usage,
 and the [theme reference](THEMES.md) owns the render-model fields.
 See the [developer guide](DEVELOPER.md) for commands and layout.

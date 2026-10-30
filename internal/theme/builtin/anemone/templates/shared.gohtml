@@ -1,0 +1,63 @@
+{{define "document-start"}}<!doctype html>
+<html lang="{{.Site.Language}}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}}{{with .Site.Title}} | {{.}}{{end}}</title>
+  {{if .Description}}<meta name="description" content="{{.Description}}">{{end}}
+  {{if .Canonical}}<link rel="canonical" href="{{.Canonical}}">{{end}}
+  {{with .Site.Brand.Favicon}}<link rel="icon" href="{{.}}">{{end}}
+  {{with .Site.Brand.Color}}<meta name="theme-color" content="{{.}}">{{end}}
+  <link rel="stylesheet" href="{{asset "site.css"}}">
+  {{with .Site.Brand.Color}}<style>:root { --link: {{.}}; }</style>{{end}}
+</head>
+<body>
+  <a class="skip-link" href="#main">{{label "skip"}}</a>
+  {{if or .Site.Title .Site.Navigation.Main .Site.Brand.Logo}}
+  <header class="site-header">
+    <div class="identity">
+      {{with .Site.Brand.Logo}}<img class="logo" src="{{.URL}}" alt="{{.Alt}}">{{end}}
+      {{with .Site.Title}}<a class="site-title" href="{{$.Site.URL}}">{{.}}</a>{{end}}
+    </div>
+    {{with .Site.Navigation.Main}}
+    <nav aria-label="{{label "main_navigation"}}">
+      <ul>{{range .}}<li><a href="{{.URL}}"{{if eq .URL $.URL}} aria-current="page"{{end}}>{{.Label}}</a></li>{{end}}</ul>
+    </nav>
+    {{end}}
+  </header>
+  {{end}}
+{{end}}
+
+{{define "title-image"}}
+  {{with .Image}}
+  <figure class="title-image"><img src="{{.URL}}" alt="{{.Alt}}">
+    {{with .Caption}}<figcaption>{{range .}}{{if .URL}}<a href="{{.URL}}">{{.Text}}</a>{{else}}{{.Text}}{{end}}{{end}}</figcaption>{{end}}
+  </figure>
+  {{end}}
+{{end}}
+
+{{define "entry-image"}}
+  {{with .Image}}
+  <figure class="title-image"><img src="{{.URL}}" alt="{{.Alt}}" loading="lazy" decoding="async">
+    {{with .Caption}}<figcaption>{{range .}}{{if .URL}}<a href="{{.URL}}">{{.Text}}</a>{{else}}{{.Text}}{{end}}{{end}}</figcaption>{{end}}
+  </figure>
+  {{end}}
+{{end}}
+
+{{define "dates"}}
+  {{with .PublishedAt}}<p class="date">{{label "published"}} <time datetime="{{.}}">{{.}}</time></p>{{end}}
+  {{with .UpdatedAt}}<p class="date">{{label "updated"}} <time datetime="{{.}}">{{.}}</time></p>{{end}}
+{{end}}
+
+{{define "document-end"}}
+  {{if or .Site.Copyright .Site.Navigation.Footer}}
+  <footer class="site-footer">
+    {{with .Site.Navigation.Footer}}
+    <nav aria-label="{{label "footer_navigation"}}"><ul>{{range .}}<li><a href="{{.URL}}">{{.Label}}</a></li>{{end}}</ul></nav>
+    {{end}}
+    {{with .Site.Copyright}}<p>{{.}}</p>{{end}}
+  </footer>
+  {{end}}
+</body>
+</html>
+{{end}}

@@ -11,7 +11,7 @@ import (
 )
 
 func TestBuiltinPackagesAndExactLabels(t *testing.T) {
-	for _, name := range []string{"poppy", "clover"} {
+	for _, name := range []string{"poppy", "clover", "anemone"} {
 		source, err := fs.Sub(embedded, "builtin/"+name)
 		if err != nil {
 			t.Fatal(err)
@@ -40,7 +40,7 @@ func TestBuiltinPackagesAndExactLabels(t *testing.T) {
 
 func TestBuiltinDefaultPaletteContrast(t *testing.T) {
 	variable := regexp.MustCompile(`--([a-z-]+):\s*(#[0-9a-f]{6})`)
-	for _, name := range []string{"poppy", "clover"} {
+	for _, name := range []string{"poppy", "clover", "anemone"} {
 		data, err := embedded.ReadFile("builtin/" + name + "/public/site.css")
 		if err != nil {
 			t.Fatal(err)

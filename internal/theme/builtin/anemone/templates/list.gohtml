@@ -1,0 +1,28 @@
+{{template "document-start" .}}
+  <main id="main" tabindex="-1">
+    <header class="page-heading">
+      <h1>{{.Title}}</h1>
+      {{template "dates" .}}
+    </header>
+    {{template "title-image" .}}
+    <div class="prose">{{.Body}}</div>
+    {{with .Entries}}
+    <ul class="entries">
+      {{range .}}
+      <li>
+        <div class="entry-heading">
+          <h2><a href="{{.URL}}">{{.Title}}</a></h2>
+          {{template "dates" .}}
+        </div>
+        {{if or .Image .Excerpt}}
+        <div class="entry-content">
+          {{template "entry-image" .}}
+          {{with .Excerpt}}<p>{{.}}</p>{{end}}
+        </div>
+        {{end}}
+      </li>
+      {{end}}
+    </ul>
+    {{end}}
+  </main>
+{{template "document-end" .}}

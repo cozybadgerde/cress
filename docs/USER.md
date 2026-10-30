@@ -1,9 +1,9 @@
 # Using Cress
 
 Cress builds ordinary, landing, and list pages offline using the built-in
-`poppy` and `clover` themes or complete local theme packages. Poppy is the
-default when no theme is selected. Release readiness and human accessibility
-review are tracked in the [work plan](../TODO.md).
+`poppy`, `clover`, and `anemone` themes or complete local theme packages.
+Poppy is the default when no theme is selected. Release readiness and human
+accessibility review are tracked in the [work plan](../TODO.md).
 
 ## Commands
 
@@ -29,8 +29,8 @@ exist. Partial initialization failures leave files for inspection, not
 automatic removal or overwriting. The command does not change `cress.toml`.
 Select the result with `[theme] name = "<name>"`.
 
-`cress site init [directory] [--theme poppy|clover]` creates a small English
-sample site in a new or completely empty directory; the default is `.`.
+`cress site init [directory] [--theme poppy|clover|anemone]` creates a small
+English sample site in a new or completely empty directory; the default is `.`.
 The parent directory must exist. Targets that are files, symlinks, or
 nonempty directories are refused, including hidden files. No merge, Git
 initialization, automatic build, or network access occurs. Partial failures
@@ -56,6 +56,7 @@ Edit the sample identity, content, contact details, and navigation before
 publication. Set `site.host` to your public HTTP/HTTPS origin for canonicals
 and sitemap output; it is intentionally unset initially and causes a warning.
 Use `--theme clover` during initialization for the small-business layout.
+Use `--theme anemone` for the paper/Scandi editorial layout.
 
 ## Testing a site
 
@@ -74,8 +75,9 @@ Preview rebuilds on changes; refresh the browser manually. Stop with Ctrl-C.
 Omitting `site.host` is fine for local testing; the warning reminds you to
 set it before publishing.
 
-To test the other built-in, initialize another new directory with
-`cress site init --theme clover test-clover`. Initialization never resets
+To compare built-ins, initialize another new directory with
+`cress site init --theme clover test-clover` or
+`cress site init --theme anemone test-anemone`. Initialization never resets
 or overwrites an existing nonempty project. Keep real project sources
 outside disposable directories, and deploy only their built `public/` output.
 
@@ -84,31 +86,41 @@ outside disposable directories, and deploy only their built `public/` output.
 Poppy uses a chalk off-white background, dark green palette, calm sans headings,
 and generous single-column spacing for freelancer sites. Clover uses a
 white/slate and dark blue layout with a solid title block and heavy
-section headings for small businesses. Both use system fonts, local
-CSS, no scripts, and no remote assets. Both support all page types and
-captioned content.
+section headings for small businesses.
 
-On landing pages, both themes enlarge the first paragraph. The paragraph
+Anemone uses warm paper surfaces, dark ink, and editorial serif headings.
+On wide screens a side masthead sits beside the reading column; on narrow
+screens it sits above it. Framed images have soft shadows and slight
+rotation, removed on narrow screens; text and captions never rotate.
+Title images retain their proportions without cropping. Pages work without
+photographs. It suits makers, independent shops, cafes, and creative businesses.
+
+All three use system fonts, local CSS, no scripts, and no remote assets.
+All support every page type and captioned content.
+
+On landing pages, all three themes enlarge the first paragraph. The paragraph
 directly after it is shown as the primary action when it contains only
 one direct Markdown link: outlined in Poppy, filled in Clover. Formatting
-inside the link is allowed. Paragraphs with surrounding text or additional
-links stay ordinary prose. This is a theme choice using Cress's neutral
+inside the link is allowed. Anemone instead gives that link a bold underline
+and more space, without a filled button. Paragraphs with surrounding text or
+additional links stay ordinary prose. This is a theme choice using Cress's neutral
 `standalone-link` paragraph class, not a generator-selected primary action.
 
-A landing page's title image is cropped to a wide 5:2 band so the
-introduction stays near the top: below the title in Poppy, directly
+In Poppy and Clover, a landing page's title image is cropped to a wide 5:2
+band so the introduction stays near the top: below the title in Poppy, directly
 under the title block in Clover. Keep the subject near the centre. A
 `[site.image]` default also appears there unless the page overrides it.
 
-Select a theme with `[theme] name = "poppy"` or `"clover"`. A complete
-same-name local package takes priority, including over the default poppy.
+Select a theme with `[theme] name = "poppy"`, `"clover"`, or `"anemone"`.
+A complete same-name local package takes priority, including over the default
+Poppy.
 Invalid local packages never fall back. The embedded development skeleton
-is used only by `theme init`, not as a third theme.
+is used only by `theme init`, not as a selectable theme.
 
 Built-in labels support exact `en` and `de`. Regional tags such as `en-US`
 or `de-CH` do not fall back; use a local theme with the matching locale.
-Page content is not automatically translated. Neither built-in consumes
-`theme.custom` keys. Both use the brand color as their accent. See the
+Page content is not automatically translated. No built-in consumes
+`theme.custom` keys. All use the brand color as their accent. See the
 [accessibility assessment](ACCESSIBILITY.md) for review status and publisher
 responsibilities.
 
@@ -260,7 +272,7 @@ ordering.
 
 The Markdown body appears above the prepared entries. Each entry exposes
 its title, URL, description, image/caption, dates, and optional excerpt,
-but not its body. Both built-ins render linked titles, supplied images,
+but not its body. All built-ins render linked titles, supplied images,
 explicit dates, and excerpts. Empty lists preserve their introduction without
 prescribed empty-state wording.
 
@@ -314,7 +326,7 @@ label = "Partner"
 url = "https://example.net/"
 
 [theme.custom]
-# Theme-specific data; neither built-in consumes custom keys.
+# Theme-specific data; no built-in consumes custom keys.
 ```
 
 | Site field | Default | Meaning |
@@ -377,7 +389,7 @@ preserved. Logo and favicon URLs are site-root or HTTP/HTTPS references.
 They receive the site URL prefix like navigation; targets are not checked.
 A logo requires explicit string `src` and `alt`; `alt = ""` is decorative.
 Omit optional settings instead of supplying empty colors or asset URLs.
-Themes choose how to present brand data. Both built-ins render the logo,
+Themes choose how to present brand data. All built-ins render the logo,
 favicon, and theme-color metadata, and use `color` as their accent for
 links, buttons, and Clover's title block. Cress warns when `color` has less
 than 4.5:1 contrast against white as a reference comparison only. The build
@@ -391,8 +403,8 @@ letters, digits, and hyphens. A selected `themes/<name>/` must be a complete,
 readable package. Invalid local packages fail without merging or fallback.
 Only designated `public/` files publish, under `themes/<name>/` in output;
 all outputs share collision checks. Only a genuinely absent local package
-permits built-in lookup for `poppy` or `clover`. No selection means `poppy`,
-including a same-name complete local override.
+permits built-in lookup for `poppy`, `clover`, or `anemone`.
+No selection means `poppy`, including a same-name complete local override.
 
 Named themes declare runtime compatibility in `theme.json`. Development
 builds reporting `dev` check against an explicit `1.0.0` compatibility

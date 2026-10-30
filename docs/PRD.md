@@ -69,7 +69,7 @@ photographic content, but a specialized gallery engine is not required.
 - Title images and inline images, without image transformation.
 - Optional captions for inline images, title images, and fenced code blocks.
 - One configured language per site.
-- Two built-in themes and locally supplied third-party themes.
+- Three built-in themes and locally supplied third-party themes.
 - Site initialization, static generation, and local preview.
 - Theme initialization for theme development.
 - Version information and usage help.
@@ -284,14 +284,17 @@ escape their intended boundaries.
 
 ## Themes
 
-Provide two built-in themes:
+Provide three built-in themes:
 
 - A coach/freelancer theme.
 - A more corporate small-business theme.
+- A paper/Scandi editorial theme for makers, independent shops, cafes, and
+  creative businesses, structurally distinct and useful without photographs.
 
-Both support the required content capabilities, responsive layouts, and
-the accessibility target. Concrete names and visual designs are not
-selected here.
+All support the required content capabilities, responsive layouts, and
+the accessibility target. Names and presentation contracts belong to the
+[theme reference](USER.md#built-in-themes) and
+[third-theme decision](adr/0020-third-bundled-theme.md).
 
 A theme is a named presentation package. Bundled and third-party themes
 have the same role and follow the same integration contract. Bundling
@@ -299,7 +302,7 @@ changes delivery, not architectural ownership.
 
 Built-in themes work without separate runtime files or downloads.
 Provide an offline, minimal renderable theme skeleton for theme
-initialization. It is developer scaffolding, not a third built-in theme.
+initialization. It is developer scaffolding, not a selectable built-in theme.
 
 Support trusted local third-party themes. A selected local theme takes
 priority over a same-name built-in theme as a complete package, without
@@ -515,8 +518,8 @@ installation. Containers and Homebrew are future distribution options.
 
 ## Acceptance criteria for 1.0
 
-1. An initialized site builds offline using either built-in theme.
-2. Both themes render ordinary, landing, and list pages, contact information,
+1. An initialized site builds offline using each of the three built-in themes.
+2. All three themes render ordinary, landing, and list pages, contact information,
    opening hours, menu tables, images, and ordered main/footer navigation.
 3. Free-form content organization produces portable directory-index routes.
    Cress-resolved links and assets work at a domain root and beneath a URL
@@ -577,7 +580,7 @@ installation. Containers and Homebrew are future distribution options.
     without broken-link checks.
 20. Optional captions for inline images, title images, and fenced code blocks
     display author-provided text and links with the associated content in
-    both shipped themes. Keep image alternatives separate and preserve code
+    all shipped themes. Keep image alternatives separate and preserve code
     escaping and syntax highlighting.
 21. List pages select eligible logical direct children, apply current draft
     visibility, and provide reversible publication/title ordering with
@@ -588,10 +591,10 @@ installation. Containers and Homebrew are future distribution options.
 22. Markdown headings have deterministic link targets with optional explicit
     IDs, numeric suffixes for automatic collisions, explicit-ID priority,
     and clear errors for duplicate or reserved explicit IDs. Raw HTML
-    remains unchanged and both shipped themes preserve heading targets.
+    remains unchanged and all shipped themes preserve heading targets.
 23. Strikethrough renders as semantic deletion markup. Static task lists
     preserve authored completion state with labeled, disabled checkboxes
-    and usable item links, including nested and ordered lists. Both shipped
+    and usable item links, including nested and ordered lists. All shipped
     themes render these features without scripts or new configuration.
 
 These criteria define readiness, not an implementation sequence.
@@ -623,3 +626,4 @@ requirements.
 - [0017: Markdown heading targets](adr/0017-markdown-heading-targets.md).
 - [0018: Strikethrough and static task lists](adr/0018-strikethrough-and-static-task-lists.md).
 - [0019: Neutral standalone-link markup](adr/0019-neutral-standalone-link-markup.md).
+- [0020: Third bundled theme](adr/0020-third-bundled-theme.md).

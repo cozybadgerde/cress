@@ -133,6 +133,10 @@ Open the printed URL and stop preview with Ctrl-C. To compare clover:
 ./bin/cress site preview --port 0 tmp/clover
 ```
 
+For the paper/Scandi theme, use `--theme anemone` and a new site directory,
+such as `tmp/anemone`. Review it with and without images as well as with
+the content tour.
+
 Initialization requires a new or completely empty target with an existing
 parent directory. Reuse an initialized site by editing its sources and
 rebuilding; choose another new directory for a fresh scaffold.

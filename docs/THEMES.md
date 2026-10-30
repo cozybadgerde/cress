@@ -1,8 +1,8 @@
 # Theme development
 
 Themes are complete embedded or local packages. The embedded skeleton exercises all
-page types and supplies offline initialization; it is not a selectable third
-built-in theme. Poppy is the default; clover is the other built-in.
+page types and supplies offline initialization; it is not a selectable
+built-in theme. Poppy is the default; Clover and Anemone are alternatives.
 See [built-in presentation and labels](USER.md#built-in-themes).
 
 ## Package contract
@@ -44,7 +44,7 @@ use the explicit `1.0.0` baseline with a warning, not a compatibility bypass.
 Unknown manifest fields warn; invalid known fields fail. See the
 [manifest schema](../schemas/theme.schema.json).
 
-Only a missing local package permits built-in lookup for poppy or clover.
+Only a missing local package permits built-in lookup for poppy, clover, or anemone.
 Unreadable, invalid, incompatible, or incomplete local packages
 never fall back. No package files merge. Symlinks and special files anywhere
 inside a selected package are rejected.
@@ -93,7 +93,7 @@ cress site preview --port 0 theme-test
 Edit files under `theme-test/themes/my-theme/`; preview rebuilds when they
 change. Refresh the browser manually. Review the home landing page, journal
 list, ordinary pages, and `/tour/` for typography, images, captions, and code.
-The initialized theme is a minimal skeleton, not a copy of poppy or clover.
+The initialized theme is a minimal skeleton, not a copy of a bundled theme.
 
 When working in the Cress repository, use `./bin/cress` after
 `mise run build` and put the site under ignored `tmp/`, for example
@@ -211,14 +211,17 @@ Canonical links are included only when the prepared URL is nonempty.
 
 ## Built-in packages
 
-`internal/theme/builtin/poppy/` and `clover/` each contain their own complete
+`internal/theme/builtin/poppy/`, `clover/`, and `anemone/` each contain complete
 templates, public CSS, manifest, and exact `en`/`de` labels. They do not
-merge with the skeleton or with each other. Neither consumes custom keys.
+merge with the skeleton or with each other. None consumes custom keys.
 Same-name local packages replace them completely.
 
 Their landing CSS emphasizes the body's first paragraph and a directly
 following paragraph that contains only one link. This is a styling
-convention over the prepared body, not page data or a link class.
+convention over the neutral `standalone-link` hook, not primary-action metadata.
+Anemone uses an underlined action rather than a button. It also supplies
+the side-masthead layout, image framing, rotation, and shadows entirely in
+its templates and CSS, without generator-owned layout rules.
 
 Their stable manifest baseline is Cress 1.0.0. Embedded packages ship with
 the executable and are tested together; local packages undergo runtime
