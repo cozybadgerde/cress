@@ -132,6 +132,19 @@ Markdown tables are required. Menus and opening hours can be ordinary
 tables or prose; Cress does not impose a separate business-data model.
 Footnotes are not a 1.0 requirement.
 
+Support strikethrough and static task lists through Goldmark's individual
+built-in extensions, without enabling the whole GitHub Flavored Markdown
+(GFM) bundle. Strikethrough produces semantic deletion markup. Publishers
+must explain important changes in words rather than rely on visual
+strikethrough or its announcement by assistive technology.
+
+Task lists display the completion state authored in Markdown using native
+disabled checkboxes associated with their item's first paragraph. Preserve
+inline formatting, links, ordered and unordered lists, and nested items.
+Task lists are not forms: visitors cannot change or save completion state.
+Publishers supply meaningful task text. No configuration or browser
+JavaScript is required.
+
 Treat publisher-authored Markdown bodies as trusted content. Allow inline
 and block raw HTML without sanitization in builds and local previews.
 Publishers must review imported, contributed, or copied HTML; local files
@@ -570,6 +583,10 @@ installation. Containers and Homebrew are future distribution options.
     IDs, numeric suffixes for automatic collisions, explicit-ID priority,
     and clear errors for duplicate or reserved explicit IDs. Raw HTML
     remains unchanged and both shipped themes preserve heading targets.
+23. Strikethrough renders as semantic deletion markup. Static task lists
+    preserve authored completion state with labeled, disabled checkboxes
+    and usable item links, including nested and ordered lists. Both shipped
+    themes render these features without scripts or new configuration.
 
 These criteria define readiness, not an implementation sequence.
 No performance threshold or adoption target has been agreed.
@@ -598,3 +615,4 @@ requirements.
 - [0015: Trusted Markdown and raw HTML](adr/0015-trusted-markdown-and-raw-html.md).
 - [0016: Accessibility baseline and assessment](adr/0016-accessibility-baseline-and-assessment.md).
 - [0017: Markdown heading targets](adr/0017-markdown-heading-targets.md).
+- [0018: Strikethrough and static task lists](adr/0018-strikethrough-and-static-task-lists.md).

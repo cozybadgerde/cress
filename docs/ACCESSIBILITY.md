@@ -13,6 +13,11 @@ captioned code, plus a content tour with Markdown and authored HTML examples.
 The tour also demonstrates automatic and explicit Markdown heading targets
 with same-page links. Verify fragment navigation and heading reading order
 without treating IDs as additional interactive controls.
+The tour includes strikethrough and static task lists with labeled native
+disabled checkboxes. Check announced names, completion state, disabled
+state, nested-list reading order, and usable links inside task text.
+These are not interactive forms. Confirm important changes remain clear
+when strikethrough is not announced.
 The home includes an original captioned SVG. Automated
 tests additionally cover German labels, supplied metadata, title images,
 caption links, and page-type composition. No scripts, forms, media players,
@@ -71,7 +76,7 @@ Record a separate outcome for both themes and every affected page.
 | 1.3.2 Meaningful sequence | Inspect reading order for all page types. |
 | 1.3.3 Sensory characteristics | Review content instructions. |
 | 1.3.4 Orientation | Check portrait and landscape without restriction. |
-| 1.3.5 Identify input purpose | No inputs; confirm not applicable. |
+| 1.3.5 Identify input purpose | No personal-data entry; task checkboxes are disabled. Confirm applicability. |
 | 1.4.1 Use of color | Links are underlined; inspect all states and content. |
 | 1.4.2 Audio control | No audio; confirm not applicable. |
 | 1.4.3 Contrast (minimum) | Default CSS text palette passes automated ratios; inspect rendered states. |
@@ -97,21 +102,21 @@ Record a separate outcome for both themes and every affected page.
 | 2.4.11 Focus not obscured (minimum) | No sticky headers; verify focused links remain visible. |
 | 2.5.1 Pointer gestures | No multipoint/path gestures; confirm not applicable. |
 | 2.5.2 Pointer cancellation | Standard links; check normal activation/cancellation. |
-| 2.5.3 Label in name | Check accessible link names match visible labels. |
+| 2.5.3 Label in name | Check accessible link and checkbox names match visible labels. |
 | 2.5.4 Motion actuation | No motion controls; confirm not applicable. |
 | 2.5.7 Dragging movements | No dragging; confirm not applicable. |
 | 2.5.8 Target size (minimum) | Navigation has padded targets; measure rendered targets and inline exceptions. |
 | 3.1.1 Language of page | Configured `lang` is tested; verify content language. |
 | 3.1.2 Language of parts | Review author content and code applicability. |
 | 3.2.1 On focus | No scripted navigation; verify no unexpected changes. |
-| 3.2.2 On input | No input controls; confirm not applicable. |
+| 3.2.2 On input | Task checkboxes are disabled; confirm no input-driven changes. |
 | 3.2.3 Consistent navigation | Shared templates preserve order; inspect across page types. |
 | 3.2.4 Consistent identification | Review repeated links and identity. |
 | 3.2.6 Consistent help | Contact link repeats in footer; inspect position and ordering. |
 | 3.3.1–3.3.4 Input errors/instructions/prevention | No forms; confirm not applicable. |
 | 3.3.7 Redundant entry | No data entry; confirm not applicable. |
 | 3.3.8 Accessible authentication (minimum) | No authentication; confirm not applicable. |
-| 4.1.2 Name, role, value | Inspect links, landmarks, and accessible names. |
+| 4.1.2 Name, role, value | Inspect links, landmarks, and checkbox names, completion, and disabled states. |
 | 4.1.3 Status messages | No dynamic page status messages; terminal preview diagnostics are not injected. |
 
 WCAG 2.2 removes 4.1.1 Parsing; it is not an additional 2.2 criterion.
@@ -123,6 +128,8 @@ Use meaningful content headings below the theme's page-level heading.
 Supply useful image alternatives or an explicit empty alternative for
 decorative images. Captions are not replacements for alternatives.
 Review translations and language changes within content.
+Give every task meaningful text. Explain important changes in words
+rather than relying on strikethrough alone.
 
 Built-in themes use the brand color as their accent for links, buttons,
 and Clover's title block. Cress warns when it has less than 4.5:1 contrast

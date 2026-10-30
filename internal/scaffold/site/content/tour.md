@@ -24,8 +24,9 @@ caption = "A placeholder image from the [home page](index.md)."
 ## A guide you can edit
 
 Open `content/tour.md` beside its preview to compare source and result.
-This page demonstrates CommonMark, tables, and Cress captions. Keep it as
-a reference, or remove it and its footer link before publishing.
+This page demonstrates CommonMark, tables, strikethrough, static task lists,
+and Cress captions. Keep it as a reference, or remove it and its footer
+link before publishing.
 
 The frontmatter above sets this page's title, description, dates, and title
 image. The theme supplies the page's main heading, so start body headings
@@ -44,6 +45,10 @@ This line starts after a hard break.
 
 Escape punctuation to show \*literal asterisks\*. Character references
 such as &amp; and &copy; render as their characters.
+
+Use ~~previous wording~~ for strikethrough. Explain important changes in
+words too: "Previously Saturday; now Friday." Screen readers may not
+announce strikethrough.
 
 ## Heading levels {#heading-levels}
 
@@ -90,6 +95,15 @@ Angle brackets make explicit automatic links: <https://example.org/> or
 1. Tell us what you need.
 2. Agree on the next step.
 3. Review the result together.
+
+Task lists show completion authored in Markdown, not interactive controls:
+
+- [x] Agree the project scope.
+- [ ] Review the [services](services.md).
+  - [ ] Choose a starting date.
+
+Edit `[ ]` to `[x]` and rebuild to change a task's state. Visitors cannot
+toggle or save the checkboxes, but can follow links in task text.
 
 ## Quotations and separators
 

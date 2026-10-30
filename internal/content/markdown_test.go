@@ -15,6 +15,115 @@ func prepareBody(t *testing.T, body string) (string, error) {
 	return string(prepared.Data.Body), err
 }
 
+func TestMarkdownStrikethrough(t *testing.T) {
+	tests := []struct {
+		name, body string
+		want       []string
+		absent     []string
+	}{
+		{
+			name: "inline formatting and resolved links",
+			body: "~~Old **wording** and [services](/services/)~~; ~previous~.",
+			want: []string{`<del>Old <strong>wording</strong> and <a href="/services/">services</a></del>`,
+				"<del>previous</del>"},
+		},
+		{
+			name: "table cell and heading",
+			body: "## ~~Old~~ title\n\n| Status |\n| --- |\n| ~~Previous~~ |\n",
+			want: []string{`<h2 id="old-title"><del>Old</del> title</h2>`, "<td><del>Previous</del></td>"},
+		},
+		{
+			name: "literal boundaries and no linkification",
+			body: "`~~literal~~`\n\n```\n~~literal~~\n```\n\n<div>~~HTML~~</div>\n\n\\~\\~escaped\\~\\~\n\nhttps://example.org/\n\n~~~unmatched~~~",
+			want: []string{"<code>~~literal~~</code>", "<pre><code>~~literal~~\n</code></pre>",
+				"<div>~~HTML~~</div>", "<p>~~escaped~~</p>", "<p>https://example.org/</p>"},
+			absent: []string{"<del>", "<a "},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			rendered, err := prepareBody(t, test.body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, want := range test.want {
+				if !strings.Contains(rendered, want) {
+					t.Errorf("missing %q in %s", want, rendered)
+				}
+			}
+			for _, absent := range test.absent {
+				if strings.Contains(rendered, absent) {
+					t.Errorf("unexpected %q in %s", absent, rendered)
+				}
+			}
+		})
+	}
+}
+
+func TestMarkdownTaskLists(t *testing.T) {
+	tests := []struct {
+		name, body string
+		want       []string
+		labels     int
+	}{
+		{
+			name: "checked markers and ordinary items",
+			body: "- [ ] Pending\n- [x] Complete\n- [X] Also complete\n- Ordinary\n",
+			want: []string{`<label><input disabled="" type="checkbox"> Pending</label>`,
+				`<label><input checked="" disabled="" type="checkbox"> Complete</label>`,
+				`<label><input checked="" disabled="" type="checkbox"> Also complete</label>`,
+				"<li>Ordinary</li>"},
+			labels: 3,
+		},
+		{
+			name: "ordered nested and inline content",
+			body: "1. [x] ~~Old~~ **scope**\n   - [ ] Read [services](/services/)\n2. Ordinary\n",
+			want: []string{"<ol>", `<label><input checked="" disabled="" type="checkbox"> <del>Old</del> <strong>scope</strong></label>`,
+				"<ul>", `<label><input disabled="" type="checkbox"> Read <a href="/services/">services</a></label>`,
+				"</label>\n<ul>", "<li>Ordinary</li>"},
+			labels: 2,
+		},
+		{
+			name: "loose paragraphs",
+			body: "- [ ] First paragraph\n\n  More detail with [contact](/contact/).\n\n  - [x] Nested\n",
+			want: []string{`<p><label><input disabled="" type="checkbox"> First paragraph</label></p>`,
+				`<p>More detail with <a href="/contact/">contact</a>.</p>`,
+				`<label><input checked="" disabled="" type="checkbox"> Nested</label>`},
+			labels: 2,
+		},
+		{
+			name: "captioned image",
+			body: `- [ ] Review ![Team](/team.jpg){caption="Photo credit"}`,
+			want: []string{`<label><input disabled="" type="checkbox"> Review <span class="captioned-image"`,
+				`<span id="cress-caption-1" class="image-caption">Photo credit</span></span></label>`},
+			labels: 1,
+		},
+		{
+			name: "literal boundaries and non-task markers",
+			body: "[ ] Not a list\n\n- [y] Not a task\n- Later [x] marker\n\n`- [ ] Code`\n\n```\n- [x] Code\n```\n\n<ul><li>[x] HTML</li></ul>",
+			want: []string{"<p>[ ] Not a list</p>", "<li>[y] Not a task</li>", "<li>Later [x] marker</li>",
+				"<code>- [ ] Code</code>", "<pre><code>- [x] Code\n</code></pre>", "<ul><li>[x] HTML</li></ul>"},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			rendered, err := prepareBody(t, test.body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, want := range test.want {
+				if !strings.Contains(rendered, want) {
+					t.Errorf("missing %q in %s", want, rendered)
+				}
+			}
+			if strings.Count(rendered, "<label>") != test.labels || strings.Count(rendered, "</label>") != test.labels ||
+				strings.Count(rendered, `disabled="" type="checkbox"`) != test.labels {
+				t.Errorf("want %d labeled disabled checkboxes in %s", test.labels, rendered)
+			}
+		})
+	}
+}
+
 func TestMarkdownHeadingTargets(t *testing.T) {
 	tests := []struct {
 		name, body string

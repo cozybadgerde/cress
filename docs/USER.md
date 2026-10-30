@@ -432,15 +432,46 @@ pass through unchanged.
 
 ## Markdown and trust
 
-CommonMark and tables are supported. Raw inline and block HTML is trusted
-and passes through unchanged, including its URLs. Code spans and fenced
-blocks remain escaped literal text. Metadata remains escaped separately.
+CommonMark, tables, strikethrough, and static task lists are supported.
+Raw inline and block HTML is trusted and passes through unchanged,
+including its URLs. Code spans and fenced blocks remain escaped literal
+text. Metadata remains escaped separately.
 
 Review imported or contributed HTML before building or opening it.
 Generation does not execute embedded code or fetch referenced resources,
 but browsers can do both. Local files are not a content sandbox.
 
 Only the selected theme's designated public assets are published.
+
+### Strikethrough and task lists
+
+Use `~~old wording~~` to render deleted text as `<del>old wording</del>`.
+Goldmark also accepts matching single tildes (`~old wording~`); prefer
+double tildes for clarity. Inline emphasis and links still work inside
+strikethrough. Code spans and fenced blocks remain literal.
+
+Do not communicate an important change through strikethrough alone:
+screen readers may not announce it. Explain the current information in
+words, for example, "Previously Saturday; now Friday."
+
+Begin a list item's text with `[ ]` for incomplete or `[x]` / `[X]` for
+complete, followed by a space and meaningful task text:
+
+```markdown
+- [x] Agree the project scope.
+- [ ] Review the [services](services.md).
+  - [ ] Choose a starting date.
+```
+
+Ordered lists also support task markers. Each item renders a native
+disabled checkbox wrapped with its first paragraph's inline content in
+a `<label>`. Subsequent paragraphs and nested lists stay outside that
+label. Links remain usable. Ordinary list items remain unchanged.
+
+These are static checklists, not forms. To change completion state, edit
+the Markdown and rebuild; visitors cannot toggle or save it. No setting,
+script, or extra dependency is required. Native checkbox appearance varies
+by browser. Raw HTML remains unchanged and publisher-controlled.
 
 ### Heading links
 

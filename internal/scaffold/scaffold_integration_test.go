@@ -43,6 +43,10 @@ func TestInitializedSiteBuildsWithBothThemes(t *testing.T) {
 			}
 			for _, example := range []string{
 				"<em>emphasis</em>", "<strong>strong text</strong>",
+				"<del>previous wording</del>",
+				`<label><input checked="" disabled="" type="checkbox"> Agree the project scope.</label>`,
+				`<label><input disabled="" type="checkbox"> Review the <a href="/services/">services</a>.</label>`,
+				`<label><input disabled="" type="checkbox"> Choose a starting date.</label>`,
 				`<h2 id="heading-levels">Heading levels</h2>`, `<h3 id="a-section-within-a-section">`,
 				`<h4 id="a-smaller-topic">`, `<h5 id="a-detail">`, `<h6 id="the-smallest-heading">`,
 				`href="#heading-levels"`, `href="#links"`, `<h2 id="links">Links</h2>`,

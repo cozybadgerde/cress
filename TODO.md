@@ -509,11 +509,16 @@ the visual design remain to be agreed before implementation.
 - [x] Implement heading targets with explicit-ID priority and reservations;
   cover both heading syntaxes, source-aware errors, links, captions, and
   unchanged raw HTML. Demonstrate and build them with both bundled themes [22].
-- [ ] Agree static task-list markup and accessibility behavior. Checkboxes
+- [x] Agree static task-list markup and accessibility behavior. Checkboxes
   show authored completion state; they are not interactive tasks.
-- [ ] Add strikethrough and static task lists using Goldmark's individual
+- [x] Record strikethrough and task-list requirements, authoring rules,
+  theme responsibilities, and [ADR 0018](docs/adr/0018-strikethrough-and-static-task-lists.md)
+  before implementation.
+- [x] Add strikethrough and static task lists using Goldmark's individual
   built-in capabilities, not the complete GFM bundle. Cover the agreed
-  behavior and existing content interactions.
+  behavior and existing content interactions. Demonstrate and build both
+  features with both bundled themes [23]. Human accessibility assessment
+  remains part of the existing release gate.
 - [ ] Agree the paper/Scandi theme's presentation contract before building.
   Aim for a playful, editorial alternative for makers, independent shops,
   cafes, and creative businesses, distinct from poppy rather than another

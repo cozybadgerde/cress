@@ -62,7 +62,7 @@ func renderContent(prepared *Page, config Config, files map[string]reference) er
 	}
 	captions := &imageCaptionParser{captions: make(map[*ast.Image]string)}
 	markdown := goldmark.New(
-		goldmark.WithExtensions(extension.Table),
+		goldmark.WithExtensions(extension.Table, extension.Strikethrough, extension.TaskList),
 		goldmark.WithParserOptions(parser.WithHeadingAttribute(),
 			parser.WithInlineParsers(util.Prioritized(captions, 50))),
 		goldmark.WithRendererOptions(goldhtml.WithUnsafe(),
@@ -83,6 +83,7 @@ func renderContent(prepared *Page, config Config, files map[string]reference) er
 	var images []*ast.Image
 	var blocks []*ast.FencedCodeBlock
 	var tables []*extensionast.Table
+	var tasks []*extensionast.TaskCheckBox
 	err := ast.Walk(document, func(node ast.Node, entering bool) (ast.WalkStatus, error) {
 		if !entering {
 			return ast.WalkContinue, nil
@@ -105,6 +106,8 @@ func renderContent(prepared *Page, config Config, files map[string]reference) er
 			blocks = append(blocks, node)
 		case *extensionast.Table:
 			tables = append(tables, node)
+		case *extensionast.TaskCheckBox:
+			tasks = append(tasks, node)
 		}
 		return ast.WalkContinue, nil
 	})
@@ -113,6 +116,11 @@ func renderContent(prepared *Page, config Config, files map[string]reference) er
 	}
 	if err := replaceCaptionedImages(prepared, markdown, images, captions.captions, references); err != nil {
 		return err
+	}
+	for _, task := range tasks {
+		parent := task.Parent()
+		parent.InsertBefore(parent, task, &markup{value: "<label>"})
+		parent.AppendChild(parent, &markup{value: "</label>"})
 	}
 	for _, block := range blocks {
 		rendered, err := renderCode(block, prepared.body, codeOptions{highlight: config.Highlight, references: references})

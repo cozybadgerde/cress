@@ -152,6 +152,12 @@ HTML; the developer skeleton does not interpret it.
 Content preparation alone marks the rendered body as trusted HTML.
 Ordinary strings must not be converted to trusted HTML.
 
+Strikethrough in `Body` uses `<del>`. Task lists contain native disabled
+checkboxes, each wrapped with its first paragraph's inline content in a
+`<label>`. Preserve labels, completion state, list structure, and item links.
+Do not enable the checkboxes or add task-state persistence. Native styling
+is the default; themes may style these elements without hiding their state.
+
 Markdown headings in `Body` already have prepared link targets. Preserve
 them without generating replacement IDs. `main`, `page-title`, and the
 `cress-*` namespace are reserved for theme and generated markup; other
