@@ -58,6 +58,9 @@ code { font-family: ui-monospace, monospace; font-size: .95em; overflow-wrap: an
 .table-wrapper { overflow-x: auto; margin-block: 1.5rem; }
 table { border-collapse: collapse; width: 100%; overflow-wrap: normal; }
 th, td { border: 1px solid var(--border); padding: .6rem; text-align: start; vertical-align: top; font-variant-numeric: tabular-nums; }
+.table-wrapper .align-left { text-align: left; }
+.table-wrapper .align-center { text-align: center; }
+.table-wrapper .align-right { text-align: right; }
 blockquote { border-inline-start: 3px solid var(--border); margin-inline: 0; padding-inline-start: 1rem; }
 .landing .prose > p:first-child { font-size: clamp(1.15rem, 2.2vw, 1.35rem); line-height: 1.55; margin-top: 0; }
 .landing .prose > p:first-child + p.standalone-link { margin-bottom: clamp(2rem, 5vw, 3rem); }

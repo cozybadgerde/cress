@@ -647,16 +647,17 @@ and release-tag examples remain where they explain required behavior.
   screenshots at 320px and 1280px confirm both themes preserve the intended
   action and leave sentence links ordinary. This does not complete the
   human accessibility matrix.
-- [ ] Review the content/presentation boundary: Cress prepares proper HTML;
-  themes alone decide how it is displayed. Audit existing generated markup
-  and presentation conventions against this boundary. Clarify which neutral
-  structural hooks are appropriate. The standalone-link case is settled
-  separately; other changes still need review and approval.
+- [x] Review the content/presentation boundary. Replace Markdown table
+  alignment styles with neutral cell classes; themes own the matching CSS.
+  Keep semantic captions, task labels, heading targets, syntax-token classes,
+  and structural hooks in content preparation.
 
 External release blockers remain:
 
 - [ ] Complete the human accessibility matrix for both themes and all
   default page types; fix and retest every applicable A/AA failure.
+  Include table-wrapper keyboard behavior with and without overflow; its
+  unconditional focus target is unchanged by the boundary review.
 - [ ] Record native Linux amd64 and Linux arm64 acceptance results.
   Cross-builds and local macOS execution do not prove native Linux behavior.
 - [ ] Complete the supported-target/product acceptance review and record

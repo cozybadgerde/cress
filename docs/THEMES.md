@@ -182,6 +182,12 @@ hook and keyboard focus target. Themes own overflow handling, spacing, and
 focus styling; Cress supplies no table layout styles. Authored HTML tables
 remain unchanged.
 
+Explicit Markdown column alignment becomes `align-left`, `align-center`,
+or `align-right` classes on header and body cells, not inline styles.
+Unspecified alignment adds no class. Themes decide how to display this
+author-provided intent; the bundled themes and skeleton apply matching
+`text-align` rules.
+
 The renderer receives no raw configuration, source tree, or generator
 internals. It neither discovers pages nor resolves routes. The skeleton
 uses `html/template` with no filesystem, network, environment, or shell

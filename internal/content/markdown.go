@@ -62,7 +62,9 @@ func renderContent(prepared *Page, config Config, files map[string]reference) er
 	}
 	captions := &imageCaptionParser{captions: make(map[*ast.Image]string)}
 	markdown := goldmark.New(
-		goldmark.WithExtensions(extension.Table, extension.Strikethrough, extension.TaskList),
+		goldmark.WithExtensions(
+			extension.NewTable(extension.WithTableCellAlignMethod(extension.TableCellAlignNone)),
+			extension.Strikethrough, extension.TaskList),
 		goldmark.WithParserOptions(parser.WithHeadingAttribute(),
 			parser.WithInlineParsers(util.Prioritized(captions, 50))),
 		goldmark.WithRendererOptions(goldhtml.WithUnsafe(),
@@ -113,6 +115,10 @@ func renderContent(prepared *Page, config Config, files map[string]reference) er
 			blocks = append(blocks, node)
 		case *extensionast.Table:
 			tables = append(tables, node)
+		case *extensionast.TableCell:
+			if node.Alignment != extensionast.AlignNone {
+				node.SetAttributeString("class", []byte("align-"+node.Alignment.String()))
+			}
 		case *extensionast.TaskCheckBox:
 			tasks = append(tasks, node)
 		}

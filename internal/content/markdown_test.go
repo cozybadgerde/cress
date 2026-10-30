@@ -263,27 +263,36 @@ func TestMarkdownTableWrapper(t *testing.T) {
 		{"standalone", ""}, {"blockquote", "> "},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			body := test.prefix + "| Name | Link |\n" + test.prefix + "|:-----|-----:|\n" +
-				test.prefix + "| Team & friends | [Contact](/contact/) |\n"
+			body := test.prefix + "| Name | Link | Status | Note |\n" + test.prefix + "|:-----|-----:|:------:|------|\n" +
+				test.prefix + "| Team & friends | [Contact](/contact/) | Ready | Default |\n"
 			rendered, err := prepareBody(t, body)
 			if err != nil {
 				t.Fatal(err)
 			}
 			for _, want := range []string{
 				"<div class=\"table-wrapper\" tabindex=\"0\">\n<table>",
-				`<th style="text-align:left">Name</th>`,
-				`<td style="text-align:left">Team &amp; friends</td>`,
-				`<td style="text-align:right"><a href="/contact/">Contact</a></td>`,
+				`<th class="align-left">Name</th>`,
+				`<th class="align-right">Link</th>`,
+				`<th class="align-center">Status</th>`,
+				`<th>Note</th>`,
+				`<td class="align-left">Team &amp; friends</td>`,
+				`<td class="align-right"><a href="/contact/">Contact</a></td>`,
+				`<td class="align-center">Ready</td>`,
+				`<td>Default</td>`,
 				"</table>\n</div>",
 			} {
 				if !strings.Contains(rendered, want) {
 					t.Errorf("missing %q in %s", want, rendered)
 				}
 			}
+			if strings.Contains(rendered, "style=") {
+				t.Errorf("table contains inline styles: %s", rendered)
+			}
 		})
 	}
-	rendered, err := prepareBody(t, "<table><tr><td>Authored HTML</td></tr></table>")
-	if err != nil || strings.Contains(rendered, "table-wrapper") {
+	authored := `<table><tr><td style="text-align:right">Authored HTML</td></tr></table>`
+	rendered, err := prepareBody(t, authored)
+	if err != nil || strings.TrimSpace(rendered) != authored {
 		t.Fatalf("authored table changed: %s, %v", rendered, err)
 	}
 }
