@@ -151,6 +151,27 @@ Syntax highlighting is enabled by default and can be disabled. Recognized
 code languages receive build-time highlighting without browser JavaScript.
 Untagged and unrecognized languages remain plain code.
 
+### Heading links
+
+Every Markdown heading has an automatic link target unless the author
+supplies an explicit ID. Explicit IDs take priority over automatic IDs
+throughout the page. Duplicate explicit IDs are errors; repeated automatic
+IDs receive numeric suffixes.
+
+Use Goldmark's built-in automatic ID rules, including their non-ASCII
+limitations. Authors can supply stable IDs when wording changes or an
+automatic ID is unsuitable. Document the syntax and exact rules in the
+authoring reference.
+
+Reserve `main`, `page-title`, and `cress-*` for theme and generated markup.
+Automatic heading IDs avoid these names; explicit heading IDs using them
+fail clearly. Themes must not introduce IDs that collide with content
+headings. Authored raw HTML is unchanged; publishers remain responsible
+for its IDs and collisions.
+
+No visible permalink controls, automatic table of contents, new
+configuration, or fragment-existence checks are required.
+
 ### Captions, attribution, and disclosures
 
 Provide optional first-class captions for inline images, title images,
@@ -545,6 +566,10 @@ installation. Containers and Homebrew are future distribution options.
     warnings; alphabetical lists retain them. Introductions and empty lists
     render normally. Explicit plain-text excerpts are optional, with no
     automatic extraction or description fallback.
+22. Markdown headings have deterministic link targets with optional explicit
+    IDs, numeric suffixes for automatic collisions, explicit-ID priority,
+    and clear errors for duplicate or reserved explicit IDs. Raw HTML
+    remains unchanged and both shipped themes preserve heading targets.
 
 These criteria define readiness, not an implementation sequence.
 No performance threshold or adoption target has been agreed.
@@ -572,3 +597,4 @@ requirements.
 - [0014: Public origin and deployment path](adr/0014-public-origin-and-deployment-path.md).
 - [0015: Trusted Markdown and raw HTML](adr/0015-trusted-markdown-and-raw-html.md).
 - [0016: Accessibility baseline and assessment](adr/0016-accessibility-baseline-and-assessment.md).
+- [0017: Markdown heading targets](adr/0017-markdown-heading-targets.md).

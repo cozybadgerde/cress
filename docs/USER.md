@@ -442,6 +442,51 @@ but browsers can do both. Local files are not a content sandbox.
 
 Only the selected theme's designated public assets are published.
 
+### Heading links
+
+Every Markdown heading receives an ID, including hash-prefixed headings
+and headings underlined with `=` or `-`. Link within the page with
+`[Opening hours](#opening-hours)`, or to another source page with
+`[Opening hours](contact.md#opening-hours)`. Existing URL-resolution rules
+preserve fragments; Cress does not check whether a fragment target exists.
+
+For a stable target independent of the heading wording, add an explicit ID:
+
+```markdown
+## When to visit {#opening-hours}
+
+[See our opening hours](#opening-hours).
+```
+
+Only heading ID attributes are supported. IDs must be nonempty text without
+ASCII whitespace or null characters. Explicit IDs retain their spelling,
+including case and non-ASCII letters. Duplicate explicit IDs on one page
+fail generation, even if they occur after an automatic heading.
+
+Automatic IDs use Goldmark's built-in rules on the heading's final source
+line, without its heading markers or attribute block: trim surrounding
+whitespace, lowercase ASCII letters, keep ASCII letters and digits, replace
+each space, hyphen, or underscore with a hyphen, and drop other characters.
+These are source-based IDs, not slugs of rendered text. Non-ASCII characters
+are dropped: `Über uns` becomes `ber-uns`. An empty result becomes `heading`.
+Use an explicit ID when those rules produce an unsuitable target.
+
+Explicit IDs are reserved first. Automatic headings then receive IDs in
+document order, adding `-1`, `-2`, and so on until the ID is unused. For
+example, two `## Services` headings produce `services` and `services-1`;
+if another heading explicitly uses `{#services}`, they become `services-1`
+and `services-2`, regardless of where that explicit heading appears.
+
+`main`, `page-title`, and all IDs starting with `cress-` are reserved for
+theme and generated markup. Explicit use fails. Automatic `main` and
+`page-title` targets receive numeric suffixes; automatic IDs starting with
+`cress-` receive a `heading-` prefix before uniqueness suffixes are assigned.
+
+No visible permalink controls or automatic table of contents are added.
+Raw HTML remains unchanged, including its IDs. Publishers must avoid
+collisions involving raw HTML and coordinate any custom theme IDs with
+their content.
+
 ## Content and assets contract
 
 Use explicit page-owned asset directories named after the source

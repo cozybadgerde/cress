@@ -10,6 +10,9 @@ The assessment fixtures are the seven English pages created by `site init`
 with each of `poppy` and `clover`: home landing, services with a table,
 about, contact with opening hours, journal list, and dated article with
 captioned code, plus a content tour with Markdown and authored HTML examples.
+The tour also demonstrates automatic and explicit Markdown heading targets
+with same-page links. Verify fragment navigation and heading reading order
+without treating IDs as additional interactive controls.
 The home includes an original captioned SVG. Automated
 tests additionally cover German labels, supplied metadata, title images,
 caption links, and page-type composition. No scripts, forms, media players,

@@ -63,13 +63,17 @@ func renderContent(prepared *Page, config Config, files map[string]reference) er
 	captions := &imageCaptionParser{captions: make(map[*ast.Image]string)}
 	markdown := goldmark.New(
 		goldmark.WithExtensions(extension.Table),
-		goldmark.WithParserOptions(parser.WithInlineParsers(util.Prioritized(captions, 50))),
+		goldmark.WithParserOptions(parser.WithHeadingAttribute(),
+			parser.WithInlineParsers(util.Prioritized(captions, 50))),
 		goldmark.WithRendererOptions(goldhtml.WithUnsafe(),
 			renderer.WithNodeRenderers(util.Prioritized(markupRenderer{}, 50))),
 	)
 	document := markdown.Parser().Parse(text.NewReader(prepared.body))
 	if captions.err != nil {
 		return fmt.Errorf("%s: %w", prepared.Source, captions.err)
+	}
+	if err := prepareHeadingIDs(document, prepared.body); err != nil {
+		return fmt.Errorf("%s: heading targets: %w", prepared.Source, err)
 	}
 	for _, marker := range captions.markers {
 		if parent := marker.Parent(); parent != nil {
@@ -131,6 +135,62 @@ func renderContent(prepared *Page, config Config, files map[string]reference) er
 		return fmt.Errorf("%s: render Markdown: %w", prepared.Source, err)
 	}
 	prepared.Data.Body = template.HTML(rendered.String())
+	return nil
+}
+
+func prepareHeadingIDs(document ast.Node, source []byte) error {
+	ids := parser.NewContext().IDs()
+	ids.Put([]byte("main"))
+	ids.Put([]byte("page-title"))
+	explicit := make(map[string]bool)
+	var automatic []*ast.Heading
+	err := ast.Walk(document, func(node ast.Node, entering bool) (ast.WalkStatus, error) {
+		heading, ok := node.(*ast.Heading)
+		if !entering || !ok {
+			return ast.WalkContinue, nil
+		}
+		for _, attribute := range heading.Attributes() {
+			if string(attribute.Name) != "id" {
+				return ast.WalkStop, fmt.Errorf("unsupported heading attribute %q; only id is supported", attribute.Name)
+			}
+		}
+		value, exists := heading.AttributeString("id")
+		if !exists {
+			automatic = append(automatic, heading)
+			return ast.WalkContinue, nil
+		}
+		id, ok := value.([]byte)
+		if !ok || len(id) == 0 || bytes.ContainsAny(id, "\x00 \t\n\r\f\v") {
+			return ast.WalkStop, fmt.Errorf("explicit heading ID must be nonempty text without ASCII whitespace or null characters")
+		}
+		name := string(id)
+		if name == "main" || name == "page-title" || strings.HasPrefix(name, "cress-") {
+			return ast.WalkStop, fmt.Errorf("explicit heading ID %q is reserved for theme or generated markup", name)
+		}
+		if explicit[name] {
+			return ast.WalkStop, fmt.Errorf("duplicate explicit heading ID %q", name)
+		}
+		explicit[name] = true
+		ids.Put(id)
+		return ast.WalkContinue, nil
+	})
+	if err != nil {
+		return err
+	}
+	// Reserve explicit IDs before allocating automatic IDs, even when the
+	// explicit heading appears later in the source.
+	for _, heading := range automatic {
+		var line []byte
+		if last := heading.Lines().Len() - 1; last >= 0 {
+			segment := heading.Lines().At(last)
+			line = segment.Value(source)
+		}
+		id := parser.NewContext().IDs().Generate(line, ast.KindHeading)
+		if bytes.HasPrefix(id, []byte("cress-")) {
+			id = append([]byte("heading-"), id...)
+		}
+		heading.SetAttributeString("id", ids.Generate(id, ast.KindHeading))
+	}
 	return nil
 }
 

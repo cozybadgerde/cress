@@ -489,6 +489,55 @@ No tag, publication, commit, or push is authorized by this phase.
   of tampered files and an unexpected identity [13, 14].
 - [ ] Confirm all acceptance criteria on the supported targets.
 
+#### Phase 9.5: Markdown features and a third built-in theme
+
+Agreed scope: strikethrough, linkable Markdown headings, static task lists,
+and one paper/Scandi theme alongside poppy and clover. Three bundled themes
+are enough for this scope. Heading targets are approved under
+[ADR 0017](docs/adr/0017-markdown-heading-targets.md). Other interfaces and
+the visual design remain to be agreed before implementation.
+
+- [ ] Before implementation, update the owning product requirements and
+  decision records for the agreed scope, including the third bundled
+  theme and its acceptance coverage.
+- [x] Agree heading-ID behavior: automatic IDs, explicit author overrides,
+  non-ASCII text, duplicate headings, and collisions with theme and
+  generated IDs. Decide separately whether visible permalink controls
+  are needed; linkable headings do not require them.
+- [x] Record heading-link requirements, authoring rules, and theme ID
+  responsibilities in their owning documents before implementation.
+- [x] Implement heading targets with explicit-ID priority and reservations;
+  cover both heading syntaxes, source-aware errors, links, captions, and
+  unchanged raw HTML. Demonstrate and build them with both bundled themes [22].
+- [ ] Agree static task-list markup and accessibility behavior. Checkboxes
+  show authored completion state; they are not interactive tasks.
+- [ ] Add strikethrough and static task lists using Goldmark's individual
+  built-in capabilities, not the complete GFM bundle. Cover the agreed
+  behavior and existing content interactions.
+- [ ] Agree the paper/Scandi theme's presentation contract before building.
+  Aim for a playful, editorial alternative for makers, independent shops,
+  cafes, and creative businesses, distinct from poppy rather than another
+  off-white palette. Explore framed images, restrained rotation of image
+  frames, and subtle shadows without rotating text. Keep pages useful
+  without photographs.
+- [ ] Build only the selected third theme with all required page types,
+  content features, navigation, and labels. Update initialization and
+  references, and assess complete default pages against the existing
+  accessibility release baseline.
+
+Deferred, not implementation commitments:
+
+- The glass-like theme may become an externally maintained theme later.
+  It is not a fourth bundled theme or a promised external deliverable.
+- Automatic table-of-contents generation, including a per-page frontmatter
+  option, needs a demonstrated long-page navigation use case before approval.
+  Goldmark supports this through an external extension, not a built-in one;
+  review dependency suitability, heading depth, placement, labels, schemas,
+  and theme presentation if revisited.
+- Other Markdown extensions remain suggestions. Definition lists merit a
+  use-case review for services and menu content; do not add them, footnotes,
+  automatic typography substitutions, or other extensions by default.
+
 #### Phase 9 handoff and leftovers
 
 Release preparation and the documentation audit are implemented, not a

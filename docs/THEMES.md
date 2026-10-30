@@ -152,6 +152,13 @@ HTML; the developer skeleton does not interpret it.
 Content preparation alone marks the rendered body as trusted HTML.
 Ordinary strings must not be converted to trusted HTML.
 
+Markdown headings in `Body` already have prepared link targets. Preserve
+them without generating replacement IDs. `main`, `page-title`, and the
+`cress-*` namespace are reserved for theme and generated markup; other
+theme IDs must not collide with content headings. Avoid generated caption
+IDs such as `cress-caption-1` even inside the reserved namespace. Raw HTML
+IDs remain publisher-controlled. See [heading links](USER.md#heading-links).
+
 Markdown tables retain their table markup inside a
 `<div class="table-wrapper" tabindex="0">`. This wrapper provides a styling
 hook and keyboard focus target. Themes own overflow handling, spacing, and

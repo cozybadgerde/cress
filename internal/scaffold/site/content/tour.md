@@ -45,7 +45,12 @@ This line starts after a hard break.
 Escape punctuation to show \*literal asterisks\*. Character references
 such as &amp; and &copy; render as their characters.
 
-## Heading levels
+## Heading levels {#heading-levels}
+
+Every Markdown heading has a link target. Link to
+[this section](#heading-levels) or [our links section](#links).
+An explicit ID such as `{#heading-levels}` keeps a target stable when
+you change its heading text.
 
 ### A section within a section
 

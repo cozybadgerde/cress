@@ -15,6 +15,107 @@ func prepareBody(t *testing.T, body string) (string, error) {
 	return string(prepared.Data.Body), err
 }
 
+func TestMarkdownHeadingTargets(t *testing.T) {
+	tests := []struct {
+		name, body string
+		want       []string
+	}{
+		{
+			name: "heading syntaxes and levels",
+			body: "# One\n\n## Two ##\n\n### Three\n\n#### Four\n\n##### Five\n\n###### Six\n\nUnderlined\n==========\n\nSection\n-------\n\n> ## Nested\n\n##\n",
+			want: []string{`<h1 id="one">One</h1>`, `<h2 id="two">Two</h2>`,
+				`<h3 id="three">Three</h3>`, `<h4 id="four">Four</h4>`,
+				`<h5 id="five">Five</h5>`, `<h6 id="six">Six</h6>`,
+				`<h1 id="underlined">Underlined</h1>`, `<h2 id="section">Section</h2>`,
+				`<h2 id="nested">Nested</h2>`, `<h2 id="heading"></h2>`},
+		},
+		{
+			name: "explicit IDs have priority",
+			body: "## Services\n\n## Services\n\n## Stable {#services}\n\n## Suffix {#services-1}\n",
+			want: []string{`<h2 id="services-2">Services</h2>`, `<h2 id="services-3">Services</h2>`,
+				`<h2 id="services">Stable</h2>`, `<h2 id="services-1">Suffix</h2>`},
+		},
+		{
+			name: "explicit setext and case",
+			body: "Stable {#Services}\n------\n\n## Services\n\n## Services\n",
+			want: []string{`<h2 id="Services">Stable</h2>`, `<h2 id="services">Services</h2>`,
+				`<h2 id="services-1">Services</h2>`},
+		},
+		{
+			name: "non-ASCII and empty slugs",
+			body: "## Über uns\n\n## 日本語\n\n## !!!\n\n## Visit {#öffnungszeiten}\n",
+			want: []string{`<h2 id="ber-uns">Über uns</h2>`, `<h2 id="heading">日本語</h2>`,
+				`<h2 id="heading-1">!!!</h2>`, `<h2 id="öffnungszeiten">Visit</h2>`},
+		},
+		{
+			name: "native source-based slugging",
+			body: "## Our **team** & services_now!\n\nFirst line\nLast line\n---------\n",
+			want: []string{`<h2 id="our-team--services-now">Our <strong>team</strong> &amp; services_now!</h2>`,
+				"<h2 id=\"last-line\">First line\nLast line</h2>"},
+		},
+		{
+			name: "reserved automatic targets and caption",
+			body: "## Main\n\n## Page title\n\n## Cress caption 1\n\n## Cress caption 1\n\n## Stable {#heading-cress-caption-1}\n\n" +
+				`Before ![Team](/team.jpg){caption="Credit"} after.`,
+			want: []string{`<h2 id="main-1">Main</h2>`, `<h2 id="page-title-1">Page title</h2>`,
+				`<h2 id="heading-cress-caption-1-1">Cress caption 1</h2>`,
+				`<h2 id="heading-cress-caption-1-2">Cress caption 1</h2>`,
+				`<h2 id="heading-cress-caption-1">Stable</h2>`,
+				`aria-describedby="cress-caption-1"`, `<span id="cress-caption-1" class="image-caption">Credit</span>`},
+		},
+		{
+			name: "raw HTML and code stay opaque",
+			body: "<h2 id=\"main\">Authored</h2>\n\n## Main\n\n```\n## Literal {#main}\n```\n\n`## Literal {#main}`",
+			want: []string{`<h2 id="main">Authored</h2>`, `<h2 id="main-1">Main</h2>`,
+				"## Literal {#main}\n</code>", `<code>## Literal {#main}</code>`},
+		},
+		{
+			name: "explicit ID is escaped",
+			body: `## Stable {id="quote\"<&"}`,
+			want: []string{`<h2 id="quote&quot;&lt;&amp;">Stable</h2>`},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			rendered, err := prepareBody(t, test.body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, want := range test.want {
+				if !strings.Contains(rendered, want) {
+					t.Errorf("missing %q in %s", want, rendered)
+				}
+			}
+		})
+	}
+}
+
+func TestInvalidHeadingTargets(t *testing.T) {
+	tests := []struct{ body, message string }{
+		{"## One {#same}\n\n## Two {#same}", `duplicate explicit heading ID "same"`},
+		{"## One {#main}", `explicit heading ID "main" is reserved`},
+		{"## One {#page-title}", `explicit heading ID "page-title" is reserved`},
+		{"## One {#cress-caption-1}", `explicit heading ID "cress-caption-1" is reserved`},
+		{"## One {#cress-other}", `explicit heading ID "cress-other" is reserved`},
+		{`## One {#}`, "must be nonempty text"},
+		{`## One {id=true}`, "must be nonempty text"},
+		{`## One {id=123}`, "must be nonempty text"},
+		{`## One {id="two words"}`, "without ASCII whitespace"},
+		{`## One {id="two\twords"}`, "without ASCII whitespace"},
+		{"## One {id=\"null\x00byte\"}", "without ASCII whitespace or null characters"},
+		{`## One {.custom}`, `unsupported heading attribute "class"`},
+	}
+	for _, test := range tests {
+		t.Run(test.body, func(t *testing.T) {
+			_, err := prepareBody(t, test.body)
+			if err == nil || !strings.Contains(err.Error(), "content/page.md: heading targets:") ||
+				!strings.Contains(err.Error(), test.message) {
+				t.Fatalf("error = %v, want source-aware error containing %q", err, test.message)
+			}
+		})
+	}
+}
+
 func TestMarkdownTableWrapper(t *testing.T) {
 	for _, test := range []struct{ name, prefix string }{
 		{"standalone", ""}, {"blockquote", "> "},
@@ -215,6 +316,8 @@ func TestMarkdownURLBoundaries(t *testing.T) {
 	config.Site.URL = "/company/"
 	body := `[Root](/about/?q=1#team) [same](#section) [query](?q=2) [external](https://example.org/about.md) [mail](mailto:hello@example.org)
 
+## Section
+
 <a href="about.md">raw HTML</a>
 
 ![Root](/images/team.jpg)
@@ -233,6 +336,7 @@ func TestMarkdownURLBoundaries(t *testing.T) {
 		`href="https://example.org/about.md"`, `href="mailto:hello@example.org"`,
 		`<a href="about.md">raw HTML</a>`, `src="/company/images/team.jpg"`,
 		`src="/company/images/team&amp;amp;.jpg"`, `href="/company/about&amp;amp;/?q=&amp;amp;"`,
+		`<h2 id="section">Section</h2>`,
 	} {
 		if !strings.Contains(rendered, want) {
 			t.Errorf("missing %q in %s", want, rendered)
