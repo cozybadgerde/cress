@@ -89,6 +89,13 @@ func renderContent(prepared *Page, config Config, files map[string]reference) er
 			return ast.WalkContinue, nil
 		}
 		switch node := node.(type) {
+		case *ast.Paragraph:
+			if node.ChildCount() == 1 {
+				switch node.FirstChild().(type) {
+				case *ast.Link, *ast.AutoLink:
+					node.SetAttributeString("class", []byte("standalone-link"))
+				}
+			}
 		case *ast.Link:
 			resolved, err := references.resolve(decodeDestination(node.Destination))
 			if err != nil {

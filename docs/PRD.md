@@ -132,6 +132,12 @@ Markdown tables are required. Menus and opening hours can be ordinary
 tables or prose; Cress does not impose a separate business-data model.
 Footnotes are not a 1.0 requirement.
 
+Expose a neutral structural hook for Markdown paragraphs containing only
+one direct link. It applies independently of page type and position.
+Content preparation does not designate a primary action or choose link
+presentation; themes may use the hook with their own layout rules.
+Authored HTML remains unchanged.
+
 Support strikethrough and static task lists through Goldmark's individual
 built-in extensions, without enabling the whole GitHub Flavored Markdown
 (GFM) bundle. Strikethrough produces semantic deletion markup. Publishers
@@ -616,3 +622,4 @@ requirements.
 - [0016: Accessibility baseline and assessment](adr/0016-accessibility-baseline-and-assessment.md).
 - [0017: Markdown heading targets](adr/0017-markdown-heading-targets.md).
 - [0018: Strikethrough and static task lists](adr/0018-strikethrough-and-static-task-lists.md).
+- [0019: Neutral standalone-link markup](adr/0019-neutral-standalone-link-markup.md).

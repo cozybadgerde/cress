@@ -15,6 +15,39 @@ func prepareBody(t *testing.T, body string) (string, error) {
 	return string(prepared.Data.Body), err
 }
 
+func TestStandaloneLinkParagraphs(t *testing.T) {
+	tests := []struct {
+		name, body, want string
+	}{
+		{"inline", "[Services](/services/)", `<p class="standalone-link"><a href="/services/">Services</a></p>`},
+		{"formatted label", "[**Our** services](/services/)", `<p class="standalone-link"><a href="/services/"><strong>Our</strong> services</a></p>`},
+		{"reference", "[Services][services]\n\n[services]: /services/", `<p class="standalone-link"><a href="/services/">Services</a></p>`},
+		{"autolink", "<https://example.org/>", `<p class="standalone-link"><a href="https://example.org/">https://example.org/</a></p>`},
+		{"before text", "See [services](/services/)", `<p>See <a href="/services/">services</a></p>`},
+		{"after text", "[Services](/services/) first.", `<p><a href="/services/">Services</a> first.</p>`},
+		{"wrapped link", "**[Services](/services/)**", `<p><strong><a href="/services/">Services</a></strong></p>`},
+		{"two links", "[One](/one/) [Two](/two/)", `<p><a href="/one/">One</a> <a href="/two/">Two</a></p>`},
+		{"tight list", "- [Services](/services/)", "<ul>\n<li><a href=\"/services/\">Services</a></li>\n</ul>"},
+		{"blockquote", "> [Services](/services/)", "<blockquote>\n<p class=\"standalone-link\"><a href=\"/services/\">Services</a></p>\n</blockquote>"},
+		{"code", "`[Services](/services/)`", "<p><code>[Services](/services/)</code></p>"},
+		{"HTML paragraph", `<p><a href="/services/">Services</a></p>`, `<p><a href="/services/">Services</a></p>`},
+		{"HTML link", `<a href="/services/">Services</a>`, `<p><a href="/services/">Services</a></p>`},
+		{"hard break", "[Services](/services/)\\\nNext line", "<p><a href=\"/services/\">Services</a><br>\nNext line</p>"},
+		{"entity text", "[Services](/services/)&nbsp;", "<p><a href=\"/services/\">Services</a>\u00a0</p>"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			rendered, err := prepareBody(t, test.body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if strings.TrimSpace(rendered) != test.want {
+				t.Errorf("rendered %q, want %q", rendered, test.want)
+			}
+		})
+	}
+}
+
 func TestMarkdownStrikethrough(t *testing.T) {
 	tests := []struct {
 		name, body string

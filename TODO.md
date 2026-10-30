@@ -628,13 +628,30 @@ and release-tag examples remain where they explain required behavior.
   its title block instead of inside it.
 - [x] Replace Poppy's cream background with a chalk off-white
   (`#fbfbf9`, surface `#f0f0ec`).
-- [ ] Loose threads: Poppy's off-white background lowers brand contrast slightly
-  (a 4.5:1 color on white is about 4.34:1 on it);
-  the 5:2 landing crop is checked only with the placeholder, not real
-  photos; a `[site.image]` default also fills every landing hero; CSS ignores
-  text nodes, so a paragraph with text around a single link right after the
-  first paragraph is also styled as the primary link. Keyboard and
-  screen-reader review belong to the accessibility matrix.
+- [x] Clarify the brand-color warning as a white-reference comparison,
+  not selected-theme validation. Dark and tinted themes may intentionally
+  use colors with low contrast against white. Keep the existing calculation
+  and threshold; document review of actual theme color pairs regardless
+  of warnings.
+- [ ] Loose threads: the 5:2 landing crop is checked only with the
+  placeholder, not real photos; a `[site.image]` default also fills every
+  landing hero. Keyboard and screen-reader review belong to the
+  accessibility matrix.
+- [x] Add the neutral `standalone-link` hook for link-only Markdown
+  paragraphs, independent of page type and position. Poppy and Clover
+  consume it for their existing primary-link convention, leaving links
+  inside sentences unstyled as actions. Record the boundary and markup
+  contract in [ADR 0019](docs/adr/0019-neutral-standalone-link-markup.md)
+  and the owning references; no primary-action data or styling enters
+  content preparation. Unit and scaffold integration tests pass; Firefox
+  screenshots at 320px and 1280px confirm both themes preserve the intended
+  action and leave sentence links ordinary. This does not complete the
+  human accessibility matrix.
+- [ ] Review the content/presentation boundary: Cress prepares proper HTML;
+  themes alone decide how it is displayed. Audit existing generated markup
+  and presentation conventions against this boundary. Clarify which neutral
+  structural hooks are appropriate. The standalone-link case is settled
+  separately; other changes still need review and approval.
 
 External release blockers remain:
 

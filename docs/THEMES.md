@@ -152,6 +152,17 @@ HTML; the developer skeleton does not interpret it.
 Content preparation alone marks the rendered body as trusted HTML.
 Ordinary strings must not be converted to trusted HTML.
 
+Markdown paragraphs containing only one direct link receive
+`class="standalone-link"`, independently of page type and position.
+CommonMark autolinks and reference-style links qualify, as does formatting
+inside a link. Surrounding text, additional links, or formatting wrapped
+around the link do not. Tight-list text blocks are not paragraphs and
+receive no class. Authored HTML remains unchanged.
+
+This hook describes structure, not a primary action or button. Themes may
+combine it with page type, position, or other presentation rules, or ignore
+it. Cress does not choose its appearance or change the link's semantics.
+
 Strikethrough in `Body` uses `<del>`. Task lists contain native disabled
 checkboxes, each wrapped with its first paragraph's inline content in a
 `<label>`. Preserve labels, completion state, list structure, and item links.

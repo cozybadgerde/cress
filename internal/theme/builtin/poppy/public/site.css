@@ -64,7 +64,7 @@ table { border-collapse: collapse; width: 100%; overflow-wrap: normal; }
 th, td { border: 1px solid var(--border); padding: .6rem; text-align: start; vertical-align: top; font-variant-numeric: tabular-nums; }
 blockquote { border-inline-start: 3px solid var(--border); margin-inline: 0; padding-inline-start: 1rem; }
 .landing .prose > p:first-child { font-size: clamp(1.2rem, 2.4vw, 1.4rem); line-height: 1.55; margin-top: 0; }
-.landing .prose > p:first-child + p:has(> a:only-child) { margin: 2rem 0 clamp(3rem, 8vw, 5rem); }
-.landing .prose > p:first-child + p:has(> a:only-child) a { display: inline-block; padding: .8rem 1.6rem; border: 2px solid var(--link); border-radius: 999px; font-weight: 600; text-decoration: none; }
-.landing .prose > p:first-child + p:has(> a:only-child) a:hover { background: var(--link); color: var(--background); }
+.landing .prose > p:first-child + p.standalone-link { margin: 2rem 0 clamp(3rem, 8vw, 5rem); }
+.landing .prose > p:first-child + p.standalone-link > a { display: inline-block; padding: .8rem 1.6rem; border: 2px solid var(--link); border-radius: 999px; font-weight: 600; text-decoration: none; }
+.landing .prose > p:first-child + p.standalone-link > a:hover { background: var(--link); color: var(--background); }
 .landing .prose > h2 { font-size: clamp(1.5rem, 3vw, 1.85rem); margin: clamp(2.5rem, 6vw, 3.5rem) 0 .75rem; padding-top: clamp(2rem, 5vw, 3rem); border-top: 1px solid var(--border); }

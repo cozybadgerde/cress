@@ -29,7 +29,7 @@ func (input fields) readBrand(prefix string) (page.Brand, error) {
 		}
 		if ratio := contrastWithWhite(rgb); ratio < 4.5 {
 			*input.warnings = append(*input.warnings, fmt.Sprintf(
-				"%s: %scolor %s has contrast %.2f:1 against white; text in this color or on it may be hard to read (4.5:1 recommended)",
+				"%s: %scolor %s has contrast %.2f:1 against white (below 4.5:1); this reference comparison does not assess the selected theme; check contrast against its actual text and background colors",
 				input.source, table.prefix, brand.Color, ratio))
 		}
 	}

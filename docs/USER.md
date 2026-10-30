@@ -89,9 +89,11 @@ CSS, no scripts, and no remote assets. Both support all page types and
 captioned content.
 
 On landing pages, both themes enlarge the first paragraph. The paragraph
-directly after it is shown as the primary action when its only element is
-one link: outlined in Poppy, filled in Clover. Keep that paragraph to the
-link alone; other links stay ordinary links.
+directly after it is shown as the primary action when it contains only
+one direct Markdown link: outlined in Poppy, filled in Clover. Formatting
+inside the link is allowed. Paragraphs with surrounding text or additional
+links stay ordinary prose. This is a theme choice using Cress's neutral
+`standalone-link` paragraph class, not a generator-selected primary action.
 
 A landing page's title image is cropped to a wide 5:2 band so the
 introduction stays near the top: below the title in Poppy, directly
@@ -378,8 +380,11 @@ Omit optional settings instead of supplying empty colors or asset URLs.
 Themes choose how to present brand data. Both built-ins render the logo,
 favicon, and theme-color metadata, and use `color` as their accent for
 links, buttons, and Clover's title block. Cress warns when `color` has less
-than 4.5:1 contrast against white, because accent text or white text on it
-may be hard to read. The build continues; choose a darker color.
+than 4.5:1 contrast against white as a reference comparison only. The build
+continues. This does not assess the selected theme: dark or tinted themes
+may intentionally use colors with low contrast against white. Check the
+actual text/background pairs in the rendered theme, whether or not Cress
+warns; a warning does not necessarily mean the color needs changing.
 
 Theme names start with a lowercase ASCII letter and contain only lowercase
 letters, digits, and hyphens. A selected `themes/<name>/` must be a complete,

@@ -133,8 +133,11 @@ rather than relying on strikethrough alone.
 
 Built-in themes use the brand color as their accent for links, buttons,
 and Clover's title block. Cress warns when it has less than 4.5:1 contrast
-against white; Poppy's warm background lowers contrast slightly, so check
-colors near that limit. Arbitrary custom CSS, raw HTML,
+against white as a reference only, not an assessment of the selected theme.
+Dark or tinted themes may intentionally use colors with low contrast
+against white. Check actual text/background pairs whether or not a warning
+appears; Poppy's off-white background also changes the measured contrast.
+Arbitrary custom CSS, raw HTML,
 third-party themes, changed navigation/content, or brand assets need
 assessment of the resulting complete pages. Passing tests is not
 certification of a finished site.

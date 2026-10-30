@@ -36,6 +36,10 @@ func TestInitializedSiteBuildsWithBothThemes(t *testing.T) {
 					!strings.Contains(string(data), `id="main"`) {
 					t.Fatalf("%s: %s, %v", file, data, err)
 				}
+				if file == "index.html" && !strings.Contains(string(data),
+					`<p class="standalone-link"><a href="/services/">Explore our services</a></p>`) {
+					t.Errorf("%s: landing action missing standalone-link structure", name)
+				}
 			}
 			tour, err := os.ReadFile(filepath.Join(site, "public/tour/index.html"))
 			if err != nil {

@@ -188,6 +188,11 @@ func TestBrandColorContrastWarning(t *testing.T) {
 			if warned := len(warnings) == 1 && strings.Contains(warnings[0], "brand.color "+test.color+" has contrast"); warned != test.warn || len(warnings) > 1 {
 				t.Fatalf("warnings = %v, want warning %v", warnings, test.warn)
 			}
+			if test.warn && (!strings.Contains(warnings[0], "against white (below 4.5:1)") ||
+				!strings.Contains(warnings[0], "this reference comparison does not assess the selected theme") ||
+				!strings.Contains(warnings[0], "check contrast against its actual text and background colors")) {
+				t.Fatalf("warning must explain its reference-only scope and theme-specific review: %q", warnings[0])
+			}
 		})
 	}
 }
