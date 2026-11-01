@@ -530,6 +530,26 @@ themes are enough for this scope. Heading targets are approved under
   at 320px and 1280px, including image-free pages, title images, long text,
   tables, code, captions, and the content tour. Keep the complete human
   accessibility assessment as the separate release gate below.
+- [ ] Polish Clover toward a clearer business/corporate presentation.
+  Agree the refined direction before changing typography, hierarchy,
+  navigation, and page composition. Preserve Poppy and Anemone's identities,
+  required content features, responsive behavior, and accessibility baseline.
+- [ ] Review logo display and placement across all three bundled themes.
+  Compare logo-only, title-only, and combined identities with wide, square,
+  and tall logos on desktop and narrow screens. Assess sizing, proportions,
+  alignment, navigation balance, background contrast, home-link behavior,
+  and accessible alternatives. Agree theme-owned changes before implementation.
+- [ ] Review configuration exposure through the prepared theme render model.
+  Map supported settings to available theme data and documented usage;
+  identify intentional generator-only settings and any missing presentation
+  data. `site.copyright` already reaches themes as `.Site.Copyright` and all
+  three bundled themes display it when supplied. Agree necessary model or
+  documentation changes without exposing raw configuration or requiring
+  every theme to display every available value.
+- [ ] Evaluate a CLI command or option to generate shell tab-completion
+  scripts. Check the existing CLI library's capabilities and agree supported
+  shells, command syntax, output behavior, and installation guidance before
+  implementation. Keep generation offline and shell setup explicit.
 
 Deferred, not implementation commitments:
 
