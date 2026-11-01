@@ -539,13 +539,11 @@ themes are enough for this scope. Heading targets are approved under
   and tall logos on desktop and narrow screens. Assess sizing, proportions,
   alignment, navigation balance, background contrast, home-link behavior,
   and accessible alternatives. Agree theme-owned changes before implementation.
-- [ ] Review configuration exposure through the prepared theme render model.
-  Map supported settings to available theme data and documented usage;
-  identify intentional generator-only settings and any missing presentation
-  data. `site.copyright` already reaches themes as `.Site.Copyright` and all
-  three bundled themes display it when supplied. Agree necessary model or
-  documentation changes without exposing raw configuration or requiring
-  every theme to display every available value.
+- [x] Review configuration exposure through the prepared theme render model.
+  Confirm intentional generator-only settings and document the prepared
+  contract, including Chroma code-block classes for theme styling.
+  `site.copyright` reaches themes as `.Site.Copyright` and all three bundled
+  themes display it when supplied. No model changes are needed.
 - [ ] Evaluate a CLI command or option to generate shell tab-completion
   scripts. Check the existing CLI library's capabilities and agree supported
   shells, command syntax, output behavior, and installation guidance before

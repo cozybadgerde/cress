@@ -152,6 +152,18 @@ HTML; the developer skeleton does not interpret it.
 Content preparation alone marks the rendered body as trusted HTML.
 Ordinary strings must not be converted to trusted HTML.
 
+Fenced code blocks render inside `<pre><code>`. A recognized language adds
+`language-<name>` to `<code>`, preserving the authored language name. When
+highlighting is enabled, Chroma adds token `<span>` elements with CSS classes.
+Common token classes include `k` for keywords, `s` for strings, and `c` for
+comments. Chroma's class-based output leaves token colors to theme CSS; the
+bundled themes style these classes in their public stylesheets. Untagged or
+unrecognized languages remain escaped plain code, and highlighting can be
+disabled with `[markdown] highlight = false`. The markup has no Chroma-specific
+IDs or `data-*` attributes. See Chroma's
+[HTML formatter documentation](https://github.com/alecthomas/chroma#the-html-formatter)
+for formatter details.
+
 Markdown paragraphs containing only one direct link receive
 `class="standalone-link"`, independently of page type and position.
 CommonMark autolinks and reference-style links qualify, as does formatting
