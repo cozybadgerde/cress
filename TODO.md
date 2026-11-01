@@ -677,8 +677,13 @@ External release blockers remain:
   default page types; fix and retest every applicable A/AA failure.
   Include table-wrapper keyboard behavior with and without overflow; its
   unconditional focus target is unchanged by the boundary review.
-- [ ] Record native Linux amd64 and Linux arm64 acceptance results.
-  Cross-builds and local macOS execution do not prove native Linux behavior.
+  The maintainer reports manual exploratory testing on 2026-11-01 with a
+  "works for me" result; scope and limitations are recorded in
+  [the assessment](docs/ACCESSIBILITY.md).
+- [x] Record native Linux amd64 and Linux arm64 checks. The maintainer reports
+  manual checks across all three themes on AlmaLinux, on native x86_64 and
+  aarch64 systems, working as expected. The broader supported-target/product
+  acceptance review remains open.
 - [ ] Complete the supported-target/product acceptance review and record
   results before approving a release tag.
 - [ ] After an explicitly approved first release, record real keyless
@@ -688,6 +693,71 @@ External release blockers remain:
 - [x] Audit resource-ownership fixes are committed as `35a9e6c`.
 - [ ] Maintainer confirms any push. No repository write to GitHub was
   performed during the audit follow-up.
+
+Maintainer-reported manual acceptance results on 2026-11-01 refer to the
+[PRD criteria](docs/PRD.md#acceptance-criteria-for-10). These are reported
+outcomes, not independently reproduced results; per-criterion environments
+and executable versions were not supplied.
+
+| Criteria | Reported result |
+|----------|-----------------|
+| 1–4 | Pass |
+| 5 | Not tested |
+| 6–8 | Pass |
+| 9–23 | Not yet reported |
+
+### Simple automated acceptance checks
+
+On 2026-11-01, local checks against `59a62f0` plus the documentation worktree
+passed: `mise run check`, `mise run build`, `mise run check:goreleaser`, and
+a fresh `go test -count=1 ./...` through mise. The built executable's version
+and site/theme help also worked. These checks exercise representative cases,
+not an exhaustive acceptance assessment.
+
+| PRD criteria | Simple-check result and evidence |
+|--------------|----------------------------------|
+| 1–2 | Pass: scaffold builds with all three themes; complete-page structure and content fixtures. |
+| 3–4 | Pass: route/URL, asset, private-source, and collision tests. |
+| 5 | Pass: initialized local theme builds, local override, and invalid/incompatible package rejection tests. This supplements the untested manual result. |
+| 6 | Pass for current behavior: configuration/frontmatter/manifest schema agreement, validation, warnings, and custom-data tests. Future compatibility policy needs release review. |
+| 7–8 | Pass: draft isolation, source watching, retained output, writer retry, and preview failure tests. |
+| 9–10 | Pass: session cleanup/isolation, staging, recovery, ambiguity refusal, and writer-lock tests. |
+| 11 | Pass: site/theme initialization and refusal tests; executable help/version smoke checks. |
+| 12 | Partial: default palette contrast, landmarks, navigation labels, captions, heading targets, and task markup tests pass. Human matrix remains open. |
+| 13 | Partial: all three targets cross-build with CGO disabled; packaging configuration validates. Archives and real signatures were not checked in this run. |
+| 14 | Partial: Linux amd64 license report generates 11 rows with no empty or Unknown license labels. Component approval and enforced release rejection are not established. |
+| 15–18 | Pass: publication metadata, highlighting, inheritance, page types, compatibility, and exact-language tests. |
+| 19–23 | Pass for tested cases: trusted HTML/escaping, captions, list preparation, heading IDs, strikethrough, and task-list tests. |
+
+The license tool warns that assembly in `golang.org/x/sys/unix` cannot be
+inspected for further dependencies and that the local unversioned module's
+license URL defaults to HEAD. These warnings need review, not suppression.
+Criterion 14 requires rejection of unreviewed or unapproved components;
+the current release tooling generates reports but has no approval-policy
+check. Keep that acceptance gap explicit.
+
+### Proposed release-gate follow-up
+
+This is a plan for later approval, not new release automation or permission
+to publish. Reuse existing tests and tools; add no browser suite.
+
+- [ ] Retain the existing pre-publication checks and build; explicitly run
+  the functional suite uncached so tagged-release evidence is fresh.
+- [ ] Add a small archive smoke check after packaging and before publication:
+  confirm exactly the three supported targets, required notices and install
+  guidance, nonempty per-target CSV reports, and checksum coverage for every
+  archive/report. Execute the host-compatible archived binary to verify the
+  release version and build initialized sites with all three embedded themes.
+  Use disposable directories and preserve existing output on failed checks.
+- [ ] Review criterion 14 with the maintainer: agree the required license
+  approval/rejection mechanism or revise the owning requirement explicitly.
+  Report generation alone must not be recorded as satisfying that criterion.
+- [ ] Plan post-publication verification using the documented Cosign workflow:
+  accept the exact tag identity/issuer, verify archive/report digests, and
+  reject a modified checksum manifest, modified artifact, and wrong identity.
+  Keep this distinct from pre-publication gating.
+- [ ] Before approving a release tag, review the recorded human accessibility
+  outcomes and native-platform evidence against the release revision.
 
 Suggested phase 9 commit: `build: prepare signed releases and refresh docs`.
 For a combined phase 8/9 commit:

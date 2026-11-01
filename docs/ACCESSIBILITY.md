@@ -2,8 +2,8 @@
 
 ## Scope and release status
 
-**Release blocked: hands-on assessment is pending.** Cress targets WCAG 2.2
-Level AA for complete default pages, not arbitrary customized sites.
+**Release blocked: criterion-by-criterion assessment is pending.** Cress targets
+WCAG 2.2 Level AA for complete default pages, not arbitrary customized sites.
 No conformance or legal-compliance claim is made.
 
 The assessment fixtures are the seven English pages created by `site init`
@@ -42,9 +42,12 @@ the side masthead. Narrow screenshots confirmed stacked layout, unrotated
 images, wrapped long content, and table overflow contained in its wrapper.
 These one-off checks are not a complete-page accessibility assessment.
 
-No operating-system accessibility tree, assistive technology, keyboard,
-touch, zoom, or user testing result is recorded yet. A persistent browser
-automation suite remains outside the agreed scope.
+On 2026-11-01, the maintainer reports manual exploratory accessibility testing
+across the three themes with a "works for me" result. No failures were reported.
+The report does not specify the tested pages, executable version, browser,
+assistive technology, keyboard, touch, zoom, or criterion-specific outcomes.
+It records exploratory evidence, not completion of the A/AA matrix below.
+A persistent browser automation suite remains outside the agreed scope.
 
 ## Human review procedure
 
