@@ -534,6 +534,11 @@ themes are enough for this scope. Heading targets are approved under
   Agree the refined direction before changing typography, hierarchy,
   navigation, and page composition. Preserve Poppy and Anemone's identities,
   required content features, responsive behavior, and accessibility baseline.
+- [ ] Establish Cress's project brand using the maintainer-prepared images.
+  Review the supplied assets, usage rights, and suitable variants; agree
+  placement in project documentation and other project-facing surfaces before
+  implementation. Keep Cress's identity separate from publisher branding and
+  the generic initialized-site content.
 - [ ] Review logo display and placement across all three bundled themes.
   Compare logo-only, title-only, and combined identities with wide, square,
   and tall logos on desktop and narrow screens. Assess sizing, proportions,
@@ -600,8 +605,18 @@ and release-tag examples remain where they explain required behavior.
   (`fix: clarify preview and writer resource ownership`).
 - [ ] Revisit audit #3 (private theme-file reads) and #4 (unchecked scaffold
   substitutions) separately; neither is an automatic release blocker.
+  Approved for #3: load only generation inputs into memory. Inspect all
+  package entries and open/close unused regular files to validate readability;
+  preserve rejection of symlinks, special files, and unreadable private files.
+  Implement with focused regression coverage; no cache or new abstraction.
+  Approved for #4: require exactly one expected anchor for each fixed
+  site/theme scaffold substitution. Fail clearly on missing or duplicate
+  anchors, retaining commented sources without a new templating system.
 - [ ] Review the code quality audit (local `audits/code-quality-2026-10-26.md`)
-  before approving output-file organization (#5, optional, not approved).
+  and implement the approved small output-file reorganization (#5).
+  Move site-lock operations into `lock.go`; separate session-registry
+  management where it improves contributor navigation. Keep the same package,
+  behavior, and interfaces; do not split every method merely for file size.
   Findings #1 to #4 (preview, Markdown, recovery, content loading) are done.
   Findings are proposals, not new release blockers.
 - [x] Fix the two P2 findings from the local theme design audit
