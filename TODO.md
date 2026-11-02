@@ -608,10 +608,11 @@ and release-tag examples remain where they explain required behavior.
   files to validate readability; preserve rejection of symlinks, special files,
   and unreadable private files. Regression tests verify unused bodies are not
   read, generation inputs remain available, and open/close failures propagate.
-- [ ] Implement audit #4 (unchecked scaffold substitutions).
-  Approved: require exactly one expected anchor for each fixed
-  site/theme scaffold substitution. Fail clearly on missing or duplicate
-  anchors, retaining commented sources without a new templating system.
+- [x] Implement audit #4 (unchecked scaffold substitutions).
+  Require exactly one expected anchor for each fixed site/theme scaffold
+  substitution. Report contextual errors on missing or duplicate anchors,
+  retaining commented sources without a new templating system. Unit tests
+  cover valid substitutions and both invalid anchor counts.
 - [ ] Review the code quality audit (local `audits/code-quality-2026-10-26.md`)
   and implement the approved small output-file reorganization (#5).
   Move site-lock operations into `lock.go`; separate session-registry

@@ -75,8 +75,10 @@ func Init(ctx context.Context, site, name string) (initErr error) {
 			data = append(data, '\n')
 		}
 		if relative == "templates/shared.gohtml" {
-			data = []byte(strings.Replace(string(data), `{{block "theme-styles" .}}{{end}}`,
-				`<link rel="stylesheet" href="{{asset "site.css"}}">`, 1))
+			data, err = insertStylesheet(data)
+			if err != nil {
+				return err
+			}
 		}
 		file, err := root.OpenFile(target, os.O_CREATE|os.O_EXCL|os.O_WRONLY, fileMode)
 		if err != nil {
@@ -89,4 +91,13 @@ func Init(ctx context.Context, site, name string) (initErr error) {
 		return fmt.Errorf("theme initialization incomplete at %s; inspect before retrying: %w", destination, err)
 	}
 	return nil
+}
+
+func insertStylesheet(source []byte) ([]byte, error) {
+	const anchor = `{{block "theme-styles" .}}{{end}}`
+	if count := strings.Count(string(source), anchor); count != 1 {
+		return nil, fmt.Errorf("embedded templates/shared.gohtml: expected exactly one theme-styles anchor, found %d", count)
+	}
+	return []byte(strings.Replace(string(source), anchor,
+		`<link rel="stylesheet" href="{{asset "site.css"}}">`, 1)), nil
 }

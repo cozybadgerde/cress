@@ -77,7 +77,10 @@ func Init(ctx context.Context, directory, name string) (initErr error) {
 			return err
 		}
 		if relative == "cress.toml" {
-			data = []byte(strings.Replace(string(data), `name = "poppy"`, `name = "`+name+`"`, 1))
+			data, err = selectTheme(data, name)
+			if err != nil {
+				return err
+			}
 		}
 		file, err := root.OpenFile(relative, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 		if err != nil {
@@ -90,4 +93,12 @@ func Init(ctx context.Context, directory, name string) (initErr error) {
 		return fmt.Errorf("site initialization incomplete at %s; inspect before retrying: %w", target, err)
 	}
 	return nil
+}
+
+func selectTheme(source []byte, name string) ([]byte, error) {
+	const anchor = `name = "poppy"`
+	if count := strings.Count(string(source), anchor); count != 1 {
+		return nil, fmt.Errorf("embedded cress.toml: expected exactly one theme-name anchor, found %d", count)
+	}
+	return []byte(strings.Replace(string(source), anchor, `name = "`+name+`"`, 1)), nil
 }
