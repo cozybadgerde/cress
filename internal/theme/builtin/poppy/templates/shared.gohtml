@@ -45,8 +45,19 @@
 {{end}}
 
 {{define "dates"}}
-  {{with .PublishedAt}}<p class="date">{{label "published"}} <time datetime="{{.}}">{{.}}</time></p>{{end}}
-  {{with .UpdatedAt}}<p class="date">{{label "updated"}} <time datetime="{{.}}">{{.}}</time></p>{{end}}
+  {{if or .PublishedAt .UpdatedAt}}
+  <p class="dates">
+    {{with .PublishedAt}}<span>{{label "published"}} <time datetime="{{.}}">{{.}}</time></span>{{end}}
+    {{with .UpdatedAt}}<span>{{if $.PublishedAt}}<span class="date-separator" aria-hidden="true">&middot;</span> {{end}}{{label "updated"}} <time datetime="{{.}}">{{.}}</time></span>{{end}}
+  </p>
+  {{end}}
+{{end}}
+
+{{define "page-heading"}}
+  <header class="page-heading">
+    {{template "dates" .}}
+    <h1>{{.Title}}</h1>
+  </header>
 {{end}}
 
 {{define "document-end"}}

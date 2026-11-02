@@ -530,11 +530,31 @@ themes are enough for this scope. Heading targets are approved under
   at 320px and 1280px, including image-free pages, title images, long text,
   tables, code, captions, and the content tour. Keep the complete human
   accessibility assessment as the separate release gate below.
-- [ ] Polish Clover toward a clearer business/corporate presentation.
-  Agree the refined direction before changing typography, hierarchy,
-  navigation, and page composition. Preserve Poppy and Anemone's identities,
-  required content features, responsive behavior, and accessibility baseline.
+- [x] Polish Clover toward a restrained, established small-business
+  presentation: reduce title-block scale and padding, lighten heading weights
+  and section rules, and tighten navigation spacing. Preserve the solid accent
+  block, filled primary link, system fonts, and publisher accent color.
+  Poppy, Anemone, logo behavior, and landing-image crop rules are unchanged.
+  Separate the wider 72rem frame from the centered 65ch reading column
+  so desktop title blocks and title images can expand without stretching prose.
+  Align ordinary and list-page headings with the centered reading column.
+  Put optional dates in one compact, muted row above these headings; retain
+  the landing title-first composition and wide title images.
+  Apply the compact metadata treatment to Poppy and Anemone as well, using
+  their own muted palette colors and preserving their existing layouts.
+  Firefox checks of both content tours at 1440px and 320px confirm the
+  muted metadata and narrow-screen wrapping. Optional-date and metadata
+  contrast tests cover all three themes.
+  Firefox screenshots confirm the initialized landing at 320px and 1280px
+  and the content tour at 320px. The wider frame is also reviewed at 1600px
+  for the landing and content tour, with the landing rechecked at 320px.
+  Review compact date metadata at 1440px with and without a title image,
+  on the journal list and dated landing, and at 320px on the content tour.
+  Checks and build pass; this visual review does not complete the human
+  accessibility matrix.
 - [ ] Establish Cress's project brand using the maintainer-prepared images.
+  Schedule a dedicated session together with a project-documentation review,
+  after theme polish, logo behavior, and real-photo landing checks.
   Review the supplied assets, usage rights, and suitable variants; agree
   placement in project documentation and other project-facing surfaces before
   implementation. Keep Cress's identity separate from publisher branding and

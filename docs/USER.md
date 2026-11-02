@@ -85,8 +85,12 @@ outside disposable directories, and deploy only their built `public/` output.
 
 Poppy uses a chalk off-white background, dark green palette, calm sans headings,
 and generous single-column spacing for freelancer sites. Clover uses a
-white/slate and dark blue layout with a solid title block and heavy
-section headings for small businesses.
+white/slate and dark blue layout with a compact solid title block, measured
+sans-serif headings, and fine section rules for an established small-business
+presentation. A wide outer frame gives title blocks and title images more
+space, while a centered reading column keeps prose narrow and text left-aligned.
+Filled primary links keep the next action clear.
+Clover centers ordinary and list-page headings on the reading column.
 
 Anemone uses warm paper surfaces, dark ink, and editorial serif headings.
 On wide screens a side masthead sits beside the reading column; on narrow
@@ -97,6 +101,9 @@ photographs. It suits makers, independent shops, cafes, and creative businesses.
 
 All three use system fonts, local CSS, no scripts, and no remote assets.
 All support every page type and captioned content.
+Optional publication and update dates share a compact, muted row above
+ordinary and list-page titles. Landing-page and list-entry dates remain
+below their titles.
 
 On landing pages, all three themes enlarge the first paragraph. The paragraph
 directly after it is shown as the primary action when it contains only

@@ -3,6 +3,7 @@
   --background: #faf8f3;
   --surface: #f0ede5;
   --text: #302f28;
+  --muted: #696354;
   --link: #64503b;
   --border: #817865;
   --syntax-keyword: #31596b;
@@ -47,7 +48,13 @@ h6 { font-size: 1.0625rem; font-weight: 700; }
 .page-heading { padding-bottom: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
 .hero h1 { max-width: 13ch; font-size: clamp(3rem, 6vw, 5.5rem); }
 .hero .page-heading { border: 0; margin-bottom: 0; }
-.date { font-size: .9375rem; font-variant-numeric: tabular-nums; }
+.page-heading h1 { margin-bottom: 0; }
+.dates { display: flex; flex-wrap: wrap; gap: .25rem .5rem; margin: .5rem 0 1rem; color: var(--muted); font-size: .875rem; line-height: 1.5; font-variant-numeric: tabular-nums; }
+.dates > span { white-space: nowrap; }
+.date-separator { margin-inline-end: .25rem; }
+.page-heading .dates { margin: 0 0 .625rem; }
+.hero .page-heading .dates { margin: 1rem 0 0; }
+@media (max-width: 30rem) { .date-separator { display: none; } }
 img { max-width: 100%; height: auto; }
 figure { margin: 2rem 0; }
 .title-image, .prose > figure { padding: .6rem; }

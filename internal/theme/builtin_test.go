@@ -1,13 +1,17 @@
 package theme
 
 import (
+	"bytes"
 	"context"
+	"html/template"
 	"io/fs"
 	"math"
 	"regexp"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/cozybadgerde/cress/internal/page"
 )
 
 func TestBuiltinPackagesAndExactLabels(t *testing.T) {
@@ -64,11 +68,74 @@ func TestBuiltinDefaultPaletteContrast(t *testing.T) {
 				t.Errorf("%s syntax contrast %.2f < 4.5", name, ratio)
 			}
 		}
+		for _, background := range []string{palette["background"], palette["surface"]} {
+			if ratio := contrast(palette["muted"], background); ratio < 4.5 {
+				t.Errorf("%s metadata contrast %.2f < 4.5", name, ratio)
+			}
+		}
 		for _, invariant := range []string{"a:focus-visible", ".skip-link", "flex-wrap: wrap", "max-width: 100%", "white-space: pre-wrap"} {
 			if !strings.Contains(string(data), invariant) {
 				t.Errorf("%s missing %s", name, invariant)
 			}
 		}
+	}
+}
+
+func TestBuiltinOptionalHeadingDates(t *testing.T) {
+	for _, name := range []string{"poppy", "clover", "anemone"} {
+		t.Run(name, func(t *testing.T) { testOptionalHeadingDates(t, name) })
+	}
+}
+
+func testOptionalHeadingDates(t *testing.T, name string) {
+	t.Helper()
+	source, err := fs.Sub(embedded, "builtin/"+name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pkg, _, err := loadPackage(context.Background(), source, Request{Language: "en", Prefix: "/"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	parsed, err := template.New("shared").Funcs(template.FuncMap{
+		"asset": pkg.AssetURL, "label": pkg.Label,
+	}).Parse(pkg.Templates["shared.gohtml"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, test := range []struct {
+		name, published, updated string
+		count                    int
+	}{
+		{"absent", "", "", 0},
+		{"published", "2026-10-21", "", 1},
+		{"updated", "", "2026-10-23", 1},
+		{"both", "2026-10-21", "2026-10-23", 2},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			var output bytes.Buffer
+			model := page.Page{Title: "<Services>", PublishedAt: test.published, UpdatedAt: test.updated}
+			if err := parsed.ExecuteTemplate(&output, "page-heading", model); err != nil {
+				t.Fatal(err)
+			}
+			html := output.String()
+			if !strings.Contains(html, "<h1>&lt;Services&gt;</h1>") ||
+				strings.Count(html, "<time ") != test.count {
+				t.Fatalf("heading lost escaped title or optional dates: %s", html)
+			}
+			if strings.Contains(html, `class="dates"`) != (test.count > 0) ||
+				strings.Contains(html, `class="date-separator"`) != (test.count == 2) {
+				t.Fatalf("empty metadata or orphaned separator: %s", html)
+			}
+			if test.count > 0 && strings.Index(html, "<time ") > strings.Index(html, "<h1>") {
+				t.Fatalf("dates follow the heading: %s", html)
+			}
+			for _, date := range []string{test.published, test.updated} {
+				if date != "" && !strings.Contains(html, `<time datetime="`+date+`">`+date+`</time>`) {
+					t.Fatalf("lost machine-readable date %s: %s", date, html)
+				}
+			}
+		})
 	}
 }
 

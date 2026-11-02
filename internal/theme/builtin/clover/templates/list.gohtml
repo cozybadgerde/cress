@@ -1,7 +1,6 @@
 {{template "document-start" .}}
   <main id="main" tabindex="-1">
-    <h1>{{.Title}}</h1>
-    {{template "dates" .}}
+    {{template "page-heading" .}}
     {{template "entry-image" .}}
     <div class="prose">{{.Body}}</div>
     {{with .Entries}}
