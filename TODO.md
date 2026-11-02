@@ -613,11 +613,12 @@ and release-tag examples remain where they explain required behavior.
   substitution. Report contextual errors on missing or duplicate anchors,
   retaining commented sources without a new templating system. Unit tests
   cover valid substitutions and both invalid anchor counts.
-- [ ] Review the code quality audit (local `audits/code-quality-2026-10-26.md`)
+- [x] Review the code quality audit (local `audits/code-quality-2026-10-26.md`)
   and implement the approved small output-file reorganization (#5).
-  Move site-lock operations into `lock.go`; separate session-registry
-  management where it improves contributor navigation. Keep the same package,
-  behavior, and interfaces; do not split every method merely for file size.
+  Site-lock operations live in `lock.go`; session creation and registry
+  reclamation live in `session_registry.go`, separate from active-session
+  operations. The package, function bodies, behavior, and interfaces remain
+  unchanged; existing output, preview, and generator tests cover the move.
   Findings #1 to #4 (preview, Markdown, recovery, content loading) are done.
   Findings are proposals, not new release blockers.
 - [x] Fix the two P2 findings from the local theme design audit
