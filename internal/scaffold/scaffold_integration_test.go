@@ -40,6 +40,21 @@ func TestInitializedSiteBuildsWithAllThemes(t *testing.T) {
 					`<p class="standalone-link"><a href="/services/">Explore our services</a></p>`) {
 					t.Errorf("%s: landing action missing standalone-link structure", name)
 				}
+				for _, identity := range []string{`<link rel="icon" href="/images/favicon.svg">`, `class="logo" src="/images/logo.svg" alt=""`} {
+					if !strings.Contains(string(data), identity) {
+						t.Errorf("%s: missing scaffold identity %s", file, identity)
+					}
+				}
+			}
+			for _, asset := range []string{"logo.svg", "favicon.svg"} {
+				source, err := os.ReadFile(filepath.Join(site, "static/images", asset))
+				if err != nil {
+					t.Fatal(err)
+				}
+				published, err := os.ReadFile(filepath.Join(site, "public/images", asset))
+				if err != nil || string(published) != string(source) {
+					t.Fatalf("%s: placeholder not published intact: %v", asset, err)
+				}
 			}
 			tour, err := os.ReadFile(filepath.Join(site, "public/tour/index.html"))
 			if err != nil {

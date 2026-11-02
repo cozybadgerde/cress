@@ -101,6 +101,12 @@ photographs. It suits makers, independent shops, cafes, and creative businesses.
 
 All three use system fonts, local CSS, no scripts, and no remote assets.
 All support every page type and captioned content.
+New sites enable gray logo and favicon placeholders in `static/images/`.
+Replace them before publishing, or remove their branding settings.
+Each theme shows the logo beside the site title: in Poppy's header, Clover's
+tinted header, and Anemone's masthead. A compact square box contains square,
+circular, or other artwork without cropping. The placeholder has empty
+alternative text because the adjacent site title supplies the identity.
 Optional publication and update dates share a compact, muted row above
 ordinary and list-page titles. Landing-page and list-entry dates remain
 below their titles.

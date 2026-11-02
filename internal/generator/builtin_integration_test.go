@@ -84,14 +84,12 @@ func TestBuiltinCompletePageStructure(t *testing.T) {
 		if err := scaffold.Init(context.Background(), site, name); err != nil {
 			t.Fatal(err)
 		}
-		config, err := os.OpenFile(filepath.Join(site, "cress.toml"), os.O_APPEND|os.O_WRONLY, 0)
+		config, err := os.ReadFile(filepath.Join(site, "cress.toml"))
 		if err != nil {
 			t.Fatal(err)
 		}
-		if _, err := config.WriteString("\n[brand]\ncolor = '#a8231a'\n"); err != nil {
-			t.Fatal(err)
-		}
-		if err := config.Close(); err != nil {
+		config = []byte(strings.Replace(string(config), "[brand]\n", "[brand]\ncolor = '#a8231a'\n", 1))
+		if err := os.WriteFile(filepath.Join(site, "cress.toml"), config, 0o644); err != nil {
 			t.Fatal(err)
 		}
 		for _, fixture := range []struct{ file, metadata, image string }{

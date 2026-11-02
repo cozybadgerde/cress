@@ -56,12 +56,13 @@ highlight = true
 
 # Optional branding. Omit unused fields rather than setting empty asset URLs.
 # Asset URLs can also be absolute HTTP/HTTPS URLs; Cress does not fetch them.
-# [brand]
+[brand]
 # color = "#346b38" # Accent color for links and buttons; aim for 4.5:1 against white.
-# favicon = "/images/favicon.svg"
+favicon = "/images/favicon.svg"
 
-# Optional logo. Place the file in static/images/ and provide both fields.
-# All built-ins render it; alt can be "" for a decorative image.
-# [brand.logo]
-# src = "/images/logo.svg"
-# alt = "Your business"
+# Replace the gray placeholders in static/images/ before publishing.
+# Square or circular artwork fits the compact header box without cropping.
+# Empty alt avoids repeating the adjacent site title.
+[brand.logo]
+src = "/images/logo.svg"
+alt = ""

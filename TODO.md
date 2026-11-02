@@ -560,6 +560,13 @@ themes are enough for this scope. Heading targets are approved under
   implementation. Keep Cress's identity separate from publisher branding and
   the generic initialized-site content.
 - [ ] Review logo display and placement across all three bundled themes.
+  Implemented: new sites enable matching gray mountain logo and favicon
+  SVG placeholders in `static/images/`. Each theme contains the logo in
+  a 3rem square beside the site title; Anemone keeps this pair together
+  in its desktop masthead and mobile header. No artwork is cropped.
+  Scaffold tests verify the assets publish intact and all page types
+  reference them. Firefox review covers all themes at 1440px and 320px.
+  The broader identity and aspect-ratio comparison below remains open.
   Compare logo-only, title-only, and combined identities with wide, square,
   and tall logos on desktop and narrow screens. Assess sizing, proportions,
   alignment, navigation balance, background contrast, home-link behavior,

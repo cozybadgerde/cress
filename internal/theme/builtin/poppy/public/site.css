@@ -33,7 +33,7 @@ main:focus-visible { outline-width: 2px; outline-offset: -2px; }
 .site-header { display: flex; flex-wrap: wrap; gap: 1.5rem 3rem; align-items: center; justify-content: space-between; }
 .identity { display: flex; align-items: center; gap: 1rem; }
 .site-title { font-weight: 700; }
-.logo { max-width: 8rem; max-height: 4rem; object-fit: contain; }
+.logo { width: 3rem; height: 3rem; flex-shrink: 0; object-fit: contain; }
 nav ul { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; padding: 0; margin: 0; list-style: none; }
 nav a { display: inline-block; padding: .5rem .25rem; }
 [aria-current="page"] { font-weight: 700; text-decoration-thickness: .15em; }
