@@ -64,9 +64,10 @@ title = { nested = ["kept", "as data"] }
 				Footer: []page.Link{{Label: "Contact", URL: "/company/contact/"}},
 			},
 			Custom: map[string]any{"title": map[string]any{"nested": []any{"kept", "as data"}}},
+			Syntax: page.Syntax{Highlight: true},
 		},
 		Description: "Shared description", Host: "https://example.org:8443",
-		Image: &page.Image{URL: "/company/team.jpg", Alt: "Our team"}, Highlight: true,
+		Image: &page.Image{URL: "/company/team.jpg", Alt: "Our team"},
 	}
 	if !reflect.DeepEqual(config, want) {
 		t.Fatalf("config = %#v, want %#v", config, want)
@@ -75,9 +76,37 @@ title = { nested = ["kept", "as data"] }
 
 func TestConfigDefaults(t *testing.T) {
 	config := defaultConfig(t)
-	want := content.Config{Site: page.Site{Language: "en", URL: "/"}, Highlight: true}
+	want := content.Config{Site: page.Site{Language: "en", URL: "/", Syntax: page.Syntax{Highlight: true}}}
 	if !reflect.DeepEqual(config, want) {
 		t.Fatalf("config = %#v, want %#v", config, want)
+	}
+}
+
+func TestSyntaxHighlightingSetting(t *testing.T) {
+	for _, test := range []struct {
+		name   string
+		source string
+		want   bool
+	}{
+		{"default", "", true},
+		{"enabled", "[syntax]\nhighlight = true", true},
+		{"disabled", "[syntax]\nhighlight = false", false},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			config, warnings, err := content.ParseConfig([]byte(test.source))
+			if err != nil || len(warnings) != 0 {
+				t.Fatalf("configuration failed: %v, %v", err, warnings)
+			}
+			prepared, _, err := content.Prepare("code.md",
+				[]byte("+++\ntitle = 'Code'\n+++\n```go\nvar value = true\n```\n"), config)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if prepared.Data.Site.Syntax.Highlight != test.want ||
+				strings.Contains(string(prepared.Data.Body), "<span") != test.want {
+				t.Fatalf("theme setting and token output disagree: %+v", prepared.Data)
+			}
+		})
 	}
 }
 
@@ -122,8 +151,8 @@ func TestInvalidConfig(t *testing.T) {
 		{"theme = false", "theme"},
 		{"[theme]\ncustom = 1", "theme.custom"},
 		{"[theme]\ncustom = []", "theme.custom"},
-		{"markdown = false", "markdown must be a table"},
-		{"[markdown]\nhighlight = 'true'", "markdown.highlight must be a boolean"},
+		{"syntax = false", "syntax must be a table"},
+		{"[syntax]\nhighlight = 'true'", "syntax.highlight must be a boolean"},
 		{"[site.image]\nsrc = ''\ncaption = false", "site.image.caption"},
 		{"[site.image]\nsrc = ''\ncaption = '[Credit](relative.md)'", "site.image.caption"},
 		{"[site", "parse configuration"},

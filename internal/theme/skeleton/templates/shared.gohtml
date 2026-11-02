@@ -11,9 +11,11 @@
   {{block "theme-styles" .}}{{end}}
   <style>
     pre { padding: 1rem; overflow: auto; background: #f5f5f5; color: #202020; }
+    {{if .Site.Syntax.Highlight}}
     pre .k, pre .kd, pre .kn, pre .kp, pre .kr, pre .kt { color: #005a9c; }
     pre .s, pre .s1, pre .s2, pre .sb, pre .sc, pre .sd { color: #7d2300; }
     pre .c, pre .c1, pre .cm, pre .cp, pre .cs { color: #525252; }
+    {{end}}
     figcaption, .image-caption { font-size: .9em; }
     .captioned-image { display: inline-block; vertical-align: middle; }
     .image-caption { display: block; }

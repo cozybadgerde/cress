@@ -206,7 +206,7 @@ commit is currently required.
 Agreed interface: source-stem `.assets/` directories, shared `static/`
 files, strict source-to-output reference resolution, text-and-link caption
 attributes and image metadata, and default-on Chroma highlighting through
-`[markdown].highlight`. The [user reference](docs/USER.md) owns syntax and
+`[syntax].highlight`. The [user reference](docs/USER.md) owns syntax and
 validation. Phase 2 leftovers require no separate cleanup commit.
 
 - [x] Resolve site-root and source-relative Markdown links and images
@@ -472,7 +472,7 @@ checks before publication, the three agreed targets, explicit version
 injection, and keyless Cosign checksum signing. Pin external Actions by
 reviewed commit. The maintainer clarified that the requested inventory is
 machine-readable output only: generate CSV reports with go-licenses.
-No added license checks, CycloneDX tooling, custom release executable,
+At this phase, no added license checks, CycloneDX tooling, custom release executable,
 or checked-in generated inventory. Generate notice text with the same tool
 and ship a short install/verify reference. Audit every
 repository Markdown document, including ADRs and scaffold content.
@@ -749,9 +749,9 @@ not an exhaustive acceptance assessment.
 The license tool warns that assembly in `golang.org/x/sys/unix` cannot be
 inspected for further dependencies and that the local unversioned module's
 license URL defaults to HEAD. These warnings need review, not suppression.
-Criterion 14 requires rejection of unreviewed or unapproved components;
-the current release tooling generates reports but has no approval-policy
-check. Keep that acceptance gap explicit.
+At the time of this check, release tooling generated reports without enforcing
+a license allowlist. The follow-up below records the resolved interpretation
+and implementation.
 
 ### Proposed release-gate follow-up
 
@@ -766,9 +766,18 @@ to publish. Reuse existing tests and tools; add no browser suite.
   archive/report. Execute the host-compatible archived binary to verify the
   release version and build initialized sites with all three embedded themes.
   Use disposable directories and preserve existing output on failed checks.
-- [ ] Review criterion 14 with the maintainer: agree the required license
-  approval/rejection mechanism or revise the owning requirement explicitly.
-  Report generation alone must not be recorded as satisfying that criterion.
+- [x] Complete the criterion 14 dependency-license gate. Approval applies to
+  license types, not per-component records. `mise run check:licenses`, included
+  in `mise run check`, enforces the approved names for all three release
+  targets. The maintainer approves OFL-1.1 for font software; Chroma reports
+  it from a combined COPYING file even without importing the SVG formatter.
+  Generated notices retain the font copyright and full OFL text. Non-code
+  asset rights remain separately reviewed; CSV release reports are unchanged.
+- [x] Clarify the syntax-highlighting interface: `[syntax] highlight = true`
+  replaces `[markdown] highlight`; `.Site.Syntax.Highlight` exposes the
+  resolved choice. Themes respect disabled syntax coloring, including when
+  using another highlighter. The scaffold demonstrates conditional styles;
+  documentation records the convention and configuration migration.
 - [ ] Plan post-publication verification using the documented Cosign workflow:
   accept the exact tag identity/issuer, verify archive/report digests, and
   reject a modified checksum manifest, modified artifact, and wrong identity.

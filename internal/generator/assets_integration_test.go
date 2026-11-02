@@ -265,7 +265,7 @@ func TestBuildDisablesHighlighting(t *testing.T) {
 		t.Skip("skipping filesystem integration test")
 	}
 	site := createSite(t, map[string]string{
-		"cress.toml":      "[markdown]\nhighlight = false",
+		"cress.toml":      "[syntax]\nhighlight = false",
 		"content/page.md": "+++\ntitle = 'Page'\n+++\n```go caption=\"Example\"\nvar text = \"<&>\"\n```",
 	})
 	if _, err := generator.Build(context.Background(), site); err != nil {

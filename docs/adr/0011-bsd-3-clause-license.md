@@ -61,6 +61,17 @@ Additional licenses require explicit review and approval before inclusion.
 Unknown or unapproved licenses cannot pass release checks automatically.
 Record approved additions and their rationale in the licensing policy.
 
+On 2026-11-02, the maintainer clarifies that approval applies to license
+types, not individual dependency approval records, and approves `OFL-1.1`
+for font software. Its font-specific conditions do not relicense Cress.
+Chroma's combined COPYING file includes this license for its SVG formatter's
+font; Cress does not import that formatter. The license checker reports both
+MIT and OFL-1.1, so the automated allowlist includes both without ignoring
+Chroma. Generated notices retain the full license text and font copyright.
+Font distribution must preserve those notices and respect reserved names
+when modifying fonts. The checker enforces license names, not asset-specific
+obligations; non-code rights review remains separate.
+
 This code allowlist does not automatically approve fonts, photographs,
 or other non-code assets. Review their distribution rights separately.
 User-provided content and third-party themes not bundled with Cress are

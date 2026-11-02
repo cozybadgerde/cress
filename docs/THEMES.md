@@ -152,17 +152,46 @@ HTML; the developer skeleton does not interpret it.
 Content preparation alone marks the rendered body as trusted HTML.
 Ordinary strings must not be converted to trusted HTML.
 
-Fenced code blocks render inside `<pre><code>`. A recognized language adds
+### Syntax highlighting
+
+`.Site.Syntax.Highlight` is the resolved site-wide syntax-highlighting choice
+from `[syntax] highlight`, enabled by default. It controls visible syntax
+coloring, not just token generation. Themes must respect `false`: do not
+apply token coloring or activate an alternative highlighter. Ordinary code
+fonts, backgrounds, padding, and scrolling remain theme-owned.
+
+Fenced code blocks render inside `<pre><code>`. A specified language adds
 `language-<name>` to `<code>`, preserving the authored language name. When
 highlighting is enabled, Chroma adds token `<span>` elements with CSS classes.
 Common token classes include `k` for keywords, `s` for strings, and `c` for
 comments. Chroma's class-based output leaves token colors to theme CSS; the
 bundled themes style these classes in their public stylesheets. Untagged or
 unrecognized languages remain escaped plain code, and highlighting can be
-disabled with `[markdown] highlight = false`. The markup has no Chroma-specific
-IDs or `data-*` attributes. See Chroma's
+disabled with `[syntax] highlight = false`. The language class remains when
+disabled; its presence is not permission to highlight. The markup has no
+Chroma-specific IDs or `data-*` attributes. See Chroma's
 [HTML formatter documentation](https://github.com/alecthomas/chroma#the-html-formatter)
 for formatter details.
+
+The initialized theme demonstrates conditional token-color CSS using
+`{{if .Site.Syntax.Highlight}}`. A separate stylesheet can be linked likewise:
+
+```html
+{{if .Site.Syntax.Highlight}}
+<link rel="stylesheet" href="{{asset "highlight.css"}}">
+{{end}}
+```
+
+Place that stylesheet at `public/highlight.css`. Target token spans beneath
+`pre code`; Cress does not emit Chroma's usual `.chroma` wrapper. Common
+subtypes include `kd` (keyword declaration), `s2` (double-quoted string), and
+`c1` (single-line comment). Not every token has a span or a class.
+Highlight.js styles use different classes and are not drop-in Chroma styles.
+If a custom theme adds an alternative highlighter, honor the same switch and
+do not reprocess already-tokenized Chroma blocks. Cress and its supplied
+themes need no browser highlighter.
+
+### Other prepared markup
 
 Markdown paragraphs containing only one direct link receive
 `class="standalone-link"`, independently of page type and position.

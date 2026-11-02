@@ -607,13 +607,20 @@ Highlighting is enabled by default. Disable it in `cress.toml` for plain
 code:
 
 ```toml
-[markdown]
+[syntax]
 highlight = false
 ```
 
 Recognized language names and aliases are highlighted during generation.
 Untagged and unknown languages stay plain without guessing. No browser JavaScript
 or resource fetching is used. Code always remains literal escaped text.
+Themes control syntax colors and code-block styling, but must respect this
+switch: disabled means no syntax coloring, including from an alternative
+highlighter. Fonts, backgrounds, padding, and scrolling remain styled.
+
+Development configuration migration: replace the former `[markdown]` table
+with `[syntax]`. The old table is no longer recognized and warns as an unknown
+setting; it does not disable highlighting.
 
 ## Output protection
 

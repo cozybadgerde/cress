@@ -54,7 +54,7 @@
       },
       "additionalProperties": true
     },
-    "markdown": {
+    "syntax": {
       "type": "object",
       "properties": {
         "highlight": { "type": "boolean", "default": true }

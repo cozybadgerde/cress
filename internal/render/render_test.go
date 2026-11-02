@@ -39,6 +39,28 @@ func TestRender(t *testing.T) {
 	}
 }
 
+func TestSyntaxHighlightingStyles(t *testing.T) {
+	renderer, err := NewRenderer()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, enabled := range []bool{true, false} {
+		output, err := renderer.Render(page.Page{
+			Title: "Code", Type: page.Ordinary,
+			Site: page.Site{Syntax: page.Syntax{Highlight: enabled}},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if strings.Contains(string(output), "pre .k,") != enabled {
+			t.Fatalf("enabled=%v: skeleton ignored syntax setting: %s", enabled, output)
+		}
+		if !strings.Contains(string(output), "pre { padding:") {
+			t.Fatal("ordinary code styling was removed")
+		}
+	}
+}
+
 func TestRenderFailure(t *testing.T) {
 	renderer := &Renderer{
 		template: template.Must(template.New("page.gohtml").Parse("{{.Missing}}")),

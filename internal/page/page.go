@@ -48,6 +48,12 @@ type Site struct {
 	Navigation Navigation
 	Custom     map[string]any
 	Brand      Brand
+	Syntax     Syntax
+}
+
+// Syntax holds prepared syntax-presentation settings.
+type Syntax struct {
+	Highlight bool
 }
 
 // Brand holds optional presentation values with prepared asset URLs.

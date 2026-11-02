@@ -166,7 +166,10 @@ escaped. HTML in code spans and fenced blocks remains literal example
 text. Generation does not execute embedded code or fetch resources
 referenced by authored HTML; browsers may execute or load that content.
 
-Syntax highlighting is enabled by default and can be disabled. Recognized
+Syntax highlighting is enabled by default through `syntax.highlight` and can
+be disabled. Themes receive the resolved setting and respect it: disabled
+means no syntax coloring or alternative highlighter activation, while ordinary
+code-block styling remains theme-owned. Recognized
 code languages receive build-time highlighting without browser JavaScript.
 Untagged and unrecognized languages remain plain code.
 
@@ -508,8 +511,10 @@ Publish a release-specific machine-readable software bill of materials
 (SBOM) covering bundled code and assets, protected by release verification.
 
 Review direct and transitive dependencies and non-code assets under their
-own licenses. Release checks reject unreviewed components and unapproved
-licenses. The project license does not grant rights to third-party assets
+own licenses. Dependency approval applies to license types, not individual
+component approval records. Release checks reject unknown or unapproved
+dependency licenses; bundled non-code assets need separate rights review.
+The project license does not grant rights to third-party assets
 or Cozy Badger trademarks.
 
 Apple Developer ID signing and notarization are deferred. Document the
@@ -561,8 +566,9 @@ installation. Containers and Homebrew are future distribution options.
     theme files. Authenticity and integrity verification accepts genuine
     artifacts and rejects tampering or unexpected publisher identities.
 14. Release SBOMs cover bundled components and their license reviews.
-    Required licenses and notices are supplied, and unreviewed or unapproved
-    components fail release checks.
+    Required licenses and notices are supplied, and unknown or unapproved
+    dependency licenses fail release checks. Bundled non-code assets have
+    separately reviewed distribution rights.
 15. Titles, descriptions, title images, canonical URLs, sitemap entries,
     and `robots.txt` reflect the documented metadata and deployment location.
     Without a public origin, generation warns and omits origin-dependent

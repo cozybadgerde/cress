@@ -9,10 +9,11 @@ taplo = "0.10.0"
 cosign = "3.1.4"
 
 [tasks.check]
-description = "Check formatting, lint, spelling, and tests without editing files"
+description = "Check formatting, lint, spelling, licenses, and tests without editing files"
 depends = [
   "check:go-format",
   "check:go-lint",
+  "check:licenses",
   "check:markdown",
   "check:spelling",
   "check:toml-format",
@@ -33,6 +34,17 @@ fi
 [tasks."check:go-lint"]
 description = "Lint Go code"
 run = "golangci-lint run"
+
+[tasks."check:licenses"]
+description = "Check dependency licenses for all release targets"
+run = """
+set -e
+for target in linux/amd64 linux/arm64 darwin/arm64; do
+  echo "Checking dependency licenses for $target"
+  GOOS="${target%/*}" GOARCH="${target#*/}" CGO_ENABLED=0 \
+    go-licenses check --allowed_licenses=MIT,BSD-2-Clause,BSD-3-Clause,Apache-2.0,OFL-1.1 ./cmd/cress
+done
+"""
 
 [tasks."check:markdown"]
 description = "Lint Markdown and internal anchors"

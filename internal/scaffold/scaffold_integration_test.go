@@ -113,7 +113,7 @@ func TestInitializedConfigOptionalExamples(t *testing.T) {
 			if err != nil || len(warnings) != 0 {
 				t.Fatalf("optional examples: warnings %v, error %v", warnings, err)
 			}
-			if config.Theme != name || !config.Highlight ||
+			if config.Theme != name || !config.Site.Syntax.Highlight ||
 				config.Host != "https://example.org" ||
 				config.Site.Copyright != "Copyright Your business" ||
 				config.Image == nil || config.Image.URL != "/images/team.jpg" ||

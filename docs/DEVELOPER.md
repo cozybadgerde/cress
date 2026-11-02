@@ -184,6 +184,7 @@ mise run check
 | `mise run check` | Run every check below and the tests. |
 | `mise run check:go-format` | Check Go formatting. |
 | `mise run check:go-lint` | Lint Go using the repository configuration. |
+| `mise run check:licenses` | Check dependency licenses against the approved allowlist for all release targets. |
 | `mise run check:markdown` | Lint Markdown without external link checks. |
 | `mise run check:spelling` | Check spelling with typos. |
 | `mise run check:toml-format` | Check TOML formatting. |

@@ -49,8 +49,8 @@ footer = [
 ]
 # External link example: { label = "Partner", url = "https://example.org/" }
 
-[markdown]
-# Highlight recognized fenced code languages at build time; no browser scripts.
+[syntax]
+# Enable syntax coloring; themes control its appearance, not this choice.
 # Set false for plain code. Untagged and unknown languages are always plain.
 highlight = true
 

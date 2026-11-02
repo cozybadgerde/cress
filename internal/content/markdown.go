@@ -136,7 +136,7 @@ func renderContent(prepared *Page, config Config, files map[string]reference) er
 		parent.AppendChild(parent, &markup{value: "</label>"})
 	}
 	for _, block := range blocks {
-		rendered, err := renderCode(block, prepared.body, codeOptions{highlight: config.Highlight, references: references})
+		rendered, err := renderCode(block, prepared.body, codeOptions{highlight: config.Site.Syntax.Highlight, references: references})
 		if err != nil {
 			return fmt.Errorf("%s: code block: %w", prepared.Source, err)
 		}

@@ -10,8 +10,17 @@ covered by the signed checksum manifest.
 
 The before hook also uses `go-licenses report` with
 `.github/notices.tpl` to generate license texts for the archives.
-There is no custom release executable, license policy check, exclusion
-list, or checked-in generated inventory.
+`mise run check:licenses`, included in `mise run check`, uses
+`go-licenses check` to enforce the approved dependency-license allowlist for
+all three release targets. Unknown or unapproved licenses fail the check.
+Approval applies to license types, not individual dependency records; see
+the [license policy](adr/0011-bsd-3-clause-license.md#dependency-license-policy).
+Bundled non-code assets still need separate distribution-rights review.
+The approved names include OFL-1.1 for font software; Chroma's combined
+COPYING file causes detection even though its SVG font formatter is not
+imported. Generated notices retain the font copyright and license text.
+There is no custom release executable, exclusion list, or checked-in
+generated inventory.
 
 To print a report locally:
 

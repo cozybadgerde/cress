@@ -22,14 +22,13 @@ type Config struct {
 	Description   string
 	Image         *page.Image
 	Host          string
-	Highlight     bool
 	Theme         string
 	IncludeDrafts bool
 }
 
 // ParseConfig validates TOML site configuration and resolves shared URLs.
 func ParseConfig(source []byte) (Config, []string, error) {
-	config := Config{Site: page.Site{Language: "en", URL: "/"}, Highlight: true}
+	config := Config{Site: page.Site{Language: "en", URL: "/", Syntax: page.Syntax{Highlight: true}}}
 	var warnings []string
 	if !utf8.Valid(source) {
 		return config, warnings, fmt.Errorf("cress.toml: configuration must be UTF-8")
@@ -39,7 +38,7 @@ func ParseConfig(source []byte) (Config, []string, error) {
 		return config, warnings, fmt.Errorf("cress.toml: parse configuration: %w", err)
 	}
 	input := fields{values: values, source: "cress.toml", kind: "configuration", warnings: &warnings}
-	input.warnUnknown("site", "navigation", "theme", "markdown", "brand")
+	input.warnUnknown("site", "navigation", "theme", "syntax", "brand")
 	site, err := input.readTable("site")
 	if err != nil {
 		return config, warnings, err
@@ -114,18 +113,18 @@ func ParseConfig(source []byte) (Config, []string, error) {
 	if err != nil {
 		return config, warnings, err
 	}
-	markdown, err := input.readTable("markdown")
+	syntax, err := input.readTable("syntax")
 	if err != nil {
 		return config, warnings, err
 	}
 
-	markdown.warnUnknown("highlight")
-	if value, exists := markdown.values["highlight"]; exists {
+	syntax.warnUnknown("highlight")
+	if value, exists := syntax.values["highlight"]; exists {
 		enabled, ok := value.(bool)
 		if !ok {
-			return config, warnings, markdown.invalidField("highlight", "must be a boolean")
+			return config, warnings, syntax.invalidField("highlight", "must be a boolean")
 		}
-		config.Highlight = enabled
+		config.Site.Syntax.Highlight = enabled
 	}
 	return config, warnings, nil
 }

@@ -403,7 +403,7 @@ func TestCodeWhitespace(t *testing.T) {
 	for _, code := range []string{"\tvar text = \"<&>\"\n", "var text = \"<&>\"\r\n", "var text = \"<&>\""} {
 		for _, highlight := range []bool{true, false} {
 			config := defaultConfig(t)
-			config.Highlight = highlight
+			config.Site.Syntax.Highlight = highlight
 			prepared, _, err := content.Prepare("page.md", []byte("+++\ntitle = 'Code'\n+++\n```go\n"+code), config)
 			if err != nil {
 				t.Fatal(err)
@@ -432,7 +432,7 @@ func TestCodeHighlightingAndCaptions(t *testing.T) {
 			for _, attribute := range []string{"", ` caption="From [guide](/guide/) <b>escaped</b>"`} {
 				t.Run(language+attribute+map[bool]string{true: "/on", false: "/off"}[enabled], func(t *testing.T) {
 					config := defaultConfig(t)
-					config.Highlight = enabled
+					config.Site.Syntax.Highlight = enabled
 					prepared, _, err := content.Prepare("page.md",
 						[]byte("+++\ntitle = 'Code'\n+++\n```"+language+attribute+"\n"+code+"```\n"), config)
 					if err != nil {
