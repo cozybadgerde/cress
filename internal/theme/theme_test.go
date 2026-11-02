@@ -2,10 +2,43 @@ package theme
 
 import (
 	"context"
+	"errors"
+	"io/fs"
 	"strings"
 	"testing"
 	"testing/fstest"
 )
+
+type privateFileFS struct {
+	fs.FS
+	private  map[string]bool
+	openErr  error
+	closeErr error
+}
+
+func (source privateFileFS) Open(name string) (fs.File, error) {
+	if source.private[name] && source.openErr != nil {
+		return nil, source.openErr
+	}
+	file, err := source.FS.Open(name)
+	if err != nil || !source.private[name] {
+		return file, err
+	}
+	return privateFile{File: file, closeErr: source.closeErr}, nil
+}
+
+type privateFile struct {
+	fs.File
+	closeErr error
+}
+
+func (file privateFile) Read([]byte) (int, error) {
+	return 0, errors.New("private file body must not be read")
+}
+
+func (file privateFile) Close() error {
+	return errors.Join(file.File.Close(), file.closeErr)
+}
 
 const validManifest = `{"name":"demo","version":"1.2.3","cress":{"minimum":"1.0.0","major":1}}`
 
@@ -66,6 +99,7 @@ func TestPackageHelpersAndBoundaries(t *testing.T) {
 		"private.txt":              {Data: []byte("private")},
 		"locales/en.toml":          {Data: []byte("more = '<More>'")},
 	}
+
 	pkg, _, err := loadPackage(context.Background(), files, Request{Name: "demo", Language: "en", Prefix: "/company/"})
 	if err != nil {
 		t.Fatal(err)
@@ -105,5 +139,55 @@ func TestPackageHelpersAndBoundaries(t *testing.T) {
 	delete(files, "templates/list.gohtml")
 	if _, _, err := loadPackage(context.Background(), files, Request{}); err == nil {
 		t.Fatal("incomplete theme accepted")
+	}
+}
+
+func TestPackageValidatesPrivateFilesWithoutReadingBodies(t *testing.T) {
+	files := fstest.MapFS{
+		"theme.json":               {Data: []byte(validManifest)},
+		"templates/page.gohtml":    {Data: []byte("Page")},
+		"templates/landing.gohtml": {Data: []byte("Landing")},
+		"templates/list.gohtml":    {Data: []byte("List")},
+		"public/site.css":          {Data: []byte("unchanged")},
+		"locales/en.toml":          {Data: []byte("more = 'More'")},
+		"locales/de.toml":          {Data: []byte("unused")},
+		"templates/design.txt":     {Data: []byte("private")},
+		"originals/image.png":      {Data: []byte("private")},
+	}
+	private := map[string]bool{
+		"locales/de.toml": true, "templates/design.txt": true, "originals/image.png": true,
+	}
+	for _, test := range []struct {
+		name     string
+		openErr  error
+		closeErr error
+	}{
+		{name: "unused bodies are not read"},
+		{name: "unreadable private file", openErr: fs.ErrPermission},
+		{name: "private close failure", closeErr: errors.New("close failed")},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			pkg, _, err := loadPackage(context.Background(), privateFileFS{
+				FS: files, private: private, openErr: test.openErr, closeErr: test.closeErr,
+			}, Request{Name: "demo", Language: "en", Prefix: "/"})
+			wantErr := errors.Join(test.openErr, test.closeErr)
+			if wantErr != nil {
+				if err == nil || !strings.Contains(err.Error(), "locales/de.toml") ||
+					!strings.Contains(err.Error(), wantErr.Error()) {
+					t.Fatalf("private file failure lost: %v", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(pkg.Templates) != 3 || pkg.Templates["page.gohtml"] != "Page" ||
+				len(pkg.Assets) != 1 || string(pkg.Assets[0].Data) != "unchanged" {
+				t.Fatalf("generation inputs changed: %+v", pkg)
+			}
+			if label, err := pkg.Label("more"); err != nil || label != "More" {
+				t.Fatalf("selected locale changed: %q, %v", label, err)
+			}
+		})
 	}
 }

@@ -603,13 +603,13 @@ and release-tag examples remain where they explain required behavior.
   then separate the site lock from target-bound writers without changing
   recovery behavior. Committed together as `35a9e6c`
   (`fix: clarify preview and writer resource ownership`).
-- [ ] Revisit audit #3 (private theme-file reads) and #4 (unchecked scaffold
-  substitutions) separately; neither is an automatic release blocker.
-  Approved for #3: load only generation inputs into memory. Inspect all
-  package entries and open/close unused regular files to validate readability;
-  preserve rejection of symlinks, special files, and unreadable private files.
-  Implement with focused regression coverage; no cache or new abstraction.
-  Approved for #4: require exactly one expected anchor for each fixed
+- [x] Implement audit #3 (private theme-file reads): load only generation
+  inputs into memory. Inspect all package entries and open/close unused regular
+  files to validate readability; preserve rejection of symlinks, special files,
+  and unreadable private files. Regression tests verify unused bodies are not
+  read, generation inputs remain available, and open/close failures propagate.
+- [ ] Implement audit #4 (unchecked scaffold substitutions).
+  Approved: require exactly one expected anchor for each fixed
   site/theme scaffold substitution. Fail clearly on missing or duplicate
   anchors, retaining commented sources without a new templating system.
 - [ ] Review the code quality audit (local `audits/code-quality-2026-10-26.md`)

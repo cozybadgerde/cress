@@ -126,6 +126,18 @@ func loadPackage(ctx context.Context, source fs.FS, request Request) (Package, [
 		if entry.IsDir() {
 			return nil
 		}
+		if name != "theme.json" &&
+			(!strings.HasPrefix(name, "templates/") || !strings.HasSuffix(name, ".gohtml")) &&
+			!strings.HasPrefix(name, "public/") && name != "locales/"+request.Language+".toml" {
+			file, err := source.Open(name)
+			if err != nil {
+				return fmt.Errorf("open %s: %w", name, err)
+			}
+			if err := file.Close(); err != nil {
+				return fmt.Errorf("close %s: %w", name, err)
+			}
+			return nil
+		}
 		data, err := fs.ReadFile(source, name)
 		if err != nil {
 			return fmt.Errorf("read %s: %w", name, err)
