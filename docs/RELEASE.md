@@ -70,5 +70,5 @@ See [installation and verification](INSTALL.md) for download verification.
 
 No release has been published yet. Outstanding accessibility, native
 platform, and published-signature evidence remains in the
-[work plan](../TODO.md#phase-9-documentation-and-release).
+[work plan](../TODO.md#phase-3-release-tooling-and-acceptance).
 Tagging and publishing require the maintainer's approval.

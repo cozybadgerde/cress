@@ -1,879 +1,149 @@
 # Work plan
 
-This is Cress's implementation plan. Product scope lives in the
-[PRD](docs/PRD.md), decisions in the [ADRs](docs/adr/), and the overall
-structure in the [architecture guide](docs/ARCHITECTURE.md).
-
-Phase 0 is complete, and the implementation phases below are approved.
-Implementation details are settled within their phase.
-
-## Phase 0: Requirements, architecture, and implementation planning
-
-### Completed foundations
-
-- [x] Record and review the PRD, product principles, and initial ADRs.
-- [x] Agree Go, offline generation, and the separation from deployment.
-- [x] Agree free-form content, portable routes, TOML authoring, and site
-  metadata defaults with explicit page overrides.
-- [x] Agree theme rendering boundaries, prepared data, local-first
-  selection, and theme-owned translations.
-- [x] Separate Cress's generated-markup responsibilities from named-theme
-  presentation and publisher-owned content, equally for bundled and
-  third-party themes.
-- [x] Agree the WCAG 2.2 AA default-page baseline, release expectations,
-  combined automated and manual assessment, and publisher-responsibility
-  limits.
-- [x] Agree linting and CI with unit-focused tests, integration tests where
-  they add meaningful confidence, and no automated end-to-end suite initially.
-- [x] Agree trusted publisher-authored Markdown and unsanitized raw HTML,
-  with escaped ordinary values and no embedded execution during generation.
-- [x] Agree pass-through HTML URLs and resolved Markdown links and images,
-  without rewrite switches or automatic broken-link checks in 1.0.
-- [x] Agree initial Markdown authoring scope, including captions for inline
-  images, title images, and fenced code blocks, with author text and links
-  for attribution, disclosures, and explanations.
-- [x] Agree optional `published_at` for the reader-facing publication date
-  and optional `updated_at` for the last-update date, without introducing a
-  creation-date field or scheduling behavior.
-- [x] Agree section-local list membership, publication/title ordering,
-  draft visibility, missing-date warnings and omission, and intro/empty
-  behavior.
-- [x] Agree optional plain-text `excerpt` frontmatter without automatic
-  extraction or description fallback.
-- [x] Agree scope-first CLI command organization for site and theme work.
-- [x] Agree optional public origin, explicit deployment paths, and
-  generator-owned URL resolution for pages, navigation, and assets.
-- [x] Agree isolated previews, automatic rebuilds, manual browser refresh,
-  and opt-in draft visibility.
-- [x] Agree complete output replacement, ownership protection, writer
-  coordination, recoverability, and temporary preview retention.
-- [x] Agree preview continuation with verified output after recoverable
-  failures, unsuccessful shutdown when output cannot be verified, and
-  automatic contention retries for established preview rebuilds without
-  changing explicit-build or initial-startup fail-fast behavior.
-- [x] Agree schemas, stable-major compatibility, and tool-neutral validation.
-- [x] Agree minor-only recognition and strict validation of previously
-  unknown fields outside protected open customizations, with matching
-  release notes, schemas, and references. Patch releases do not introduce
-  newly recognized fields.
-- [x] Agree project licensing, component review, and signed release direction.
-- [x] Separate product requirements, architectural guidance, and
-  implementation planning; remove premature implementation prescriptions.
-- [x] Give language, generation, contracts, authoring, theme integration,
-  rendering, navigation, CLI scopes, and URL policy focused ADR ownership;
-  consolidate and renumber the unpublished collection without changing
-  accepted decisions.
-- [x] Review all project documents for consistent decisions, realistic
-  guarantees, and clear language before implementation planning.
-
-These are approved directions; implementation status is tracked below.
-
-### Implementation foundations
-
-- [x] Create the minimal Go scaffold and add the BSD-3-Clause license.
-  No third-party components are bundled yet; add notices as needed.
-- [x] Add pinned mise tools, basic developer tasks, repository defaults,
-  and a brief agent entrypoint.
-- [x] Document the agreed architecture without prescribing speculative
-  package layouts or interfaces.
-- [x] Add basic CI that runs the existing check and build tasks.
-- [x] Finish phase 0 by approving the phased implementation plan below.
-  Phases may still be reordered before implementation starts.
-
-## Implementation phases
-
-Each phase delivers a working, tested slice and leaves `trunk` releasable as
-a development build. Phases name outcomes, not packages. The bracketed
-numbers refer to the PRD's [acceptance criteria](docs/PRD.md#acceptance-criteria-for-10).
-A phase can partly cover a criterion; the last phase that lists it
-completes it.
-
-Every phase is done when:
-
-- `mise run check` and `mise run build` pass locally. Keep CI tasks aligned
-  with local checks; CI execution is not a phase-completion gate for now.
-- New behavior has unit tests, and integration tests where a real
-  filesystem or process boundary matters.
-- New or changed fields update the JSON schemas and references in the
-  same change.
-- Failures are reported clearly, without silent fallbacks.
-- Decisions taken during implementation are recorded in the owning
-  document, and CI grows with the checks the phase needs.
-
-### Phase workflow
-
-- Before each phase, review open leftovers and agree whether to include
-  them in that phase or address them in a separate commit.
-- Ask detail questions and resolve material ambiguities before starting
-  the phase. Record agreed interfaces in their owning references.
-- Implement and verify one phase at a time. Do not start the next phase
-  without its clarification and leftover review.
-- At phase end, update completed tasks, document remaining loose ends here
-  with their intended phase or separate-commit scope, and suggest a commit
-  message. Creating a commit requires a separate instruction.
-- The maintainer confirms completed commits and pushes. The first planned
-  push is after phase 3.
-
-### Planning review
-
-These are clarification gates, not changes to the approved phase order.
-
-- [x] Agree the phase 1 build command, site layout, frontmatter delimiters,
-  minimum fields, and routing rules in the [user reference](docs/USER.md).
-- [x] Publish the minimal frontmatter schema in phase 1, with executable
-  schema/runtime agreement tests. Expand it with site contracts in phase 2.
-- [x] Agree phase 1 minimum path and output protection, including
-  symlink refusal, source/output separation, duplicate page destinations,
-  and file/directory conflicts. Full asset collision handling remains in
-  phase 3; ownership, replacement, and recovery remain in phase 6.
-  Phase 1 also rejects case-folded and canonically equivalent destinations.
-- [x] Exclude drafts in phase 1 and validate their provided known fields.
-  Full metadata resolution remains in phase 2.
-- [x] Document the initial prepared model and ordinary-page skeleton in the
-  [theme reference](docs/THEMES.md). Complete package integration remains in
-  phase 5; the skeleton is not a third selectable built-in theme.
-- [x] Review phase 1 dependencies and supply required runtime notices.
-  Use urfave/cli v3 for the CLI. Continue component review as dependencies
-  arrive; phase 9 completes release inventory and enforcement.
-- [x] Include generated-markup accessibility checks as content rendering
-  arrives in phase 3. Phase 8 adds complete-page assessment for both
-  shipped themes.
-
-### Phase 1: Walking skeleton
-
-- [x] Add root help and version output and the `cress site` and
-  `cress theme` scopes [11].
-- [x] Build ordinary Markdown pages with TOML frontmatter into
-  directory-index routes through the embedded theme skeleton [3].
-- [x] Write output only to a new or empty directory. Refuse anything else
-  until phase 6 adds ownership checks and replacement.
-
-#### Phase 1 handoff and leftovers
-
-Phase 1 is complete. Implementation and local verification passed, and
-the maintainer confirmed commit `12e8ad2`. CI execution is not required
-for phase closure under the current workflow.
-
-- [x] Before phase 2, review the current authoring and render interfaces,
-  including published-page title requirements, the English-only skeleton,
-  and reserved site configuration that is not yet loaded.
-
-At the phase 1 handoff, output replacement, recovery, and writer locking
-were deferred to phase 6. Markdown URL resolution and asset publication
-were deferred to phase 3. Those follow-ups are recorded below.
-
-### Phase 2: Site contracts
-
-Agreed interface: optional `cress.toml` with `[site]`, `[site.image]`,
-`[navigation]`, and `[theme.custom]`. Site fields are `title`, `description`,
-`copyright`, `language`, `host`, and `path`. Page metadata keeps its required
-title, inherits only description and image, and adds explicit page types.
-See the [user reference](docs/USER.md) for validation and override rules.
-
-- [x] Validate site configuration and frontmatter: errors for malformed
-  input and invalid known fields, warnings for unknown fields, and an
-  open theme-customization area [6].
-- [x] Resolve site metadata defaults and explicit page overrides, page
-  types, and draft exclusion for builds [7, 17].
-- [x] Configure navigation, public origin, and deployment path, and
-  resolve generator-owned URLs beneath the deployment path [3].
-- [x] Publish the site-configuration schema and expand the initial
-  frontmatter schema with the new contracts [6].
-
-#### Phase 2 handoff and leftovers
-
-Implementation and local verification are complete. The maintainer
-confirmed commit `9af8877`. CI remains aligned through the existing
-check/build tasks; no CI run is required.
-
-- [x] Before phase 3, clarify source-relative Markdown and title-image
-  references, asset ownership, caption syntax, highlighting options, and
-  generated-markup accessibility coverage. Preserve the agreed separation
-  between resolved Markdown URLs and unchanged authored HTML.
-- [x] In phase 4, implement published list generation and rendering, plus
-  canonical URLs, sitemap, `robots.txt`, and missing-origin warnings.
-  Until then, published lists fail explicitly; excluded draft lists remain
-  valid. `site.host` is validated but not used for publication metadata yet.
-
-Title-image metadata, navigation, and page URLs now resolve the configured
-URL prefix. Markdown body destinations and image asset publication still
-wait for phase 3. Branding is recorded under phase 5; output replacement,
-recovery, and writer locking remain phase 6 work. No separate cleanup
-commit is currently required.
-
-### Phase 3: Content rendering
-
-Agreed interface: source-stem `.assets/` directories, shared `static/`
-files, strict source-to-output reference resolution, text-and-link caption
-attributes and image metadata, and default-on Chroma highlighting through
-`[syntax].highlight`. The [user reference](docs/USER.md) owns syntax and
-validation. Phase 2 leftovers require no separate cleanup commit.
-
-- [x] Resolve site-root and source-relative Markdown links and images
-  and leave authored HTML and external URLs unchanged [3, 19].
-- [x] Render trusted raw HTML, literal code, and build-time syntax
-  highlighting that can be disabled [16, 19].
-- [x] Render captions for inline images and fenced code blocks, and
-  prepare title-image caption data [20].
-- [x] Copy page-owned assets and shared static files unchanged, keep
-  private sources private, and reject output collisions with both
-  sources named [4].
-
-#### Phase 3 handoff and leftovers
-
-Implementation and local checks/build are complete. Unit and filesystem
-tests cover source resolution, draft isolation, unchanged asset bytes,
-collisions, invalid sources, code escaping, and caption markup/association.
-The new Chroma and regexp2 dependencies have reviewed MIT notices; the SVG
-formatter and its embedded font are not linked. CI remains aligned through
-the existing tasks; no CI execution was required.
-
-Phase 3 and the local-playground follow-up are committed as `23e2e09` and
-`05d0fe3`. Push confirmation remains with the maintainer. No separate
-cleanup commit is currently required.
-
-- [x] Create a temporary gitignored playground for manual validation
-  before site initialization was available; retired after phase 8.
-- [x] When `site init` arrives in phase 8, replace the temporary playground
-  setup guidance with the supported initialization workflow.
-- [x] Before phase 4, review the remaining list and publication-metadata
-  work and clarify date formats, list configuration and render data,
-  excerpts, and origin-dependent generated files and warnings.
-- [ ] Assess complete pages for all three shipped themes against
-  WCAG 2.2 AA. Current tests cover generated markup and caption association,
-  not complete-page accessibility or publisher-authored HTML.
-
-At the phase 3 handoff, output ownership, replacement, recovery, and writer
-locking remained phase 6 work. That follow-up is recorded below.
-List and publication-metadata implementation is tracked in phase 4 below.
-
-### Phase 4: Lists and publication metadata
-
-Agreed interface: optional date-only `published_at` and `updated_at`, plain
-`excerpt`, and `[list]` with `order = "published_at" | "title"` and
-`reverse = false`. Title ordering uses case-folded Unicode lexical keys.
-Prepare entries before rendering. Generate canonicals, sitemap entries
-with explicit update dates, and permissive robots output; without an
-origin, warn once and omit origin-dependent metadata. The
-[user reference](docs/USER.md) owns the complete authoring contract.
-Phase 3 leftovers stay in phases 6 and 8.
-
-- [x] Build list pages with section-local membership, draft visibility,
-  publication and title ordering, reversal, route tie-breaks,
-  missing-date warnings, and optional excerpts [21].
-- [x] Generate canonical URLs, the sitemap, and `robots.txt`, and warn
-  and omit origin-dependent metadata without a public origin [15].
-
-#### Phase 4 handoff and leftovers
-
-Implementation is complete. Coverage includes date validation on drafts,
-logical list membership across equivalent source layouts, chronological
-and Unicode title ordering, reversal and route ties, missing-date warnings,
-prepared metadata-only entries, empty-list introductions, and escaping.
-Publication coverage includes root and prefixed canonicals, XML sitemap
-URLs and explicit update dates, missing-origin behavior, and generated-file
-collisions that preserve previous output. No dependencies were added.
-
-`mise run check` and `mise run build` pass locally. CI remains aligned
-through the existing tasks; no CI run was required. Phase 4 is committed
-as `77399e7`; push confirmation remains with the maintainer.
-
-- [x] Before phase 5, agree brand fields and formats, theme manifest and
-  runtime compatibility, local/built-in selection, required templates and
-  prepared data, exact-language labels, public asset namespacing, and
-  `theme init` behavior.
-
-No separate cleanup commit was required before phase 5. Output replacement,
-recovery, and locking were assigned to phase 6; the temporary site scaffold
-and complete-theme accessibility assessment remain in phase 8. For subpath deployments,
-host-root robots handling stays an external deployment responsibility,
-as documented in the user reference.
-
-### Phase 5: Theme integration
-
-Agreed package and branding contracts live in the
-[theme reference](docs/THEMES.md) and [user reference](docs/USER.md).
-Phases 5 and 6 may follow consecutively without a commit pause; retain the
-clarification and leftover review before phase 6.
-
-- [x] Define and implement `[brand]` for brand color, logo, and favicon,
-  including prepared theme data, asset URLs, schemas, and references.
-  Keep it distinct from site metadata and `theme.custom`; clarify field
-  formats and logo alternatives before implementation.
-
-- [x] Define the theme package and JSON manifest, extend the prepared
-  render model, and publish the manifest schema [6, 18].
-- [x] Select local themes before built-in themes as complete packages,
-  check runtime compatibility, and fail invalid packages without
-  fallback [5].
-- [x] Require ordinary, landing, and list support, load exact-language
-  labels, and publish only namespaced public theme assets [18].
-- [x] Add `cress theme init` from the embedded skeleton without
-  overwriting files [11].
-
-#### Phase 5 handoff and leftovers
-
-Local checks and build pass. Brand fields, manifests, runtime compatibility,
-exact-language labels, asset namespaces, and non-overwriting initialization
-are implemented with schema/runtime and filesystem coverage. Go modules'
-semantic-version helper has reviewed BSD-3-Clause notices.
-
-Phases 5 and 6 are committed together as `5dd386c`.
-Push confirmation remains with the maintainer.
-
-At the phase 5 handoff, the two named built-in themes remained phase 8 work;
-selected names
-resolve locally or fail explicitly. Unconfigured builds retain the embedded
-development skeleton. No separate cleanup commit was needed before phase 6.
-Site initialization, temporary-playground retirement, and complete-theme
-accessibility assessment were assigned to phase 8.
-
-### Phase 6: Output safety
-
-Clarified before implementation: private gitignored `.cress/` state, paired
-public ownership marker, no adoption of old nonempty output, verified
-automatic recovery with an explicit stop on ambiguity, and a fail-fast OS
-lock covering the entire build. No phase 5 cleanup is required first.
-
-- [x] Stage complete output, verify Cress ownership, and replace previous
-  output as a whole, removing stale files [10].
-- [x] Coordinate writers per site with OS advisory locking and fail fast
-  on contention [10].
-- [x] Restore previous output on failed publication, preserve recovery
-  evidence, and stop with guidance in ambiguous states [10].
-
-#### Phase 6 handoff and leftovers
-
-Complete staged replacement, paired ownership, whole-build OS locking, and
-verified recovery are implemented. Coverage exercises stale/manual file
-removal, source and staging errors, interrupted transactions, injected
-promotion/restoration/cleanup/state-record failures, unsafe targets, path
-aliases, cross-process contention, and lock release on process exit.
-Unit-only mode, race checks, and both Linux cross-builds pass alongside
-the repository checks/build. No dependency was needed for output safety.
-CI continues to use the same local tasks; no CI run was required.
-
-Phases 5 and 6 are committed together as `5dd386c`
-(`feat: add local themes and safe output publication`).
-Push confirmation remains with the maintainer.
-
-- [x] Retire the old playground entirely after site initialization arrives;
-  no pre-ownership output migration remains necessary for that fixture.
-- [x] Before phase 7, clarify preview CLI/draft choices, session ownership,
-  watch/retry scheduling, and cleanup. Extend the writer with explicit
-  session targets and verified-usable-output reporting for preview errors.
-- [x] In phase 8, include private `.cress/` state in initialized sites'
-  Git ignore rules.
-
-No separate cleanup commit is required. Preview/session behavior remains
-phase 7 work. Built-in themes, site initialization, playground retirement,
-and complete-theme accessibility assessment remain in phase 8.
-Ambiguous recovery still requires manual inspection; no repair/adoption
-command or power-loss durability guarantee is introduced.
-
-### Phase 7: Preview
-
-Clarified before implementation: loopback-only
-`cress site preview [directory] --drafts --port N`, default port 8080,
-explicit free-port selection with `--port 0`, unchanged public origin and
-deployment prefix, native fsnotify events with a short debounce, and
-private temporary sessions with lock-verified reclamation. Included drafts
-require publishable metadata. No cleanup commit is required first.
-The unowned playground output was preserved during phase 7 and later retired.
-
-- [x] Serve isolated private preview sessions with an explicit draft
-  choice and no effect on deployable output [7].
-- [x] Rebuild on source edits without losing edits made during a rebuild,
-  keep the last verified output on failure, and retry blocked rebuilds
-  [8].
-- [x] Stop unsuccessfully when no verified output remains, clean up on
-  shutdown, and reclaim only verifiably inactive sessions [8, 9].
-
-#### Phase 7 handoff and leftovers
-
-Preview implementation is complete. The writer now separates the shared
-site lock from target recovery, so previews never require or mutate
-deployable output. Included drafts use normal metadata, rendering, source
-resolution, assets, lists, and publication preparation.
-
-Coverage includes concurrent draft-free and draft-inclusive sessions,
-prefix serving and updates, invalid-edit preservation, edits during
-rebuilding, contention retries without another edit, nested source edits,
-atomic configuration saves, generated-output event exclusion, publication
-and cleanup failure usability, fatal unverified output, inactive-session
-reclamation, changed identities, and signal shutdown. Local checks/build,
-unit-only mode, race checks, and supported Linux cross-builds pass.
-CI remains aligned through the existing tasks; no CI execution was required.
-
-New runtime dependencies are fsnotify and its Go system bindings, with
-reviewed BSD-3-Clause notices and the Go patent grant.
-Phase 7 is committed as `86aaf05`; push confirmation remains with the
-maintainer.
-
-- [x] Before phase 8, clarify the two built-in themes' names, presentation
-  contracts and defaults, site-init CLI and scaffold contents, and the
-  complete-page accessibility review scope. Revisit existing playground
-  and site-ignore leftovers first; no separate cleanup commit is required.
-
-At the phase 7 handoff, built-in themes, site initialization, playground
-retirement, generated site ignore rules, and complete-theme accessibility
-assessment remained phase 8 work. The temporary playground has since been
-retired in favor of initialized test sites. Native-watch filesystem limitations
-and manual ambiguous-recovery handling are documented in the user reference.
-
-### Phase 8: Built-in themes and site initialization
-
-Clarified: `poppy` (freelancer and default) and `clover` (small business),
-system fonts and local CSS only, exact English/German labels, no initial
-custom keys, non-overwriting site init into a new/empty directory, and an
-English sample scaffold. Human accessibility assessment remains an explicit
-release blocker; no automated-browser scope or AA claim is added.
-
-- [x] Build the coach/freelancer and corporate small-business themes
-  with all page types, captions, and navigation [1, 2, 20].
-- [x] Add `cress site init` for a ready-to-build site without overwriting
-  files [1, 11].
-- [ ] Assess default pages against WCAG 2.2 AA with automated checks and
-  manual review, and record scope, environments, results, and
-  limitations [12].
-
-#### Phase 8 handoff and leftovers
-
-Embedded themes and site initialization are implemented. Both themes build
-the seven-page scaffold offline; local override and invalid-local failure,
-unsafe-target refusal, output preservation, complete-page structure, and
-default palette contrast have automated coverage. No dependencies or
-third-party assets were added.
-
-The generated `cress.toml` documents all supported settings in place,
-including defaults and commented optional examples. Both theme selections
-retain ready-to-build defaults; optional examples are parsing-tested.
-The footer-linked content tour owns the main frontmatter hints; other pages
-document only distinct features, such as list settings. The tour demonstrates
-CommonMark, tables, captions, title images, and authored HTML.
-Both themes have build coverage for the tour. No new leftovers were added.
-
-The remaining accessibility task is intentionally unchecked:
-[the assessment record](docs/ACCESSIBILITY.md) records automated evidence
-and a complete A/AA human-review matrix without claiming hands-on results.
-Complete that review before release. The old playground is removed entirely;
-developers use initialized sites under ignored `/tmp/`. Developer, theme-author,
-and publisher guides document fresh test-site initialization.
-
-Suggested commit message: `feat: add poppy and clover themes and site init`.
-No commit or push was performed. Phase 9 follows after its clarification
-gate, including review of every repository Markdown file and honest
-documentation of external release blockers.
-
-### Phase 9: Documentation and release
-
-Clarified: `v*` tag-triggered GitHub Actions with strict full SemVer,
-checks before publication, the three agreed targets, explicit version
-injection, and keyless Cosign checksum signing. Pin external Actions by
-reviewed commit. The maintainer clarified that the requested inventory is
-machine-readable output only: generate CSV reports with go-licenses.
-At this phase, no added license checks, CycloneDX tooling, custom release executable,
-or checked-in generated inventory. Generate notice text with the same tool
-and ship a short install/verify reference. Audit every
-repository Markdown document, including ADRs and scaffold content.
-No tag, publication, commit, or push is authorized by this phase.
-
-- [x] Complete author, maintainer, and theme-development references,
-  including schema-based validation guidance [6, 11].
-- [x] Generate release-specific CSV dependency-license reports and archive
-  notice text with go-licenses [14].
-- [x] Prepare version-tag GitHub Actions and GoReleaser automation,
-  with Cosign keyless signing and documented verification [13].
-- [ ] Publish an explicitly approved release and verify its real signature
-  bundle, expected identity/issuer, archive and report digests, and rejection
-  of tampered files and an unexpected identity [13, 14].
-- [ ] Confirm all acceptance criteria on the supported targets.
-
-#### Phase 9.5: Markdown features and a third built-in theme
-
-Agreed scope: strikethrough, linkable Markdown headings, static task lists,
-and Anemone, a paper/Scandi theme alongside Poppy and Clover. Three bundled
-themes are enough for this scope. Heading targets are approved under
-[ADR 0017](docs/adr/0017-markdown-heading-targets.md); the third theme under
-[ADR 0020](docs/adr/0020-third-bundled-theme.md).
-
-- [x] Before implementation, update the owning product requirements and
-  decision records for the agreed scope, including the third bundled
-  theme and its acceptance coverage.
-- [x] Agree heading-ID behavior: automatic IDs, explicit author overrides,
-  non-ASCII text, duplicate headings, and collisions with theme and
-  generated IDs. Decide separately whether visible permalink controls
-  are needed; linkable headings do not require them.
-- [x] Record heading-link requirements, authoring rules, and theme ID
-  responsibilities in their owning documents before implementation.
-- [x] Implement heading targets with explicit-ID priority and reservations;
-  cover both heading syntaxes, source-aware errors, links, captions, and
-  unchanged raw HTML. Demonstrate and build them with both bundled themes [22].
-- [x] Agree static task-list markup and accessibility behavior. Checkboxes
-  show authored completion state; they are not interactive tasks.
-- [x] Record strikethrough and task-list requirements, authoring rules,
-  theme responsibilities, and [ADR 0018](docs/adr/0018-strikethrough-and-static-task-lists.md)
-  before implementation.
-- [x] Add strikethrough and static task lists using Goldmark's individual
-  built-in capabilities, not the complete GFM bundle. Cover the agreed
-  behavior and existing content interactions. Demonstrate and build both
-  features with both bundled themes [23]. Human accessibility assessment
-  remains part of the existing release gate.
-- [x] Agree Anemone's presentation contract before building: a quiet editorial
-  alternative with serif headings, a desktop side masthead, framed images,
-  restrained image-only rotation, and subtle shadows. Text and captions
-  stay upright; narrow layouts drop rotation. Keep pages useful without
-  photographs. Record the contract in ADR 0020 and the theme/user references.
-- [x] Build Anemone with all required page types, content features,
-  navigation, and exact English/German labels. Update initialization,
-  references, and automated coverage for all three themes. Inspect Anemone
-  at 320px and 1280px, including image-free pages, title images, long text,
-  tables, code, captions, and the content tour. Keep the complete human
-  accessibility assessment as the separate release gate below.
-- [x] Polish Clover toward a restrained, established small-business
-  presentation: reduce title-block scale and padding, lighten heading weights
-  and section rules, and tighten navigation spacing. Preserve the solid accent
-  block, filled primary link, system fonts, and publisher accent color.
-  Poppy, Anemone, logo behavior, and landing-image crop rules are unchanged.
-  Separate the wider 72rem frame from the centered 65ch reading column
-  so desktop title blocks and title images can expand without stretching prose.
-  Align ordinary and list-page headings with the centered reading column.
-  Put optional dates in one compact, muted row above these headings; retain
-  the landing title-first composition and wide title images.
-  Apply the compact metadata treatment to Poppy and Anemone as well, using
-  their own muted palette colors and preserving their existing layouts.
-  Firefox checks of both content tours at 1440px and 320px confirm the
-  muted metadata and narrow-screen wrapping. Optional-date and metadata
-  contrast tests cover all three themes.
-  Firefox screenshots confirm the initialized landing at 320px and 1280px
-  and the content tour at 320px. The wider frame is also reviewed at 1600px
-  for the landing and content tour, with the landing rechecked at 320px.
-  Review compact date metadata at 1440px with and without a title image,
-  on the journal list and dated landing, and at 320px on the content tour.
-  Checks and build pass; this visual review does not complete the human
-  accessibility matrix.
-Theme refinement follow-up from the 2026-11-03 review:
-
-Evaluate consistency within each theme against its presentation contract in
-[the user guide](docs/USER.md#built-in-themes), not by making the three themes
+This plan tracks open work only. Product scope lives in the
+[PRD](docs/PRD.md), rationale in the [ADRs](docs/adr/), and structure in the
+[architecture guide](docs/ARCHITECTURE.md). Completed work is retained in
+Git history, not repeated here.
+
+## Phase workflow
+
+Agree material interfaces and visual choices before implementation. Work
+through one task at a time, reviewing relevant leftovers before starting.
+New proposals below are not permission to expand scope or publish a release.
+
+For code changes, run `mise run check` and `mise run build`; release
+configuration changes also require `mise run check:goreleaser`. Use focused
+unit tests and useful integration coverage, without adding a browser suite.
+Update affected schemas and owning references alongside behavior changes.
+Remove completed tasks and keep remaining work here. Commits, pushes, tags,
+and publication require maintainer approval.
+
+## Phase 1: Theme composition and identity
+
+Evaluate consistency within each theme against its
+[presentation contract](docs/USER.md#built-in-themes), not by making the themes
 uniform. Preserve Poppy's freelancer focus, Clover's established small-business
 presentation, and Anemone's maker/shop/cafe editorial character.
-The review used Firefox at 1440px and 320px with title-image landings,
-mixed journal lists, and ordinary content. Findings are improvement proposals,
-not a complete accessibility assessment or approved replacement compositions.
-Agree each visual change before implementing it, one task at a time.
 
 - [ ] Rebalance Poppy's landing hierarchy with and without a title image.
-  Start with desktop/mobile comparisons using short and long titles.
-  Bring the introduction and outlined primary action into focus sooner
-  without losing calm spacing, readable sans headings, or meaningful imagery.
-  Compare real landscape and portrait photos and inherited site images;
-  coordinate with the existing real-photo crop check below.
+  Compare short/long titles at desktop/mobile sizes. Bring the introduction
+  and outlined primary action into focus sooner without losing calm spacing,
+  readable sans headings, or meaningful imagery.
 - [ ] Rebalance Clover's image-bearing landing composition.
   Keep the compact solid title block, wider frame, centered reading column,
-  and filled primary action. Reduce the visual distance between the title,
-  offer, and action when a title image is supplied. Compare image-free and
-  image-bearing pages at desktop/mobile sizes; do not merely shrink all images
-  or stretch prose to the outer frame.
+  and filled primary action. Reduce the distance between title, offer, and
+  action; do not merely shrink all images or stretch prose to the outer frame.
 - [ ] Balance Anemone's landing headline and image together.
   Review the desktop split and responsive heading scale with short/long titles
   and landscape/portrait photos. Give images deliberate prominence without
   making the heading tower over a small image. Preserve the side masthead,
-  editorial serif hierarchy, upright captions, uncropped title images, and
-  restrained image-only framing/rotation. Keep image-free pages useful.
-- [ ] Refine journal-list image presentation within each theme.
-  Improve scanning of title, metadata, image, and excerpt with mixed entries
-  containing images, excerpts, both, or neither. Poppy and Clover need a
-  deliberate preview treatment rather than article-sized imagery; Anemone's
-  split must balance headings with supporting content. Agree crop/proportion
-  choices separately per theme and verify long titles and narrow layouts.
-  Correct Poppy/Clover template roles: page-level title images stay eager,
-  repeated entry images use lazy loading. Verify loaded images before judging
-  their size; a lazy image absent from a headless screenshot is not by itself
-  evidence of a broken layout.
+  serif hierarchy, upright captions, uncropped title images, and restrained
+  image-only framing/rotation. Keep image-free pages useful.
+- [ ] Verify landing imagery with real photos, not only placeholders.
+  Include landscape/portrait subjects, the Poppy/Clover 5:2 crop, and inherited
+  `[site.image]` defaults. Coordinate this review with each landing refinement
+  rather than repeating it as a separate implementation.
+- [ ] Refine journal-list imagery within each theme.
+  Improve scanning of title, metadata, image, and excerpt with entries having
+  images, excerpts, both, or neither. Poppy/Clover need deliberate previews
+  rather than article-sized imagery; Anemone's split must balance headings
+  and supporting content. Agree crop/proportion choices per theme and verify
+  long titles and narrow layouts. Correct Poppy/Clover loading roles:
+  page-level title images stay eager, repeated entry images use lazy loading.
+  Verify loaded images before judging their size; absence from a headless
+  screenshot alone does not demonstrate a layout failure.
+- [ ] Complete logo and identity review across all three themes.
+  Compare logo-only, title-only, and combined identities with square, circular,
+  wide, and tall artwork on desktop/mobile. Assess sizing, alignment,
+  navigation balance, contrast, and accessible alternatives. Make each
+  logo/title identity a coherent home-link target, with appropriate names
+  and focus treatment and without duplicate announcements.
 - [ ] Tighten mobile header/navigation composition within each theme.
-  Review wrapping, identity width, and the gap before the page heading with
-  short/long site titles and English/German labels at 320px and intermediate
-  widths. Preserve each theme's navigation character, clear current-page
-  state, keyboard focus, and usable touch targets. Do not introduce a hidden
-  menu or smaller targets solely to keep links on one row.
+  Review wrapping, identity width, and space before headings with short/long
+  site titles and English/German labels at 320px and intermediate widths.
+  Preserve clear current-page state, keyboard focus, usable touch targets,
+  and each theme's character. Do not hide navigation or shrink targets solely
+  to keep links on one row.
 - [ ] Refine caption hierarchy within each theme.
-  Compare title-image, body-image, and list-image captions against that
-  theme's date metadata, prose, and links. Tune secondary tone and attachment
-  spacing while retaining readable contrast, recognizable caption links,
-  and upright captions. Themes may use different sizes, colors, and spacing;
-  verify internal consistency rather than identical values across themes.
+  Compare title-, body-, and list-image captions with that theme's metadata,
+  prose, and links. Tune secondary tone and attachment spacing while retaining
+  readable contrast, recognizable links, and upright captions. Sizes, colors,
+  and spacing may differ between themes.
 - [ ] Discuss intrinsic image dimensions before changing the render model.
-  Determine whether reserving space for local images warrants prepared
-  width/height data and how SVG, remote, and unknown-size images behave.
-  Keep this separate from visual crop choices; no arbitrary fixed ratio,
-  fetching remote images, or model expansion without an agreed current need.
+  Determine whether reserving local-image space warrants prepared width/height
+  data and how SVG, remote, and unknown-size images behave. Keep this separate
+  from crop choices; do not fetch remote images or expand the model without
+  an agreed current need.
 
-- [ ] Establish Cress's project brand using the maintainer-prepared images.
-  Schedule a dedicated session together with a project-documentation review,
-  after theme polish, logo behavior, and real-photo landing checks.
-  Review the supplied assets, usage rights, and suitable variants; agree
-  placement in project documentation and other project-facing surfaces before
-  implementation. Keep Cress's identity separate from publisher branding and
-  the generic initialized-site content.
-- [ ] Review logo display and placement across all three bundled themes.
-  Implemented: new sites enable matching gray mountain logo and favicon
-  SVG placeholders in `static/images/`. Each theme contains the logo in
-  a 3rem square beside the site title; Anemone keeps this pair together
-  in its desktop masthead and mobile header. No artwork is cropped.
-  Scaffold tests verify the assets publish intact and all page types
-  reference them. Firefox review covers all themes at 1440px and 320px.
-  The broader identity and aspect-ratio comparison below remains open.
-  Compare logo-only, title-only, and combined identities with wide, square,
-  and tall logos on desktop and narrow screens. Assess sizing, proportions,
-  alignment, navigation balance, background contrast, home-link behavior,
-  and accessible alternatives. Agree theme-owned changes before implementation.
-  Make the logo/title identity a coherent home-link target per theme.
-  Agree accessible names for combined and logo-only variants without duplicate
-  announcements; retain each theme's identity placement and focus treatment.
-- [x] Review configuration exposure through the prepared theme render model.
-  Confirm intentional generator-only settings and document the prepared
-  contract, including Chroma code-block classes for theme styling.
-  `site.copyright` reaches themes as `.Site.Copyright` and all three bundled
-  themes display it when supplied. No model changes are needed.
-- [ ] Evaluate a CLI command or option to generate shell tab-completion
-  scripts. Check the existing CLI library's capabilities and agree supported
-  shells, command syntax, output behavior, and installation guidance before
-  implementation. Keep generation offline and shell setup explicit.
+## Phase 2: Project branding and documentation
 
-Deferred, not implementation commitments:
+Schedule this as a dedicated session after theme polish, identity review,
+and real-photo checks.
 
-- The glass-like theme may become an externally maintained theme later.
-  It is not a fourth bundled theme or a promised external deliverable.
-- Automatic table-of-contents generation, including a per-page frontmatter
-  option, needs a demonstrated long-page navigation use case before approval.
-  Goldmark supports this through an external extension, not a built-in one;
-  review dependency suitability, heading depth, placement, labels, schemas,
-  and theme presentation if revisited.
-- Other Markdown extensions remain suggestions. Definition lists merit a
-  use-case review for services and menu content; do not add them, footnotes,
-  automatic typography substitutions, or other extensions by default.
+- [ ] Establish Cress's project brand using maintainer-prepared images.
+  Review asset rights and variants; agree placement in documentation and other
+  project-facing surfaces before implementation. Keep project branding separate
+  from publisher identity and generic scaffold content.
+- [ ] Review project documentation together with the branding work.
+  Check clarity, navigation, examples, and agreement with current behavior.
+  Keep requirements, rationale, and implementation tasks in their owning
+  documents rather than duplicating policies.
 
-#### Phase 9 handoff and leftovers
+## Phase 3: Release tooling and acceptance
 
-Release preparation and the documentation audit are implemented, not a
-claim that 1.0 is ready or published. The
-[release reference](docs/RELEASE.md) owns the concrete maintainer procedure;
-the [install reference](docs/INSTALL.md) ships in every archive.
+The [release reference](docs/RELEASE.md) owns the maintainer procedure.
+These tasks are not authorization to tag or publish.
 
-The Markdown audit covers root guidance/README/work plan, all guides,
-all 16 ADRs, notices, the accessibility record, and all seven scaffold pages.
-Accepted ADR rationale remains unchanged. Current references now describe
-site initialization, poppy/clover and local-first selection, exact labels,
-explicit draft-inclusive preview, current schemas, and release tooling
-instead of the old walking-skeleton status.
-
-GoReleaser invokes go-licenses report for CSV output and generated notice
-text. The custom helper, generated approval inventory, license policy
-checks, scanner exceptions, and CycloneDX tooling are removed.
-The third-party reference points to generated artifacts and go.mod rather
-than duplicating a dependency/license catalogue. ADRs remain untouched.
-
-The workflow's strict SemVer guard accepts valid versions and rejects
-shortened, malformed, and leading-zero versions.
-Tags use `v1.0.0` or `v1.0.0-pre.0`, never `v-1.0.0-pre.0`.
-GoReleaser automatically marks suffix-bearing versions as GitHub prereleases.
-
-Local Markdown links and internal anchors are checked; scaffold Markdown
-is reviewed and built as content, not linted as a guide.
-Setup documentation points to mise.toml and go.mod rather than maintaining
-duplicate tool versions or dependency inventories. Compatibility baselines
-and release-tag examples remain where they explain required behavior.
-
-- [x] Review the software design audit (local `audits/software-design-2026-10-25.md`)
-  and fix #2 before #1: preserve preview root ownership on replacement failure,
-  then separate the site lock from target-bound writers without changing
-  recovery behavior. Committed together as `35a9e6c`
-  (`fix: clarify preview and writer resource ownership`).
-- [x] Implement audit #3 (private theme-file reads): load only generation
-  inputs into memory. Inspect all package entries and open/close unused regular
-  files to validate readability; preserve rejection of symlinks, special files,
-  and unreadable private files. Regression tests verify unused bodies are not
-  read, generation inputs remain available, and open/close failures propagate.
-- [x] Implement audit #4 (unchecked scaffold substitutions).
-  Require exactly one expected anchor for each fixed site/theme scaffold
-  substitution. Report contextual errors on missing or duplicate anchors,
-  retaining commented sources without a new templating system. Unit tests
-  cover valid substitutions and both invalid anchor counts.
-- [x] Review the code quality audit (local `audits/code-quality-2026-10-26.md`)
-  and implement the approved small output-file reorganization (#5).
-  Site-lock operations live in `lock.go`; session creation and registry
-  reclamation live in `session_registry.go`, separate from active-session
-  operations. The package, function bodies, behavior, and interfaces remain
-  unchanged; existing output, preview, and generator tests cover the move.
-  Findings #1 to #4 (preview, Markdown, recovery, content loading) are done.
-  Findings are proposals, not new release blockers.
-- [x] Fix the two P2 findings from the local theme design audit
-  (`audits/theme-design-2026-10-26.md`): lazy-load list-entry images and
-  style focusable Markdown table wrappers for horizontal scrolling.
-  Keep page title images eager and leave authored HTML unchanged.
-- [x] Apply the theme P3 refinements: a thinner inset main focus ring,
-  shared outer measures for header/content/footer, syntax color tokens,
-  and inline-code styling kept separate from fenced code.
-  Image dimensions are not modeled; layout-shift prevention remains
-  outside this change. Firefox screenshots cover 320px and 1280px layouts;
-  cross-browser keyboard/touch and screen-reader review remain pending
-  in the human accessibility matrix.
-
-- [x] Follow up on the local landing-page design critique
-  (`audits/landing-design-critique-2026-10-27.md`): demonstrate a
-  Services-first, offer-first scaffold journey and explore distinct
-  Poppy/Clover landing compositions using existing prepared data.
-  Done: Services-first scaffold journey, distinct Poppy/Clover landing
-  compositions, consistent site frame, brand accent, and title-image band.
-- [x] Prepare persona content fixtures under the gitignored
-  `tmp/theme-exploration/`: coach with Poppy and cleaning with Clover.
-  Both demonstrate an offer-first, Services-first journey and secondary
-  contact route. These are fictional design examples, not shipped scaffold
-  replacements or working booking, purchase, or newsletter services.
-- [x] Choose distinct landing compositions and check consultant and
-  restaurant fixtures. Poppy: calm single column, sans headings throughout,
-  outlined primary link. Clover: solid title block, heavy section rules,
-  filled primary link. The primary link is a CSS convention (a lone-link
-  paragraph after the first paragraph); no data fields or link classes.
-  The scaffold now leads with a Services link. Firefox covers 320/1280px.
-- [x] Keep header, navigation, and footer at one frame width on every page.
-  The frame is sized to the reading measure (Poppy 52rem, Clover 56rem
-  with 1.0625rem body text), so content fills it and shares both edges.
-  Clover's header and footer drop their borders; the surface tint separates.
-- [x] Use `[brand] color` as the built-in themes' accent (links, buttons,
-  Clover's title block). Cress warns below 4.5:1 against white and keeps
-  building; Clover's header/footer links use the text color. ADR 0007,
-  USER.md, and ACCESSIBILITY.md record the change. The scaffold seedling is
-  replaced by a neutral, labelled photo placeholder.
-- [x] Crop landing title images to a 5:2 band so the introduction and
-  primary link stay near the first screen. Clover renders the image below
-  its title block instead of inside it.
-- [x] Replace Poppy's cream background with a chalk off-white
-  (`#fbfbf9`, surface `#f0f0ec`).
-- [x] Clarify the brand-color warning as a white-reference comparison,
-  not selected-theme validation. Dark and tinted themes may intentionally
-  use colors with low contrast against white. Keep the existing calculation
-  and threshold; document review of actual theme color pairs regardless
-  of warnings.
-- [ ] Loose threads: the 5:2 landing crop is checked only with the
-  placeholder, not real photos; a `[site.image]` default also fills every
-  landing hero. Keyboard and screen-reader review belong to the
-  accessibility matrix.
-- [x] Add the neutral `standalone-link` hook for link-only Markdown
-  paragraphs, independent of page type and position. Poppy and Clover
-  consume it for their existing primary-link convention, leaving links
-  inside sentences unstyled as actions. Record the boundary and markup
-  contract in [ADR 0019](docs/adr/0019-neutral-standalone-link-markup.md)
-  and the owning references; no primary-action data or styling enters
-  content preparation. Unit and scaffold integration tests pass; Firefox
-  screenshots at 320px and 1280px confirm both themes preserve the intended
-  action and leave sentence links ordinary. This does not complete the
-  human accessibility matrix.
-- [x] Review the content/presentation boundary. Replace Markdown table
-  alignment styles with neutral cell classes; themes own the matching CSS.
-  Keep semantic captions, task labels, heading targets, syntax-token classes,
-  and structural hooks in content preparation.
-
-External release blockers remain:
-
-- [ ] Complete the human accessibility matrix for all three themes and all
-  default page types; fix and retest every applicable A/AA failure.
-  Include table-wrapper keyboard behavior with and without overflow; its
-  unconditional focus target is unchanged by the boundary review.
-  The maintainer reports manual exploratory testing on 2026-11-01 with a
-  "works for me" result; scope and limitations are recorded in
-  [the assessment](docs/ACCESSIBILITY.md).
-- [x] Record native Linux amd64 and Linux arm64 checks. The maintainer reports
-  manual checks across all three themes on AlmaLinux, on native x86_64 and
-  aarch64 systems, working as expected. The broader supported-target/product
-  acceptance review remains open.
-- [ ] Complete the supported-target/product acceptance review and record
-  results before approving a release tag.
-- [ ] After an explicitly approved first release, record real keyless
-  signing and negative verification evidence; snapshots cannot provide it.
-- [x] Maintainer confirms phases 8/9 and scaffold updates committed as
-  `567f6b6` (`feat: add themes, init and docs`).
-- [x] Audit resource-ownership fixes are committed as `35a9e6c`.
-- [ ] Maintainer confirms any push. No repository write to GitHub was
-  performed during the audit follow-up.
-
-Maintainer-reported manual acceptance results on 2026-11-01 refer to the
-[PRD criteria](docs/PRD.md#acceptance-criteria-for-10). These are reported
-outcomes, not independently reproduced results; per-criterion environments
-and executable versions were not supplied.
-
-| Criteria | Reported result |
-|----------|-----------------|
-| 1–4 | Pass |
-| 5 | Not tested |
-| 6–8 | Pass |
-| 9–23 | Not yet reported |
-
-### Simple automated acceptance checks
-
-On 2026-11-01, local checks against `59a62f0` plus the documentation worktree
-passed: `mise run check`, `mise run build`, `mise run check:goreleaser`, and
-a fresh `go test -count=1 ./...` through mise. The built executable's version
-and site/theme help also worked. These checks exercise representative cases,
-not an exhaustive acceptance assessment.
-
-| PRD criteria | Simple-check result and evidence |
-|--------------|----------------------------------|
-| 1–2 | Pass: scaffold builds with all three themes; complete-page structure and content fixtures. |
-| 3–4 | Pass: route/URL, asset, private-source, and collision tests. |
-| 5 | Pass: initialized local theme builds, local override, and invalid/incompatible package rejection tests. This supplements the untested manual result. |
-| 6 | Pass for current behavior: configuration/frontmatter/manifest schema agreement, validation, warnings, and custom-data tests. Future compatibility policy needs release review. |
-| 7–8 | Pass: draft isolation, source watching, retained output, writer retry, and preview failure tests. |
-| 9–10 | Pass: session cleanup/isolation, staging, recovery, ambiguity refusal, and writer-lock tests. |
-| 11 | Pass: site/theme initialization and refusal tests; executable help/version smoke checks. |
-| 12 | Partial: default palette contrast, landmarks, navigation labels, captions, heading targets, and task markup tests pass. Human matrix remains open. |
-| 13 | Partial: all three targets cross-build with CGO disabled; packaging configuration validates. Archives and real signatures were not checked in this run. |
-| 14 | Partial: Linux amd64 license report generates 11 rows with no empty or Unknown license labels. Component approval and enforced release rejection are not established. |
-| 15–18 | Pass: publication metadata, highlighting, inheritance, page types, compatibility, and exact-language tests. |
-| 19–23 | Pass for tested cases: trusted HTML/escaping, captions, list preparation, heading IDs, strikethrough, and task-list tests. |
-
-The license tool warns that assembly in `golang.org/x/sys/unix` cannot be
-inspected for further dependencies and that the local unversioned module's
-license URL defaults to HEAD. These warnings need review, not suppression.
-At the time of this check, release tooling generated reports without enforcing
-a license allowlist. The follow-up below records the resolved interpretation
-and implementation.
-
-### Proposed release-gate follow-up
-
-This is a plan for later approval, not new release automation or permission
-to publish. Reuse existing tests and tools; add no browser suite.
-
-- [ ] Retain the existing pre-publication checks and build; explicitly run
-  the functional suite uncached so tagged-release evidence is fresh.
-- [ ] Add a small archive smoke check after packaging and before publication:
-  confirm exactly the three supported targets, required notices and install
-  guidance, nonempty per-target CSV reports, and checksum coverage for every
-  archive/report. Execute the host-compatible archived binary to verify the
-  release version and build initialized sites with all three embedded themes.
-  Use disposable directories and preserve existing output on failed checks.
-- [x] Complete the criterion 14 dependency-license gate. Approval applies to
-  license types, not per-component records. `mise run check:licenses`, included
-  in `mise run check`, enforces the approved names for all three release
-  targets. The maintainer approves OFL-1.1 for font software; Chroma reports
-  it from a combined COPYING file even without importing the SVG formatter.
-  Generated notices retain the font copyright and full OFL text. Non-code
-  asset rights remain separately reviewed; CSV release reports are unchanged.
-- [x] Clarify the syntax-highlighting interface: `[syntax] highlight = true`
-  replaces `[markdown] highlight`; `.Site.Syntax.Highlight` exposes the
-  resolved choice. Themes respect disabled syntax coloring, including when
-  using another highlighter. The scaffold demonstrates conditional styles;
-  documentation records the convention and configuration migration.
-- [ ] Plan post-publication verification using the documented Cosign workflow:
-  accept the exact tag identity/issuer, verify archive/report digests, and
-  reject a modified checksum manifest, modified artifact, and wrong identity.
+- [ ] Prepare fresh pre-publication evidence.
+  Retain existing checks/build and run the functional suite uncached against
+  the intended release revision.
+- [ ] Add an archive smoke check after packaging and before publication.
+  Confirm exactly macOS arm64, Linux amd64, and Linux arm64; required notices
+  and install guidance; nonempty per-target license CSVs; and checksum coverage
+  for every archive/report. Run the host-compatible archived binary to verify
+  its version and build initialized sites with all three embedded themes.
+  Use disposable directories and preserve existing output on failures.
+- [ ] Plan post-publication Cosign verification.
+  Require the exact tag identity/issuer, verify archive/report digests, and
+  reject modified checksums, modified artifacts, and wrong identities.
   Keep this distinct from pre-publication gating.
-- [ ] Before approving a release tag, review the recorded human accessibility
-  outcomes and native-platform evidence against the release revision.
+- [ ] Complete the human accessibility matrix for all three themes and
+  default page types. Record environments, scope, results, and limitations in
+  [the assessment](docs/ACCESSIBILITY.md); fix and retest applicable A/AA
+  failures. Include keyboard, screen-reader, touch, zoom/reflow, and
+  table-wrapper behavior with and without overflow. Exploratory checks do not
+  complete this gate.
+- [ ] Complete supported-target/product acceptance against the
+  [PRD criteria](docs/PRD.md#acceptance-criteria-for-10).
+  Record criterion-specific environments and results for the release revision.
+  Existing automated and native-platform checks do not replace the remaining
+  manual/product assessment.
+- [ ] Review accessibility outcomes, platform evidence, and distribution
+  rights before approving a release tag.
 
-Suggested phase 9 commit: `build: prepare signed releases and refresh docs`.
-For a combined phase 8/9 commit:
-`feat: add bundled themes, site init, and release preparation`.
+## Phase 4: Approved publication and verification
 
-Ideas beyond 1.0 are welcome as separate proposals.
+Depends on release readiness and explicit maintainer approval.
+
+- [ ] Publish the approved release through the documented tag workflow.
+- [ ] Record real keyless-signature and negative-verification evidence for
+  the published artifacts. Snapshots cannot provide this evidence.
+
+## Optional follow-up: Shell completion
+
+- [ ] Evaluate offline shell-completion generation.
+  Check the existing CLI library and agree supported shells, command syntax,
+  output behavior, and installation guidance before implementation.
+  Keep shell setup explicit.
+
+## Deferred ideas
+
+These are not implementation commitments:
+
+- An externally maintained glass-like theme, not a fourth bundled theme.
+- Automatic table of contents, including per-page control, after a demonstrated
+  long-page navigation need. Review dependency suitability, heading depth,
+  placement, labels, schemas, and presentation before approval.
+- Additional Markdown extensions such as definition lists for services/menu
+  content, footnotes, or typography substitutions, after a concrete use-case
+  review.
