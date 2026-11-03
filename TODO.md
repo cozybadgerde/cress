@@ -25,10 +25,6 @@ Evaluate consistency within each theme against its
 uniform. Preserve Poppy's freelancer focus, Clover's established small-business
 presentation, and Anemone's maker/shop/cafe editorial character.
 
-- [ ] Rebalance Clover's image-bearing landing composition.
-  Keep the compact solid title block, wider frame, centered reading column,
-  and filled primary action. Reduce the distance between title, offer, and
-  action; do not merely shrink all images or stretch prose to the outer frame.
 - [ ] Balance Anemone's landing headline and image together.
   Review the desktop split and responsive heading scale with short/long titles
   and landscape/portrait photos. Give images deliberate prominence without

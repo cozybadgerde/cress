@@ -52,6 +52,16 @@ h2 { font-size: 1.6rem; margin-top: 2rem; }
 .hero:has(+ .title-image) { margin-bottom: 0; }
 .landing > .title-image { margin: 0 0 clamp(2rem, 5vw, 3rem); }
 .landing > .title-image img { display: block; width: 100%; aspect-ratio: 5 / 2; object-fit: cover; }
+/* Wide screens pair the title block and image; a caption sits below the image only. */
+@media (min-width: 60rem) {
+  .landing:has(> .hero + .title-image) { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-template-rows: auto auto auto; }
+  .landing > .hero:has(+ .title-image) { grid-row: 1; display: flex; flex-direction: column; justify-content: flex-end; }
+  .landing > .hero:has(+ .title-image) h1 { font-size: clamp(2rem, 3.4vw, 2.75rem); }
+  .landing > .hero + .title-image { grid-row: 1 / span 2; display: grid; grid-template-rows: subgrid; margin: 0; }
+  .landing > .hero + .title-image img { height: 100%; min-height: 18rem; aspect-ratio: auto; contain: size; }
+  .landing > .hero + .title-image figcaption { padding-top: .5rem; }
+  .landing:has(> .hero + .title-image) > .prose { grid-column: 1 / -1; margin-top: clamp(2rem, 4vw, 3rem); }
+}
 img { max-width: 100%; height: auto; }
 figure { margin: 1.5rem 0; }
 figcaption, .image-caption { font-size: 1rem; }

@@ -119,9 +119,11 @@ and more space, without a filled button. Paragraphs with surrounding text or
 additional links stay ordinary prose. This is a theme choice using Cress's neutral
 `standalone-link` paragraph class, not a generator-selected primary action.
 
-In Poppy and Clover, a landing page's title image is cropped to a wide 5:2
-band so the introduction stays near the top: below the title in Poppy, directly
-under the title block in Clover. Keep the subject near the centre. A
+In Poppy and Clover, a landing page's title image is cropped so the
+introduction stays near the top. Poppy shows a wide 5:2 band below the title.
+Clover shows the same band under the title block on narrow screens; on wide
+screens the title block and image sit side by side, and any caption stays
+below the image. Keep the subject near the centre. A
 `[site.image]` default also appears there unless the page overrides it.
 
 Select a theme with `[theme] name = "poppy"`, `"clover"`, or `"anemone"`.
