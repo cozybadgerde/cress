@@ -25,12 +25,6 @@ Evaluate consistency within each theme against its
 uniform. Preserve Poppy's freelancer focus, Clover's established small-business
 presentation, and Anemone's maker/shop/cafe editorial character.
 
-- [ ] Balance Anemone's landing headline and image together.
-  Review the desktop split and responsive heading scale with short/long titles
-  and landscape/portrait photos. Give images deliberate prominence without
-  making the heading tower over a small image. Preserve the side masthead,
-  serif hierarchy, upright captions, uncropped title images, and restrained
-  image-only framing/rotation. Keep image-free pages useful.
 - [ ] Verify landing imagery with real photos, not only placeholders.
   Include landscape/portrait subjects, the Poppy/Clover 5:2 crop, and inherited
   `[site.image]` defaults. Coordinate this review with each landing refinement

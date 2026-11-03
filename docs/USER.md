@@ -94,8 +94,9 @@ Clover centers ordinary and list-page headings on the reading column.
 
 Anemone uses warm paper surfaces, dark ink, and editorial serif headings.
 On wide screens a side masthead sits beside the reading column; on narrow
-screens it sits above it. Framed images have soft shadows and slight
-rotation, removed on narrow screens; text and captions never rotate.
+screens it sits above it. Framed images have soft shadows. Body images rotate
+slightly on wide screens; title images, text, and captions never rotate.
+On wide screens a landing title image sits beside the title, height-capped.
 Title images retain their proportions without cropping. Pages work without
 photographs. It suits makers, independent shops, cafes, and creative businesses.
 

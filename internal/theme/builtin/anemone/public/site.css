@@ -47,6 +47,11 @@ h5 { font-size: 1.2rem; }
 h6 { font-size: 1.0625rem; font-weight: 700; }
 .page-heading { padding-bottom: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
 .hero h1 { max-width: 13ch; font-size: clamp(3rem, 6vw, 5.5rem); }
+/* With an image, a calmer heading pairs with an uncropped, height-capped photo. */
+.hero.with-image { margin-bottom: 2.5rem; }
+.hero.with-image h1 { max-width: 20ch; font-size: clamp(2.5rem, 4.5vw, 3.75rem); }
+.hero.with-image .title-image { margin: 2rem 0 0; }
+.hero.with-image .title-image img { width: auto; max-width: 100%; max-height: min(26rem, 60vh); }
 .hero .page-heading { border: 0; margin-bottom: 0; }
 .page-heading h1 { margin-bottom: 0; }
 .dates { display: flex; flex-wrap: wrap; gap: .25rem .5rem; margin: .5rem 0 1rem; color: var(--muted); font-size: .875rem; line-height: 1.5; font-variant-numeric: tabular-nums; }
@@ -66,7 +71,7 @@ figure { margin: 2rem 0; }
   box-shadow: .2rem .5rem 1rem #302f2826;
   transform: rotate(-1deg);
 }
-.hero .title-image img { transform: rotate(1deg); }
+.hero .title-image img { transform: none; }
 figcaption, .image-caption { margin-top: 1rem; font-size: .9375rem; line-height: 1.6; }
 .captioned-image { display: inline-block; max-width: 100%; vertical-align: middle; }
 .image-caption { display: block; }
@@ -106,13 +111,13 @@ input[type="checkbox"] { accent-color: var(--text); }
   main { width: 100%; padding-top: 4rem; }
   body:has(.site-header) main, body:has(.site-header) .site-footer { grid-column: 2; }
   .site-footer { width: 100%; }
-  .hero.with-image { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: center; gap: 1.5rem; }
-  .hero .title-image { margin-top: 0; }
-  .hero .title-image img { transform: rotate(1.5deg); }
+  .hero.with-image { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); align-items: center; gap: 2.5rem; }
+  .hero.with-image h1 { font-size: clamp(2.25rem, 3vw, 3rem); }
+  .hero.with-image .title-image { margin: 0; }
   .entries > li:has(.entry-content) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2rem; }
 }
 @media (max-width: 59.999rem), (prefers-reduced-motion: reduce) {
-  .title-image img, .prose > figure img, .hero .title-image img { transform: none; }
+  .title-image img, .prose > figure img { transform: none; }
 }
 @media (forced-colors: active) {
   .title-image img, .prose > figure img { border: 1px solid CanvasText; box-shadow: none; }
