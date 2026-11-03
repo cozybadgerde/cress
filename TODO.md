@@ -552,6 +552,63 @@ themes are enough for this scope. Heading targets are approved under
   on the journal list and dated landing, and at 320px on the content tour.
   Checks and build pass; this visual review does not complete the human
   accessibility matrix.
+Theme refinement follow-up from the 2026-11-03 review:
+
+Evaluate consistency within each theme against its presentation contract in
+[the user guide](docs/USER.md#built-in-themes), not by making the three themes
+uniform. Preserve Poppy's freelancer focus, Clover's established small-business
+presentation, and Anemone's maker/shop/cafe editorial character.
+The review used Firefox at 1440px and 320px with title-image landings,
+mixed journal lists, and ordinary content. Findings are improvement proposals,
+not a complete accessibility assessment or approved replacement compositions.
+Agree each visual change before implementing it, one task at a time.
+
+- [ ] Rebalance Poppy's landing hierarchy with and without a title image.
+  Start with desktop/mobile comparisons using short and long titles.
+  Bring the introduction and outlined primary action into focus sooner
+  without losing calm spacing, readable sans headings, or meaningful imagery.
+  Compare real landscape and portrait photos and inherited site images;
+  coordinate with the existing real-photo crop check below.
+- [ ] Rebalance Clover's image-bearing landing composition.
+  Keep the compact solid title block, wider frame, centered reading column,
+  and filled primary action. Reduce the visual distance between the title,
+  offer, and action when a title image is supplied. Compare image-free and
+  image-bearing pages at desktop/mobile sizes; do not merely shrink all images
+  or stretch prose to the outer frame.
+- [ ] Balance Anemone's landing headline and image together.
+  Review the desktop split and responsive heading scale with short/long titles
+  and landscape/portrait photos. Give images deliberate prominence without
+  making the heading tower over a small image. Preserve the side masthead,
+  editorial serif hierarchy, upright captions, uncropped title images, and
+  restrained image-only framing/rotation. Keep image-free pages useful.
+- [ ] Refine journal-list image presentation within each theme.
+  Improve scanning of title, metadata, image, and excerpt with mixed entries
+  containing images, excerpts, both, or neither. Poppy and Clover need a
+  deliberate preview treatment rather than article-sized imagery; Anemone's
+  split must balance headings with supporting content. Agree crop/proportion
+  choices separately per theme and verify long titles and narrow layouts.
+  Correct Poppy/Clover template roles: page-level title images stay eager,
+  repeated entry images use lazy loading. Verify loaded images before judging
+  their size; a lazy image absent from a headless screenshot is not by itself
+  evidence of a broken layout.
+- [ ] Tighten mobile header/navigation composition within each theme.
+  Review wrapping, identity width, and the gap before the page heading with
+  short/long site titles and English/German labels at 320px and intermediate
+  widths. Preserve each theme's navigation character, clear current-page
+  state, keyboard focus, and usable touch targets. Do not introduce a hidden
+  menu or smaller targets solely to keep links on one row.
+- [ ] Refine caption hierarchy within each theme.
+  Compare title-image, body-image, and list-image captions against that
+  theme's date metadata, prose, and links. Tune secondary tone and attachment
+  spacing while retaining readable contrast, recognizable caption links,
+  and upright captions. Themes may use different sizes, colors, and spacing;
+  verify internal consistency rather than identical values across themes.
+- [ ] Discuss intrinsic image dimensions before changing the render model.
+  Determine whether reserving space for local images warrants prepared
+  width/height data and how SVG, remote, and unknown-size images behave.
+  Keep this separate from visual crop choices; no arbitrary fixed ratio,
+  fetching remote images, or model expansion without an agreed current need.
+
 - [ ] Establish Cress's project brand using the maintainer-prepared images.
   Schedule a dedicated session together with a project-documentation review,
   after theme polish, logo behavior, and real-photo landing checks.
@@ -571,6 +628,9 @@ themes are enough for this scope. Heading targets are approved under
   and tall logos on desktop and narrow screens. Assess sizing, proportions,
   alignment, navigation balance, background contrast, home-link behavior,
   and accessible alternatives. Agree theme-owned changes before implementation.
+  Make the logo/title identity a coherent home-link target per theme.
+  Agree accessible names for combined and logo-only variants without duplicate
+  announcements; retain each theme's identity placement and focus treatment.
 - [x] Review configuration exposure through the prepared theme render model.
   Confirm intentional generator-only settings and document the prepared
   contract, including Chroma code-block classes for theme styling.
