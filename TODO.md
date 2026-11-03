@@ -25,10 +25,6 @@ Evaluate consistency within each theme against its
 uniform. Preserve Poppy's freelancer focus, Clover's established small-business
 presentation, and Anemone's maker/shop/cafe editorial character.
 
-- [ ] Rebalance Poppy's landing hierarchy with and without a title image.
-  Compare short/long titles at desktop/mobile sizes. Bring the introduction
-  and outlined primary action into focus sooner without losing calm spacing,
-  readable sans headings, or meaningful imagery.
 - [ ] Rebalance Clover's image-bearing landing composition.
   Keep the compact solid title block, wider frame, centered reading column,
   and filled primary action. Reduce the distance between title, offer, and
