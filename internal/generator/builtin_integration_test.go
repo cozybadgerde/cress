@@ -135,6 +135,9 @@ func TestBuiltinCompletePageStructure(t *testing.T) {
 					strings.Count(html, "<figcaption>Image credit</figcaption>") != wantLazy+1 {
 					t.Errorf("%s/%s: incorrect image loading or lost caption: %s", name, file, html)
 				}
+				if wantLazy == 1 && strings.Index(html, `alt="Placeholder">`) > strings.Index(html, `loading="lazy"`) {
+					t.Errorf("%s/%s: list page image must load eagerly before lazy entry images", name, file)
+				}
 			}
 		}
 		if err := theme.Init(context.Background(), site, name); err != nil {

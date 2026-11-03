@@ -97,7 +97,7 @@ On wide screens a side masthead sits beside the reading column; on narrow
 screens it sits above it. Framed images have soft shadows. Body images rotate
 slightly on wide screens; title images, text, and captions never rotate.
 On wide screens a landing title image sits beside the title, height-capped.
-Title images retain their proportions without cropping. Pages work without
+Page title images retain their proportions without cropping. Pages work without
 photographs. It suits makers, independent shops, cafes, and creative businesses.
 
 All three use system fonts, local CSS, no scripts, and no remote assets.
@@ -126,6 +126,12 @@ Clover shows the same band under the title block on narrow screens; on wide
 screens the title block and image sit side by side, and any caption stays
 below the image. Keep the subject near the centre. A
 `[site.image]` default also appears there unless the page overrides it.
+
+List entries crop their images to a fixed shape for easy scanning: a 5:2
+band in Poppy, a 4:3 thumbnail left of the text in Clover, and a framed 4:3
+print beside the text in Anemone. On narrow screens Clover and Anemone stack
+the image below the date. Entry images load lazily; the list's own title
+image loads immediately.
 
 Select a theme with `[theme] name = "poppy"`, `"clover"`, or `"anemone"`.
 A complete same-name local package takes priority, including over the default

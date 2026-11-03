@@ -60,6 +60,8 @@ figcaption, .image-caption { font-size: 1rem; }
 .entries { list-style: none; padding: 0; }
 .entries > li { border-top: 1px solid var(--border); padding: 1.5rem 0; }
 .entries h2 { margin-top: 0; }
+.entries .title-image { margin: 1rem 0; }
+.entries .title-image img { display: block; width: 100%; aspect-ratio: 5 / 2; object-fit: cover; }
 .site-footer { border-top: 1px solid var(--border); }
 pre { padding: 1rem; overflow: auto; background: var(--surface); color: var(--text); white-space: pre-wrap; }
 pre .k, pre .kd, pre .kn, pre .kp, pre .kr, pre .kt { color: var(--syntax-keyword); }

@@ -29,15 +29,6 @@ presentation, and Anemone's maker/shop/cafe editorial character.
   Include landscape/portrait subjects, the Poppy/Clover 5:2 crop, and inherited
   `[site.image]` defaults. Coordinate this review with each landing refinement
   rather than repeating it as a separate implementation.
-- [ ] Refine journal-list imagery within each theme.
-  Improve scanning of title, metadata, image, and excerpt with entries having
-  images, excerpts, both, or neither. Poppy/Clover need deliberate previews
-  rather than article-sized imagery; Anemone's split must balance headings
-  and supporting content. Agree crop/proportion choices per theme and verify
-  long titles and narrow layouts. Correct Poppy/Clover loading roles:
-  page-level title images stay eager, repeated entry images use lazy loading.
-  Verify loaded images before judging their size; absence from a headless
-  screenshot alone does not demonstrate a layout failure.
 - [ ] Complete logo and identity review across all three themes.
   Compare logo-only, title-only, and combined identities with square, circular,
   wide, and tall artwork on desktop/mobile. Assess sizing, alignment,

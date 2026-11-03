@@ -1,7 +1,7 @@
 {{template "document-start" .}}
   <main id="main" tabindex="-1">
     {{template "page-heading" .}}
-    {{template "entry-image" .}}
+    {{template "title-image" .}}
     <div class="prose">{{.Body}}</div>
     {{with .Entries}}
     <ul class="entries">
@@ -9,7 +9,7 @@
       <li>
         <h2><a href="{{.URL}}">{{.Title}}</a></h2>
         {{template "dates" .}}
-        {{template "title-image" .}}
+        {{template "entry-image" .}}
         {{with .Excerpt}}<p>{{.}}</p>{{end}}
       </li>
       {{end}}
