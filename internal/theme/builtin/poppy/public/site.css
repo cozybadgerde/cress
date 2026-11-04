@@ -31,17 +31,24 @@ main:focus-visible { outline-width: 2px; outline-offset: -2px; }
 .skip-link:not(:focus) { clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; }
 .site-header, .site-footer { max-width: var(--content-width); margin: auto; padding: 2rem var(--gutter); }
 .site-header { display: flex; flex-wrap: wrap; gap: 1.5rem 3rem; align-items: center; justify-content: space-between; }
-.identity { display: flex; width: fit-content; max-width: 100%; align-items: center; gap: 1rem; }
+.identity { display: flex; width: fit-content; max-width: 100%; min-height: 2.75rem; align-items: center; gap: 1rem; }
 .site-title { min-width: 0; font-weight: 700; }
 .logo { width: 3rem; height: 3rem; flex-shrink: 0; object-fit: contain; }
 nav ul { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; padding: 0; margin: 0; list-style: none; }
-nav a { display: inline-block; padding: .5rem .25rem; }
+nav { min-width: 0; max-width: 100%; }
+nav li { min-width: 0; max-width: 100%; }
+nav a { display: inline-flex; align-items: center; min-width: 2.75rem; min-height: 2.75rem; max-width: 100%; padding: .5rem .25rem; }
 [aria-current="page"] { font-weight: 700; text-decoration-thickness: .15em; }
 main { max-width: var(--content-width); margin: auto; padding: 2rem var(--gutter) 4rem; }
 h1, h2, h3 { line-height: 1.2; font-weight: 650; letter-spacing: -.02em; text-wrap: balance; }
 h1 { font-size: clamp(2rem, 4.5vw, 3rem); margin: 0 0 1.5rem; }
 h2 { margin-top: 2rem; font-size: 1.8rem; }
 main.landing { padding-top: 1.5rem; }
+@media (max-width: 40rem) {
+  .site-header { gap: .75rem; padding-block: 1.25rem; }
+  .site-header nav { flex-basis: 100%; }
+  main { padding-top: 1.5rem; }
+}
 .hero h1 { max-width: 20ch; font-size: clamp(2.25rem, 5vw, 3.5rem); margin-bottom: 1.25rem; }
 /* A cropped banner keeps the introduction and lead link near the first screen. */
 .hero .title-image img { display: block; width: 100%; aspect-ratio: 5 / 2; object-fit: cover; }
@@ -49,8 +56,10 @@ img { max-width: 100%; height: auto; }
 figure { margin: 1.5rem 0; }
 /* A fixed ratio reserves title-image space before the file loads. */
 :is(main, article) > .title-image img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
-figcaption, .image-caption { font-size: 1rem; }
-.captioned-image { display: inline-block; vertical-align: middle; }
+figure > img, .captioned-image > img { display: block; }
+figure > pre { margin: 0; }
+figcaption, .image-caption { margin: .5rem 0 0; color: var(--muted); font-size: 1rem; font-style: normal; line-height: 1.5; }
+.captioned-image { display: inline-block; max-width: 100%; vertical-align: middle; }
 .image-caption { display: block; }
 .page-heading { margin-bottom: 1.5rem; }
 .page-heading h1 { margin-bottom: 0; }

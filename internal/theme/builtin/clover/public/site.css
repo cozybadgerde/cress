@@ -24,13 +24,20 @@ main:focus-visible { outline-width: 2px; outline-offset: -2px; }
 .site-header, .site-footer { padding: 1.5rem max(var(--gutter), calc((100% - var(--content-width)) / 2 + var(--gutter))); background: var(--surface); }
 .site-header a, .site-footer a { color: var(--text); }
 .site-header { display: flex; flex-wrap: wrap; gap: .75rem 2rem; align-items: center; justify-content: space-between; padding-block: 1rem; }
-.identity { display: flex; width: fit-content; max-width: 100%; gap: 1rem; align-items: center; }
+.identity { display: flex; width: fit-content; max-width: 100%; min-height: 2.75rem; gap: 1rem; align-items: center; }
 .site-title { min-width: 0; font-weight: 650; font-size: 1.25rem; }
 .logo { width: 3rem; height: 3rem; flex-shrink: 0; object-fit: contain; }
 nav ul { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; padding: 0; margin: 0; list-style: none; }
-nav a { display: inline-block; padding: .5rem .25rem; }
+nav { min-width: 0; max-width: 100%; }
+nav li { min-width: 0; max-width: 100%; }
+nav a { display: inline-flex; align-items: center; min-width: 2.75rem; min-height: 2.75rem; max-width: 100%; padding: .5rem .25rem; }
 [aria-current="page"] { font-weight: 700; text-decoration-thickness: .15em; }
 main { max-width: var(--content-width); margin: auto; padding: 2.5rem var(--gutter) 4rem; }
+@media (max-width: 40rem) {
+  .site-header { align-items: flex-start; }
+  .site-header nav { flex-basis: 100%; }
+  main { padding-top: 1.75rem; }
+}
 .prose, .entries, .page-heading { max-width: var(--reading-width); margin-inline: auto; }
 .page-heading { margin-bottom: 1.5rem; }
 .page-heading h1 { margin-bottom: 0; }
@@ -59,15 +66,16 @@ h2 { font-size: 1.6rem; margin-top: 2rem; }
   .landing > .hero:has(+ .title-image) h1 { font-size: clamp(2rem, 3.4vw, 2.75rem); }
   .landing > .hero + .title-image { grid-row: 1 / span 2; display: grid; grid-template-rows: subgrid; margin: 0; }
   .landing > .hero + .title-image img { height: 100%; min-height: 18rem; aspect-ratio: auto; contain: size; }
-  .landing > .hero + .title-image figcaption { padding-top: .5rem; }
   .landing:has(> .hero + .title-image) > .prose { grid-column: 1 / -1; margin-top: clamp(2rem, 4vw, 3rem); }
 }
 img { max-width: 100%; height: auto; }
 figure { margin: 1.5rem 0; }
 /* A fixed ratio reserves title-image space before the file loads. */
 :is(main, article) > .title-image img { display: block; width: 100%; aspect-ratio: 3 / 2; max-height: min(36rem, 70vh); object-fit: cover; }
-figcaption, .image-caption { font-size: 1rem; }
-.captioned-image { display: inline-block; vertical-align: middle; }
+figure > img, .captioned-image > img { display: block; }
+figure > pre { margin: 0; }
+figcaption, .image-caption { margin: .5rem 0 0; color: var(--muted); font-size: .9375rem; font-style: normal; line-height: 1.5; }
+.captioned-image { display: inline-block; max-width: 100%; vertical-align: middle; }
 .image-caption { display: block; }
 .entries { list-style: none; padding: 0; }
 .entries > li { padding: 1.5rem 0; border-top: 1px solid var(--border); }

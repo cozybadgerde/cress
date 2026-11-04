@@ -114,6 +114,12 @@ the identity. Without a title, the link uses the logo's alternative text,
 or a localized "Home" label when that text is empty. Long titles wrap beside
 the logo. Square or circular artwork works best; wide or tall artwork fits
 inside the same box and may appear smaller.
+
+On narrow screens, Poppy and Clover place navigation below the identity.
+Anemone keeps its stacked masthead until the desktop side layout takes over.
+Links wrap openly rather than hiding behind a menu. Identity and navigation
+links have a minimum 44px target at the default font size.
+
 Optional publication and update dates share a compact, muted row above
 ordinary and list-page titles. Landing-page and list-entry dates remain
 below their titles.
@@ -137,12 +143,20 @@ On ordinary and list pages, Poppy crops title images to 16:9 and Clover to
 3:2. Clover also caps their height at the smaller of 36rem and 70% of the
 viewport height. These crops reserve space before images load. Anemone
 keeps title images uncropped, so their space can change as they load.
+Images in page text may also move surrounding content while loading.
+Intrinsic image dimensions are not prepared; generation never fetches remote
+images to discover their size.
 
 List entries crop their images to a fixed shape for easy scanning: a 5:2
 band in Poppy, a 4:3 thumbnail left of the text in Clover, and a framed 4:3
 print beside the text in Anemone. On narrow screens Clover and Anemone stack
 the image below the date. Entry images load lazily; the list's own title
 image loads immediately.
+
+Captions stay upright and use each theme's muted text color, with underlined
+links. Poppy keeps them at 1rem with a small gap below the image. Clover uses
+smaller captions, with more compact list-image credits. Anemone leaves a
+larger gap beneath its framed images so the shadow does not crowd the text.
 
 Select a theme with `[theme] name = "poppy"`, `"clover"`, or `"anemone"`.
 A complete same-name local package takes priority, including over the default

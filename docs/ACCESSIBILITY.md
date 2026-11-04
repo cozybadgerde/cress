@@ -49,6 +49,18 @@ assistive technology, keyboard, touch, zoom, or criterion-specific outcomes.
 It records exploratory evidence, not completion of the A/AA matrix below.
 A persistent browser automation suite remains outside the agreed scope.
 
+On 2026-11-04, a scoped Firefox 159.0 headless review on macOS compared
+short/long identities, English/German navigation labels, and title-, body-,
+inline-, code-, and list-image captions in all three themes. Rendered
+measurements at 320, 640, 768, 960, and 1440 CSS pixels found no horizontal
+page overflow, including text-spacing overrides at 320px. Identity and
+navigation targets measured at least 44px in each dimension; muted caption
+text exceeded 4.5:1 against the default backgrounds. Screenshots also covered
+390px layouts. Tab input followed the skip link, identity, and main links in
+document order. The headless session did not expose `:focus-visible` states,
+so visible keyboard-focus verification remains part of the human review.
+These exploratory checks do not complete the release matrix.
+
 ## Human review procedure
 
 Generate fresh fixtures using the current executable:

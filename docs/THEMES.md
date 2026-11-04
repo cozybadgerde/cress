@@ -143,6 +143,14 @@ names the part to keep in view when a theme crops the image. Built-in themes
 add a `focus-<value>` class and keep that third in view; themes that do not
 crop may ignore it.
 
+The render model does not expose intrinsic image width or height. Built-in
+themes reserve space for fixed crops and logos through CSS; uncropped images
+may shift surrounding content while loading. This applies to local raster
+images, SVGs, and remote or unknown-size images alike. Generation does not
+fetch remote resources to determine dimensions. Keep uncropped presentations
+proportional rather than inventing dimensions or imposing a crop solely to
+reserve space.
+
 `page.Entry` exposes `Title`, `URL`, `Description`, `Image`, `PublishedAt`,
 `UpdatedAt`, and `Excerpt` with the same prepared meanings as page fields.
 Entries do not contain page bodies, nested entries, raw source paths, or

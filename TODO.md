@@ -18,34 +18,9 @@ Update affected schemas and owning references alongside behavior changes.
 Remove completed tasks and keep remaining work here. Commits, pushes, tags,
 and publication require maintainer approval.
 
-## Phase 1: Theme composition and identity
-
-Evaluate consistency within each theme against its
-[presentation contract](docs/USER.md#built-in-themes), not by making the themes
-uniform. Preserve Poppy's freelancer focus, Clover's established small-business
-presentation, and Anemone's maker/shop/cafe editorial character.
-
-- [ ] Tighten mobile header/navigation composition within each theme.
-  Review wrapping, identity width, and space before headings with short/long
-  site titles and English/German labels at 320px and intermediate widths.
-  Preserve clear current-page state, keyboard focus, usable touch targets,
-  and each theme's character. Do not hide navigation or shrink targets solely
-  to keep links on one row.
-- [ ] Refine caption hierarchy within each theme.
-  Compare title-, body-, and list-image captions with that theme's metadata,
-  prose, and links. Tune secondary tone and attachment spacing while retaining
-  readable contrast, recognizable links, and upright captions. Sizes, colors,
-  and spacing may differ between themes.
-- [ ] Discuss intrinsic image dimensions before changing the render model.
-  Determine whether reserving local-image space warrants prepared width/height
-  data and how SVG, remote, and unknown-size images behave. Keep this separate
-  from crop choices; do not fetch remote images or expand the model without
-  an agreed current need.
-
 ## Phase 2: Project branding and documentation
 
-Schedule this as a dedicated session after theme polish, identity review,
-and real-photo checks.
+Schedule this as a dedicated session.
 
 - [ ] Establish Cress's project brand using maintainer-prepared images.
   Review asset rights and variants; agree placement in documentation and other
