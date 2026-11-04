@@ -1,5 +1,7 @@
 # Cress
 
+![Cress: a mouse sheltering beneath a green leaf beside the wordmark.](docs/assets/logo/logo.webp)
+
 A cozy static site generator. Fresh little sites, fast.
 
 Cress turns Markdown content, one TOML configuration file, and a curated
@@ -88,7 +90,9 @@ For questions or feedback, contact the project maintainers via:
 
 ## License
 
-Cress is licensed under [BSD-3-Clause](LICENSE). Bundled dependencies retain
+Cress's code is licensed under [BSD-3-Clause](LICENSE). The
+[project artwork](docs/assets/logo/README.md) is copyright Daniel Schier
+and licensed under CC BY-SA 4.0 International. Bundled dependencies retain
 their own licenses; see the
 [third-party notices](docs/THIRD-PARTY-NOTICES.md) and
 [licensing decision](docs/adr/0011-bsd-3-clause-license.md).

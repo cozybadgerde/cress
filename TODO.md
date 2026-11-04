@@ -22,10 +22,6 @@ and publication require maintainer approval.
 
 Schedule this as a dedicated session.
 
-- [ ] Establish Cress's project brand using maintainer-prepared images.
-  Review asset rights and variants; agree placement in documentation and other
-  project-facing surfaces before implementation. Keep project branding separate
-  from publisher identity and generic scaffold content.
 - [ ] Review project documentation together with the branding work.
   Check clarity, navigation, examples, and agreement with current behavior.
   Keep requirements, rationale, and implementation tasks in their owning
