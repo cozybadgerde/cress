@@ -12,11 +12,8 @@ These documents explain what Cress should do and why:
   failure boundaries.
 - [Architectural decision records](PRD.md#decision-records): accepted
   decisions and their rationale.
-- [Work plan](../TODO.md): implementation phases and their definition of
-  done.
 
-The work plan tracks remaining implementation and release evidence. The
-[contribution notes](../README.md#contributing) explain how to propose a
+The [contribution notes](../README.md#contributing) explain how to propose a
 change.
 
 ## Prerequisites
@@ -180,8 +177,7 @@ CI runs `mise run check`, `mise run build`, and `mise run check:goreleaser`
 with the same pinned tools on
 pushes to `trunk` and on pull requests. These tasks automatically include
 the configuration/frontmatter schema tests and filesystem integration
-tests. Current phase-completion and commit/push coordination live in the
-[work plan](../TODO.md#phase-workflow).
+tests.
 
 EditorConfig supplies basic editor defaults. External schema validation is
 documented in the [user reference](USER.md#external-schema-validation);

@@ -1,8 +1,6 @@
 # Cress product requirements
 
 Status: approved product direction; generator capabilities implemented.
-Release preparation and outstanding acceptance evidence are tracked in the
-[work plan](../TODO.md).
 
 Target release: 1.0.0.
 
@@ -28,7 +26,6 @@ integration and continuous delivery (CI/CD).
 
 This document describes product needs, scope, and observable acceptance
 criteria. The [ADRs](adr/) provide architectural guidance and guardrails.
-The [work plan](../TODO.md) tracks remaining decisions and implementation.
 Agreed field names and observable behavior are part of the product
 contract. Remaining authoring syntax, package layouts, algorithms, and
 setup instructions belong to implementation and its documentation.

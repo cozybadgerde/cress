@@ -2,8 +2,7 @@
 
 Cress builds ordinary, landing, and list pages offline using the built-in
 `poppy`, `clover`, and `anemone` themes or complete local theme packages.
-Poppy is the default when no theme is selected. Release readiness and human
-accessibility review are tracked in the [work plan](../TODO.md).
+Poppy is the default when no theme is selected.
 
 ## Install Cress
 

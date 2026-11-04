@@ -68,7 +68,4 @@ https://github.com/cozybadgerde/cress/.github/workflows/release.yml@refs/tags/<e
 The issuer is `https://token.actions.githubusercontent.com`.
 See [installation and verification](INSTALL.md) for download verification.
 
-Outstanding accessibility, native-platform, and signature-verification
-work remains in the
-[work plan](../TODO.md#phase-3-release-tooling-and-acceptance).
 Tagging and publishing require the maintainer's approval.

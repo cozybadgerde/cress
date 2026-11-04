@@ -7,8 +7,8 @@ rationale. This guide links to both instead of repeating them.
 
 Status: implemented generator structure. Poppy, Clover, Anemone, site/theme
 initialization, complete generation, recoverable output replacement, and
-isolated preview are available. Release tooling is separate from the
-offline executable; outstanding release evidence lives in the work plan.
+isolated preview are available. [Release tooling](RELEASE.md) is separate
+from the offline executable.
 
 ## System context
 

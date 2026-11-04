@@ -34,7 +34,6 @@ preview, and build.
 - Local theme packages, explicit navigation, and automatic preview rebuilds.
 
 The [product requirements](docs/PRD.md#scope) define the scope.
-Release readiness is tracked in the [work plan](TODO.md).
 
 ## Documentation
 
@@ -49,7 +48,6 @@ Release readiness is tracked in the [work plan](TODO.md).
   rationale, listed in the [decision index](docs/PRD.md#decision-records).
 - [Accessibility assessment](docs/ACCESSIBILITY.md): evidence and blockers.
 - [Release maintenance](docs/RELEASE.md): inventory, packaging, and signing.
-- [Work plan](TODO.md): implementation phases.
 
 ## Contributing
 
