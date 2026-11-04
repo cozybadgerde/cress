@@ -508,7 +508,7 @@ caption = "By [Alex](/credits/) <b>escaped</b>"
 		t.Fatal(err)
 	}
 	for range 2 {
-		prepared, _, err := content.Prepare("page.md", []byte("+++\ntitle = 'Page'\n+++\nBody"), config)
+		prepared, _, err := content.Prepare("page.md", []byte("+++\ntitle = 'Page'\ntype = 'landing'\n+++\nBody"), config)
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -124,7 +124,7 @@ In Poppy and Clover, a landing page's title image is cropped so the
 introduction stays near the top. Poppy shows a wide 5:2 band below the title.
 Clover shows the same band under the title block on narrow screens; on wide
 screens the title block and image sit side by side, and any caption stays
-below the image. Keep the subject near the centre. A
+below the image. Crops keep the centre unless the image sets `focus`. A
 `[site.image]` default also appears there unless the page overrides it.
 
 List entries crop their images to a fixed shape for easy scanning: a 5:2
@@ -241,10 +241,14 @@ validated even on excluded drafts. No directory-level inheritance occurs.
 |------------------|------|----------|
 | `description` | String | Inherits `site.description` when absent; `""` clears it. |
 | `type` | String | `ordinary` by default; also accepts `landing` and `list`. |
-| `image` | Table | Replaces the complete inherited `site.image`; `{ src = "" }` clears it. |
+| `image` | Table | Sets the title image. On landing pages it replaces the complete inherited `site.image`; `{ src = "" }` clears it. |
 
 An image table requires a string `src`. A nonempty source also requires
 an explicit string `alt`; an empty alternative marks a decorative image.
+An optional `focus` names the part to keep in view when a theme crops the
+image: `center` (default), `top`, `bottom`, `left`, `right`, `top-left`,
+`top-right`, `bottom-left`, or `bottom-right`. For example, use
+`focus = "top"` for a portrait whose face sits in the upper third.
 Sources are site-root paths, absolute HTTP/HTTPS URLs, or source-relative
 assets on a page. Site defaults cannot use source-relative paths.
 See [content and assets](#content-and-assets-contract) for asset publication
@@ -359,11 +363,13 @@ url = "https://example.net/"
 | `language` | `"en"` | Valid BCP 47 language tag; preserve spelling for exact theme-label matching. Built-ins support `en` and `de`. |
 | `host` | Omitted | Public origin, including HTTP/HTTPS scheme and optional port; not merely a hostname. |
 | `path` | `"/"` | Web URL prefix, not a filesystem destination or deployment operation. |
-| `image` | Omitted | Default title image, using the same complete-table contract as frontmatter. |
+| `image` | Omitted | Default title image for landing pages, using the same complete-table contract as frontmatter. |
 
 `site.title`, `site.copyright`, and `site.language` are site-only settings.
-Only the description and title image inherit into page metadata. Page
-titles, types, and draft status do not inherit.
+Only the description and title image inherit into page metadata. The
+description reaches every page; the title image reaches landing pages only,
+so ordinary pages, list pages, and list entries show only their own images.
+Page titles, types, and draft status do not inherit.
 
 `host` cannot contain credentials, a query, a fragment, or a path other
 than an optional final `/`. The prepared origin omits that final slash.

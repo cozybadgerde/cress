@@ -25,10 +25,6 @@ Evaluate consistency within each theme against its
 uniform. Preserve Poppy's freelancer focus, Clover's established small-business
 presentation, and Anemone's maker/shop/cafe editorial character.
 
-- [ ] Verify landing imagery with real photos, not only placeholders.
-  Include landscape/portrait subjects, the Poppy/Clover 5:2 crop, and inherited
-  `[site.image]` defaults. Coordinate this review with each landing refinement
-  rather than repeating it as a separate implementation.
 - [ ] Complete logo and identity review across all three themes.
   Compare logo-only, title-only, and combined identities with square, circular,
   wide, and tall artwork on desktop/mobile. Assess sizing, alignment,

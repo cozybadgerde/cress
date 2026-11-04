@@ -28,10 +28,13 @@ alt = "Shared alternative"
 		image                          *page.Image
 		pageType                       page.Type
 	}{
-		{"inherit", "", "Shared description", &page.Image{URL: "/company/shared.jpg", Alt: "Shared alternative"}, page.Ordinary},
+		{"ordinary without default image", "", "Shared description", nil, page.Ordinary},
+		{"list without default image", "type = 'list'", "Shared description", nil, page.List},
 		{"override", "description = 'Page description'\n[image]\nsrc = '/page.jpg'\nalt = 'Page alternative'",
 			"Page description", &page.Image{URL: "/company/page.jpg", Alt: "Page alternative"}, page.Ordinary},
-		{"clear", "description = ''\n[image]\nsrc = ''", "", nil, page.Ordinary},
+		{"clear", "type = 'landing'\ndescription = ''\n[image]\nsrc = ''", "", nil, page.Landing},
+		{"focus", "[image]\nsrc = '/page.jpg'\nalt = ''\nfocus = 'top-left'", "Shared description",
+			&page.Image{URL: "/company/page.jpg", Alt: "", Focus: "top-left"}, page.Ordinary},
 		{"landing", "type = 'landing'", "Shared description",
 			&page.Image{URL: "/company/shared.jpg", Alt: "Shared alternative"}, page.Landing},
 		{"external image", "[image]\nsrc = 'https://example.net/photo.jpg'\nalt = ''",
@@ -72,6 +75,7 @@ func TestPageValidationAndTypes(t *testing.T) {
 		{"invalid draft description", "draft = true\ndescription = false", "description must be a string", true},
 		{"incomplete override", "title = 'Page'\n[image]\nalt = 'Missing source'", "image.src is required", false},
 		{"no inherited alternative", "title = 'Page'\n[image]\nsrc = '/page.jpg'", "image.alt is required", false},
+		{"invalid focus", "title = 'Page'\n[image]\nsrc = '/page.jpg'\nalt = ''\nfocus = 'top left'", "image.focus must be one of", false},
 		{"relative draft image", "draft = true\n[image]\nsrc = 'relative.jpg'\nalt = ''", "", true},
 		{"invalid draft image", "draft = true\n[image]\nsrc = '//example.org/image.jpg'\nalt = ''", "image.src", true},
 		{"missing page title", "description = 'Not a title'", "published pages require a title", false},

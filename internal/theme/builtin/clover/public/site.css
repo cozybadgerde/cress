@@ -75,6 +75,15 @@ figcaption, .image-caption { font-size: 1rem; }
   .entries > li > * { grid-column: 2; }
   .entries > li > .title-image { grid-column: 1; grid-row: 1 / span 3; margin: .25rem 0 0; }
 }
+/* Image focus keywords keep that third of a cropped image in view. */
+.focus-top { object-position: 50% 33%; }
+.focus-bottom { object-position: 50% 67%; }
+.focus-left { object-position: 33% 50%; }
+.focus-right { object-position: 67% 50%; }
+.focus-top-left { object-position: 33% 33%; }
+.focus-top-right { object-position: 67% 33%; }
+.focus-bottom-left { object-position: 33% 67%; }
+.focus-bottom-right { object-position: 67% 67%; }
 .entries .title-image img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
 .entries .title-image figcaption { font-size: .875rem; color: var(--muted); }
 pre { padding: 1rem; overflow: auto; background: var(--surface); color: var(--text); white-space: pre-wrap; }

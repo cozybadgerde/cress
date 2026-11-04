@@ -96,6 +96,8 @@ func TestFrontmatterSchemaMatchesRuntime(t *testing.T) {
 		{"relative draft image", "draft = true\n[image]\nsrc = 'page.assets/photo.jpg'\nalt = ''", true},
 		{"image caption", "title = 'About'\n[image]\nsrc = '/photo.jpg'\nalt = ''\ncaption = 'By [Alex](/credits/)'", true},
 		{"image caption type", "title = 'About'\n[image]\nsrc = ''\ncaption = false", false},
+		{"image focus", "title = 'About'\n[image]\nsrc = '/photo.jpg'\nalt = ''\nfocus = 'bottom-right'", true},
+		{"image focus value", "title = 'About'\n[image]\nsrc = '/photo.jpg'\nalt = ''\nfocus = 'top left'", false},
 		{"image scheme", "title = 'About'\n[image]\nsrc = 'javascript:alert'\nalt = ''", false},
 		{"image protocol relative", "title = 'About'\n[image]\nsrc = '//example.org/photo.jpg'\nalt = ''", false},
 		{"invalid draft image", "draft = true\nimage = false", false},

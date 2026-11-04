@@ -30,7 +30,7 @@
 
 {{define "title-image"}}
   {{with .Image}}
-  <figure class="title-image"><img src="{{.URL}}" alt="{{.Alt}}">
+  <figure class="title-image"><img src="{{.URL}}" alt="{{.Alt}}"{{with .Focus}} class="focus-{{.}}"{{end}}>
     {{with .Caption}}<figcaption>{{range .}}{{if .URL}}<a href="{{.URL}}">{{.Text}}</a>{{else}}{{.Text}}{{end}}{{end}}</figcaption>{{end}}
   </figure>
   {{end}}
@@ -38,7 +38,7 @@
 
 {{define "entry-image"}}
   {{with .Image}}
-  <figure class="title-image"><img src="{{.URL}}" alt="{{.Alt}}" loading="lazy" decoding="async">
+  <figure class="title-image"><img src="{{.URL}}" alt="{{.Alt}}"{{with .Focus}} class="focus-{{.}}"{{end}} loading="lazy" decoding="async">
     {{with .Caption}}<figcaption>{{range .}}{{if .URL}}<a href="{{.URL}}">{{.Text}}</a>{{else}}{{.Text}}{{end}}{{end}}</figcaption>{{end}}
   </figure>
   {{end}}

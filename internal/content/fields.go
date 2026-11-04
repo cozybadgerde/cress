@@ -75,7 +75,7 @@ func (input fields) readImage(prefix string) (*page.Image, error) {
 	if err != nil {
 		return nil, err
 	}
-	image.warnUnknown("src", "alt", "caption")
+	image.warnUnknown("src", "alt", "caption", "focus")
 	if _, exists := image.values["src"]; !exists {
 		return nil, image.invalidField("src", "is required")
 	}
@@ -90,6 +90,13 @@ func (input fields) readImage(prefix string) (*page.Image, error) {
 	caption, err := image.readString("caption", "")
 	if err != nil {
 		return nil, err
+	}
+	focus, err := image.readString("focus", "")
+	if err != nil {
+		return nil, err
+	}
+	if _, exists := image.values["focus"]; exists && !slices.Contains(imageFocuses, focus) {
+		return nil, image.invalidField("focus", "must be one of "+strings.Join(imageFocuses, ", "))
 	}
 	resolve := func(value string) (string, error) {
 		if prefix == "" {
@@ -121,5 +128,8 @@ func (input fields) readImage(prefix string) (*page.Image, error) {
 	if err != nil {
 		return nil, image.invalidField("src", err.Error())
 	}
-	return &page.Image{URL: resolved, Alt: alt, Caption: parts}, nil
+	return &page.Image{URL: resolved, Alt: alt, Caption: parts, Focus: focus}, nil
 }
+
+var imageFocuses = []string{"center", "top", "bottom", "left", "right",
+	"top-left", "top-right", "bottom-left", "bottom-right"}

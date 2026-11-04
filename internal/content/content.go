@@ -48,7 +48,6 @@ func prepareMetadata(name string, source []byte, config Config) (Page, []string,
 		URL:         strings.TrimSuffix(config.Site.URL, "/") + route,
 		Type:        page.Ordinary,
 		Description: config.Description,
-		Image:       config.Image,
 		Site:        config.Site,
 	}
 
@@ -93,6 +92,9 @@ func prepareMetadata(name string, source []byte, config Config) (Page, []string,
 		prepared.Data.Type = page.Type(pageType)
 	default:
 		return prepared, warnings, input.invalidField("type", "must be ordinary, landing, or list")
+	}
+	if prepared.Data.Type == page.Landing {
+		prepared.Data.Image = config.Image
 	}
 	prepared.Data.PublishedAt, err = input.readDate("published_at")
 	if err != nil {

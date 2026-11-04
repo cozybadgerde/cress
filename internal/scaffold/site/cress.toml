@@ -18,12 +18,13 @@ language = "en"
 # Start and end with "/"; keep internal URLs below relative to the site root.
 path = "/"
 
-# Optional default title image; pages replace the whole table or clear its src.
+# Optional default title image for landing pages; a page replaces the whole table.
 # Put shared files in static/images/ to publish them at /images/.
 # [site.image]
 # src = "/images/team.jpg"
 # alt = "Our team" # Describe the image, or use "" for a decorative image.
 # caption = "Meet our team. [Photo credit](https://example.org/credits/)"
+# focus = "top" # Part kept in view when a theme crops: center, top, bottom-left, ...
 
 [theme]
 # Built-ins: "poppy" (default), "clover", "anemone"; also accepts local names.

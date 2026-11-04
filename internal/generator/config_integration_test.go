@@ -42,7 +42,7 @@ private = "not raw configuration for templates"
 		"content/index.md":         "+++\ntitle = 'Home'\n+++\nHello",
 		"content/landing.md":       "+++\ntitle = 'Landing'\ntype = 'landing'\n+++\nLanding intro",
 		"content/hidden-list.md":   "+++\ndraft = true\ntype = 'list'\n+++\nHidden",
-		"content/clear.md":         "+++\ntitle = 'Clear'\ndescription = ''\n[image]\nsrc = ''\n+++\nPlain",
+		"content/clear.md":         "+++\ntitle = 'Clear'\ntype = 'landing'\ndescription = ''\n[image]\nsrc = ''\n+++\nPlain",
 		"content/section/index.md": "+++\ntitle = 'Section'\ndescription = 'Section only'\n+++\nSection",
 		"content/section/child.md": "+++\ntitle = 'Child'\n+++\nChild",
 	})
@@ -66,8 +66,7 @@ private = "not raw configuration for templates"
 		`<html lang="de">`, `href="/company/">&lt;Business&gt;</a>`,
 		`content="Shared &#34;description&#34;"`, `href="/company/first/"`,
 		`href="/company/second/?a=1&amp;b=2#team"`, `>&lt;Second&gt;</a>`,
-		`href="https://example.net/"`, `src="https://images.example.org/team.jpg"`,
-		`alt="&lt;Team&gt;"`, `<p>&lt;Copyright&gt;</p>`,
+		`href="https://example.net/"`, `<p>&lt;Copyright&gt;</p>`,
 	} {
 		if !strings.Contains(home, expected) {
 			t.Errorf("home does not contain %q:\n%s", expected, home)
@@ -80,9 +79,13 @@ private = "not raw configuration for templates"
 		!strings.Contains(home, `<link rel="canonical" href="https://publication.example.org/company/">`) {
 		t.Fatal("canonical identity or hostname-independent browsing is incorrect")
 	}
-	if !strings.Contains(readPage("landing"), `class="hero"`) ||
-		strings.Contains(home, `class="hero"`) {
+	landing := readPage("landing")
+	if !strings.Contains(landing, `class="hero`) || strings.Contains(home, `class="hero`) {
 		t.Fatal("page types did not select distinct templates")
+	}
+	if !strings.Contains(landing, `src="https://images.example.org/team.jpg" alt="&lt;Team&gt;"`) ||
+		strings.Contains(home, "team.jpg") {
+		t.Fatal("site image must default only on landing pages")
 	}
 	clear := readPage("clear")
 	if strings.Contains(clear, "<img") || strings.Contains(clear, `name="description"`) {

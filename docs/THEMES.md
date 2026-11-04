@@ -110,7 +110,7 @@ The renderer accepts a prepared `page.Page` value:
 | `Description` | `string` | Resolved plain-text description after site inheritance and page overrides. |
 | `Type` | `page.Type` | Explicit `ordinary`, `landing`, or `list` behavior. |
 | `URL` | `string` | Escaped browsing path, including the site URL prefix and a trailing slash. |
-| `Image` | `*page.Image` | Optional resolved title image with `URL`, escaped plain-text `Alt`, and prepared `Caption` parts. |
+| `Image` | `*page.Image` | Optional resolved title image with `URL`, escaped plain-text `Alt`, prepared `Caption` parts, and `Focus`. Only landing pages receive the `site.image` default. |
 | `Body` | `template.HTML` | Trusted HTML produced by content preparation from the Markdown body. |
 | `Site` | `page.Site` | Prepared shared presentation data. |
 | `Canonical` | `string` | Absolute publication URL, or empty without `site.host`. |
@@ -136,6 +136,12 @@ has escaped plain-text `Text` and an optional resolved `URL` for a link.
 Render the caption beside its image with `figure` and `figcaption`; omit
 caption markup when the slice is empty. Caption parts are ordinary data,
 not trusted HTML.
+
+`Image.Focus` is empty or one of `center`, `top`, `bottom`, `left`,
+`right`, `top-left`, `top-right`, `bottom-left`, and `bottom-right`. It
+names the part to keep in view when a theme crops the image. Built-in themes
+add a `focus-<value>` class and keep that third in view; themes that do not
+crop may ignore it.
 
 `page.Entry` exposes `Title`, `URL`, `Description`, `Image`, `PublishedAt`,
 `UpdatedAt`, and `Excerpt` with the same prepared meanings as page fields.

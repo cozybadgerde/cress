@@ -19,6 +19,8 @@ type Image struct {
 	URL     string
 	Alt     string
 	Caption []CaptionPart
+	// Focus is "" or a crop keyword such as "top" or "bottom-left".
+	Focus string
 }
 
 // CaptionPart is escaped caption text, optionally linked to a prepared URL.

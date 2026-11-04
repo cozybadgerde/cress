@@ -69,9 +69,17 @@ figure { margin: 2rem 0; }
   padding: .65rem;
   background: var(--surface);
   box-shadow: .2rem .5rem 1rem #302f2826;
-  transform: rotate(-1deg);
 }
-.hero .title-image img { transform: none; }
+.prose > figure img { transform: rotate(-1deg); }
+/* Image focus keywords keep that third of a cropped image in view. */
+.focus-top { object-position: 50% 33%; }
+.focus-bottom { object-position: 50% 67%; }
+.focus-left { object-position: 33% 50%; }
+.focus-right { object-position: 67% 50%; }
+.focus-top-left { object-position: 33% 33%; }
+.focus-top-right { object-position: 67% 33%; }
+.focus-bottom-left { object-position: 33% 67%; }
+.focus-bottom-right { object-position: 67% 67%; }
 figcaption, .image-caption { margin-top: 1rem; font-size: .9375rem; line-height: 1.6; }
 .captioned-image { display: inline-block; max-width: 100%; vertical-align: middle; }
 .image-caption { display: block; }
@@ -111,7 +119,7 @@ input[type="checkbox"] { accent-color: var(--text); }
   main { width: 100%; padding-top: 4rem; }
   body:has(.site-header) main, body:has(.site-header) .site-footer { grid-column: 2; }
   .site-footer { width: 100%; }
-  .hero.with-image { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); align-items: center; gap: 2.5rem; }
+  .hero.with-image { display: grid; grid-template-columns: minmax(0, 1fr) fit-content(60%); align-items: center; gap: 2.5rem; }
   .hero.with-image h1 { font-size: clamp(2.25rem, 3vw, 3rem); }
   .hero.with-image .title-image { margin: 0; }
   .entries > li:has(.title-image) { display: grid; grid-template-columns: minmax(0, 1fr) 15rem; gap: 0 2.5rem; align-items: start; align-content: center; }
@@ -119,9 +127,9 @@ input[type="checkbox"] { accent-color: var(--text); }
   .entries > li:has(.title-image) :is(.entry-heading, .entry-content) > :not(.title-image) { grid-column: 1; margin-block: 0 .75rem; }
   .entries > li .entry-content > .title-image { grid-column: 2; grid-row: 1 / span 3; align-self: center; margin: 0; }
 }
-.entries .title-image img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; transform: none; }
+.entries .title-image img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
 @media (max-width: 59.999rem), (prefers-reduced-motion: reduce) {
-  .title-image img, .prose > figure img { transform: none; }
+  .prose > figure img { transform: none; }
 }
 @media (forced-colors: active) {
   .title-image img, .prose > figure img { border: 1px solid CanvasText; box-shadow: none; }
