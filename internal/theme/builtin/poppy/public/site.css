@@ -47,6 +47,8 @@ main.landing { padding-top: 1.5rem; }
 .hero .title-image img { display: block; width: 100%; aspect-ratio: 5 / 2; object-fit: cover; }
 img { max-width: 100%; height: auto; }
 figure { margin: 1.5rem 0; }
+/* A fixed ratio reserves title-image space before the file loads. */
+:is(main, article) > .title-image img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
 figcaption, .image-caption { font-size: 1rem; }
 .captioned-image { display: inline-block; vertical-align: middle; }
 .image-caption { display: block; }

@@ -64,6 +64,8 @@ h2 { font-size: 1.6rem; margin-top: 2rem; }
 }
 img { max-width: 100%; height: auto; }
 figure { margin: 1.5rem 0; }
+/* A fixed ratio reserves title-image space before the file loads. */
+:is(main, article) > .title-image img { display: block; width: 100%; aspect-ratio: 3 / 2; max-height: min(36rem, 70vh); object-fit: cover; }
 figcaption, .image-caption { font-size: 1rem; }
 .captioned-image { display: inline-block; vertical-align: middle; }
 .image-caption { display: block; }

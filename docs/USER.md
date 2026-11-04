@@ -127,6 +127,11 @@ screens the title block and image sit side by side, and any caption stays
 below the image. Crops keep the centre unless the image sets `focus`. A
 `[site.image]` default also appears there unless the page overrides it.
 
+On ordinary and list pages, Poppy crops title images to 16:9 and Clover to
+3:2. Clover also caps their height at the smaller of 36rem and 70% of the
+viewport height. These crops reserve space before images load. Anemone
+keeps title images uncropped, so their space can change as they load.
+
 List entries crop their images to a fixed shape for easy scanning: a 5:2
 band in Poppy, a 4:3 thumbnail left of the text in Clover, and a framed 4:3
 print beside the text in Anemone. On narrow screens Clover and Anemone stack
