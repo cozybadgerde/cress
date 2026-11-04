@@ -9,7 +9,8 @@ without a header. These `.licenses.csv` files are release artifacts,
 covered by the signed checksum manifest.
 
 The before hook also uses `go-licenses report` with
-`.github/notices.tpl` to generate license texts for the archives.
+[the notices template](../.github/notices.tpl) to generate license texts
+for the archives.
 `mise run check:licenses`, included in `mise run check`, uses
 `go-licenses check` to enforce the approved dependency-license allowlist for
 all three release targets. Unknown or unapproved licenses fail the check.
@@ -39,23 +40,22 @@ mise exec -- goreleaser release --snapshot --clean --skip=publish,sign
 
 The snapshot command replaces generated `dist/` artifacts and writes
 `bin/THIRD-PARTY-NOTICES.txt`. It does not tag, publish, or sign.
-Archives cover macOS arm64, Linux amd64, and Linux arm64.
+The [release configuration](../.goreleaser.yml) owns target platforms,
+archive contents, and report names.
 
 ## Tag workflow
 
-`.github/workflows/release.yml` triggers on full `v`-prefixed semantic
-version tags. A read-only job runs the existing checks and build.
+The [release workflow](../.github/workflows/release.yml) validates full
+`v`-prefixed semantic version tags. A read-only job runs the existing checks
+and build.
 The publication job runs GoReleaser with release-write and OIDC permissions.
 Tools use the versions pinned in [`mise.toml`](../mise.toml).
 
-Use `v1.0.0` for a stable release or `v1.0.0-pre.0` (also `-alpha.1`,
-`-beta.1`, or `-rc.1`) for a prerelease. GoReleaser automatically marks
-versions with a prerelease suffix as GitHub prereleases, not stable releases.
-There is no hyphen between `v` and the major version:
-`v-1.0.0-pre.0` is invalid. Short versions such as `v1.0` and numeric
-components with leading zeros, such as `v01.0.0` or `v1.0.0-pre.01`,
-are rejected. Optional SemVer build metadata, such as `+build.1`, is allowed;
-build metadata alone does not make a release a prerelease.
+Choose the intended version rather than copying a documentation example.
+Use a full major, minor, and patch version after `v`, without an intervening
+hyphen. The workflow owns the exact tag-validation rules.
+GoReleaser marks versions with a prerelease suffix as GitHub prereleases.
+Build metadata alone does not make a release a prerelease.
 
 GoReleaser injects the executable version, creates the archives and CSV
 reports, and generates `checksums.txt`. Cosign keylessly signs that file.
@@ -68,7 +68,7 @@ https://github.com/cozybadgerde/cress/.github/workflows/release.yml@refs/tags/<e
 The issuer is `https://token.actions.githubusercontent.com`.
 See [installation and verification](INSTALL.md) for download verification.
 
-No release has been published yet. Outstanding accessibility, native
-platform, and published-signature evidence remains in the
+Outstanding accessibility, native-platform, and signature-verification
+work remains in the
 [work plan](../TODO.md#phase-3-release-tooling-and-acceptance).
 Tagging and publishing require the maintainer's approval.

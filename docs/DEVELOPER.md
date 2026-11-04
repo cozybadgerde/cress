@@ -15,8 +15,7 @@ These documents explain what Cress should do and why:
 - [Work plan](../TODO.md): implementation phases and their definition of
   done.
 
-Generator capabilities are implemented; external release evidence and
-human accessibility review remain outstanding in the work plan. The
+The work plan tracks remaining implementation and release evidence. The
 [contribution notes](../README.md#contributing) explain how to propose a
 change.
 
@@ -110,8 +109,18 @@ See the [architecture guide](ARCHITECTURE.md#responsibilities) for component
 responsibilities and [third-party notices](THIRD-PARTY-NOTICES.md) for
 generated dependency reports and redistribution notices.
 
-Use `mise tasks ls` to list all tasks. The tasks call ordinary tools, so
-native Go commands remain usable directly.
+Use `mise tasks ls` to list the tasks defined in
+[`mise.toml`](../mise.toml). The tasks call ordinary tools, so native Go
+commands remain usable directly.
+
+## Building
+
+```sh
+mise run build
+```
+
+The build writes the executable to `bin/cress`. The `bin/` directory is
+ignored by Git. Use this executable for the test sites below.
 
 ### Test sites
 
@@ -119,7 +128,6 @@ Create fresh test sites with `site init`. The repository's `/tmp/` tree is
 gitignored, including sources and generated output:
 
 ```sh
-mise run build
 mkdir -p tmp
 ./bin/cress site init tmp/poppy
 ./bin/cress site build tmp/poppy
@@ -133,43 +141,20 @@ Open the printed URL and stop preview with Ctrl-C. To compare clover:
 ./bin/cress site preview --port 0 tmp/clover
 ```
 
-For the paper/Scandi theme, use `--theme anemone` and a new site directory,
-such as `tmp/anemone`. Review it with and without images as well as with
-the content tour.
+For Anemone, use `--theme anemone` and a new directory such as `tmp/anemone`.
+Review the content tour and pages with and without images.
 
-Initialization requires a new or completely empty target with an existing
-parent directory. Reuse an initialized site by editing its sources and
-rebuilding; choose another new directory for a fresh scaffold.
-The sample covers every page type and includes a content tour and commented
-configuration. Add test-specific content, drafts, or shared `static/` assets
-as needed. Use preview's `--drafts` flag to inspect unfinished pages.
-Preview does not change deployable `public/` output.
+Edit the fixture's sources to test a change. Do not initialize over an
+existing project. Add test-specific content, drafts, or shared assets as
+needed. See the [user guide](USER.md#testing-a-site) for the authoring workflow
+and output-safety rules.
 
 Theme authors can use the same scaffold with a
 [local development theme](THEMES.md#testing-a-theme).
-Publishers can follow [testing-a-site guidance](USER.md#testing-a-site)
-with an installed executable. Manual test sites do not replace automated tests.
+Manual test sites do not replace automated tests.
 
-## Building
-
-```sh
-mise run build
-```
-
-The build writes the executable to `bin/cress`. The `bin/` directory is
-ignored by Git.
-
-Validate the release packaging configuration without building or
-publishing:
-
-```sh
-mise run check:goreleaser
-```
-
-The release configuration packages the three agreed targets with notices,
-installation guidance, per-target CSV license reports, and signed checksums.
-See [release maintenance](RELEASE.md) for review, snapshot validation, and
-the external evidence still required before publishing.
+For packaging changes, also run `mise run check:goreleaser`.
+The [release guide](RELEASE.md) owns rehearsal and publication procedures.
 
 ## Testing and checks
 
@@ -179,27 +164,13 @@ Run all checks and tests without editing files:
 mise run check
 ```
 
-| Command | Purpose |
-|---------|---------|
-| `mise run check` | Run every check below and the tests. |
-| `mise run check:go-format` | Check Go formatting. |
-| `mise run check:go-lint` | Lint Go using the repository configuration. |
-| `mise run check:licenses` | Check dependency licenses against the approved allowlist for all release targets. |
-| `mise run check:markdown` | Lint Markdown without external link checks. |
-| `mise run check:spelling` | Check spelling with typos. |
-| `mise run check:toml-format` | Check TOML formatting. |
-| `mise run check:toml` | Validate TOML syntax. |
-| `mise run test` | Run `go test ./...`. |
-| `mise run fmt` | Format Go and TOML files. |
-| `mise run fmt:go` | Format Go files. |
-| `mise run fmt:toml` | Format TOML files. |
-
-`check` and `fmt` run their tasks in parallel. Checks never edit files;
-run `mise run fmt` to fix formatting.
+The task definitions in [`mise.toml`](../mise.toml) list the checks and tools.
+Use `mise tasks ls` for their current names and descriptions.
+Checks never edit files. Run `mise run fmt` to apply formatting.
 
 Unit tests are the default. Integration tests cover real filesystem or
-process boundaries. Browser and end-to-end tests are not part of the setup
-yet.
+process boundaries. A persistent browser or end-to-end suite is outside
+the initial scope.
 
 Run `go test -short ./...` to skip filesystem integration tests. Schema
 tests compare representative parsed TOML values with runtime validation

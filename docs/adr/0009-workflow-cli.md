@@ -45,7 +45,7 @@ version information remain accessible at the root.
 | `cress theme init` | Initialize a theme for development. |
 | `cress config validate` | Illustrate a possible future configuration scope. |
 
-These examples explain the grouping, not a complete command catalogue.
+These examples explain the grouping, not a complete command catalog.
 A configuration scope and standalone validation commands are outside the
 current 1.0 scope. This decision does not introduce either.
 

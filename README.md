@@ -9,66 +9,44 @@ theme into static website files. It is built by
 [Cozy Badger](https://www.cozybadger.de) for small businesses and
 solopreneurs first.
 
-## Motivation
-
-Small businesses need a simple, reliable website. Cress focuses on exactly
-that: a few page types, clear configuration, and themes that look good
-without template knowledge.
-
-Cress keeps the site structure small and predictable. A technical
-maintainer runs the site, while the business owner only writes Markdown.
-High-quality themes and consistent, easy-to-grasp commands should make
-working with Cress feel cozy for publishers and maintainers alike.
-
-## Description
-
-Cress provides:
-
-- Ordinary content pages, landing pages, and list pages.
-- Free-form content folders with clean, portable URLs.
-- Explicit main and footer navigation.
-- Three built-in themes and support for local third-party themes.
-- Site and theme initialization, static builds, and a local preview with
-  automatic rebuilds.
-- JSON schemas and references for configuration and frontmatter.
-
-Cress generates plain static files offline, ready for the hosting and
-deployment tools you already use. The
-[product requirements](docs/PRD.md#scope) describe the full scope.
-
 ## Getting started
 
-Cress is in development; no release has been published yet. Build from
-source using the [developer guide](docs/DEVELOPER.md), then create a site:
+[Install Cress](docs/INSTALL.md), then create and preview a site:
 
 ```sh
-./bin/cress site init my-site
-./bin/cress site preview --port 0 my-site
+cress site init my-site
+cress site preview --port 0 my-site
 ```
 
-Open the printed loopback URL. Stop preview with Ctrl-C, edit the sample
-content and identity, and build deployable output with
-`./bin/cress site build my-site`. Deployment stays external.
-Poppy is the default freelancer theme; use `site init --theme clover`
-for the small-business theme or `site init --theme anemone` for the
-paper/Scandi editorial theme. All three are embedded and work offline.
+Open the printed URL. Edit `my-site/content/` and `my-site/cress.toml`,
+then refresh the browser. Stop preview with Ctrl-C.
+Run `cress site build my-site` to produce `my-site/public/`.
+Deploy those files with your hosting tools.
 
-The [user reference](docs/USER.md) documents authoring and output safety.
-The [installation reference](docs/INSTALL.md) covers future release archives.
-Release readiness, including pending human accessibility assessment, is
-tracked in the [work plan](TODO.md).
+The [user guide](docs/USER.md) walks through your first page, configuration,
+preview, and build.
+
+## What Cress provides
+
+- Ordinary pages, landing pages, and journal-style lists.
+- Markdown content with page-owned images and shared static files.
+- Three offline themes for freelancers, small businesses, and makers.
+- Local theme packages, explicit navigation, and automatic preview rebuilds.
+
+The [product requirements](docs/PRD.md#scope) define the scope.
+Release readiness is tracked in the [work plan](TODO.md).
 
 ## Documentation
 
-- [Product requirements](docs/PRD.md): scope, principles, and acceptance
-  criteria for 1.0.
+- [User guide](docs/USER.md): install, write, configure, preview, and build.
+- [Installation](docs/INSTALL.md): obtain and verify an executable.
+- [Theme development](docs/THEMES.md): create a package and use prepared data.
+- [Developer guide](docs/DEVELOPER.md): set up, build, and test the source.
+- [Product requirements](docs/PRD.md): scope and acceptance criteria.
 - [Architecture guide](docs/ARCHITECTURE.md): system boundary,
   responsibilities, build and preview flow, and failure boundaries.
 - [Architectural decision records](docs/adr/): accepted decisions and their
   rationale, listed in the [decision index](docs/PRD.md#decision-records).
-- [Developer guide](docs/DEVELOPER.md): set up, build, and test the source.
-- [User reference](docs/USER.md): commands, authoring, and current limitations.
-- [Theme reference](docs/THEMES.md): packages and prepared render model.
 - [Accessibility assessment](docs/ACCESSIBILITY.md): evidence and blockers.
 - [Release maintenance](docs/RELEASE.md): inventory, packaging, and signing.
 - [Work plan](TODO.md): implementation phases.

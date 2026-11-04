@@ -13,8 +13,8 @@ updated_at = 2026-10-23
 # Optional plain text for lists; not extracted from the body or description.
 excerpt = "Explore headings, links, images, tables, code, and captions."
 
-# An image replaces the whole site default; image = { src = "" } clears it.
-# Put that clearing example above [image] if you use it instead of this table.
+# Only landing pages inherit site.image; an explicit image replaces it.
+# To clear it, put image = { src = "" } above [image] instead of this table.
 [image]
 src = "index.assets/placeholder.svg"
 alt = "Placeholder for a photo"
@@ -30,8 +30,8 @@ link before publishing.
 
 The frontmatter above sets this page's title, description, dates, and title
 image. The theme supplies the page's main heading, so start body headings
-at level two. Ordinary page titles are required; descriptions and images
-inherit from `cress.toml` when omitted.
+at level two. Published page titles are required. Descriptions inherit from
+`cress.toml` when omitted. Only landing pages inherit its default title image.
 
 ## Text and emphasis
 

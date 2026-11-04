@@ -18,15 +18,6 @@ Update affected schemas and owning references alongside behavior changes.
 Remove completed tasks and keep remaining work here. Commits, pushes, tags,
 and publication require maintainer approval.
 
-## Phase 2: Project branding and documentation
-
-Schedule this as a dedicated session.
-
-- [ ] Review project documentation together with the branding work.
-  Check clarity, navigation, examples, and agreement with current behavior.
-  Keep requirements, rationale, and implementation tasks in their owning
-  documents rather than duplicating policies.
-
 ## Phase 3: Release tooling and acceptance
 
 The [release reference](docs/RELEASE.md) owns the maintainer procedure.

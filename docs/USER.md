@@ -5,81 +5,142 @@ Cress builds ordinary, landing, and list pages offline using the built-in
 Poppy is the default when no theme is selected. Release readiness and human
 accessibility review are tracked in the [work plan](../TODO.md).
 
-## Commands
+## Install Cress
+
+Follow [installation and verification](INSTALL.md) to obtain the executable.
+Confirm it is available with `cress --version`. The examples below assume
+`cress` is on your shell's `PATH`.
+
+## Create your site
+
+From the directory where you keep projects, choose a new site name:
 
 ```sh
-cress --help
-cress --version
-cress site --help
-cress theme --help
 cress site init my-site
-cress site build
+cd my-site
+```
+
+Initialization creates sample content, `cress.toml`, shared images, and a
+`.gitignore` for generated output and private state. It does not initialize
+Git or build the site. It never merges into a nonempty directory, including
+one with hidden files. The parent directory must exist. Partial failures
+leave files for inspection rather than deleting them.
+
+Poppy is the default theme. For a different starting layout, use
+`cress site init --theme clover my-site` or
+`cress site init --theme anemone my-site` instead.
+
+## Write your first page
+
+Open `content/about.md` and replace its example with your own introduction:
+
+```markdown
++++
+title = "About us"
++++
+
+## Work with people who care
+
+We help small businesses build a useful presence online.
+```
+
+The TOML between `+++` lines supplies metadata. The theme renders `title`
+as the main heading, so start body headings at level two.
+This page appears at `/about/`. Add another `.md` file under `content/`
+when you need another page. See [writing pages](#writing-pages) for validation
+and [routes](#routes) for nested paths.
+
+The generated [content tour](../internal/scaffold/site/content/tour.md)
+shows the supported frontmatter and Markdown features.
+Compare `content/tour.md` with its preview while learning.
+
+## Make the site yours
+
+Edit the existing tables in `cress.toml`. Change `[site] title` to your
+business name and replace the example description. Adjust `[navigation]`
+when you add pages. Navigation uses published URLs such as `/about/`,
+not Markdown filenames.
+
+The generated configuration is the annotated setting reference.
+Its [source template](../internal/scaffold/site/cress.toml) and the
+[configuration schema](../schemas/site.schema.json) stay alongside the code.
+Optional examples are commented out. Uncomment a table and its fields
+together rather than adding duplicate tables.
+
+Replace the placeholder logo and favicon in `static/images/`, or remove
+their settings from `[brand]` and `[brand.logo]`. To try another built-in,
+change the existing `[theme] name`. The
+[theme overview](#built-in-themes) explains their different presentations.
+
+Set `[site] host` to your public origin before publishing. Leave it omitted
+while the address is unknown. A local preview works without it, but warns
+that canonical URLs and a sitemap cannot be generated.
+See [site configuration](#site-configuration) for inheritance and URL rules.
+
+## Preview your changes
+
+From inside `my-site`, run:
+
+```sh
 cress site preview --port 0
 ```
 
-`cress site build [directory]` builds the selected site directory, defaulting
-to the current directory. It reads `content/`, writes generated files to
-`public/`, and keeps private writer state in `.cress/` inside that directory.
-An unsuccessful build exits with status 1.
-Warnings alone do not fail a build.
+Open the printed local URL. Preview rebuilds after source edits.
+Refresh the browser to see them. Invalid edits leave the last verified
+preview available and print a diagnostic in the terminal.
+Preview uses private temporary output. It does not modify `public/`.
 
-`cress theme init <name> [site-directory]` creates `themes/<name>/` from the
-embedded skeleton; the site directory defaults to `.`. The target must not
-exist. Partial initialization failures leave files for inspection, not
-automatic removal or overwriting. The command does not change `cress.toml`.
-Select the result with `[theme] name = "<name>"`.
-
-`cress site init [directory] [--theme poppy|clover|anemone]` creates a small
-English sample site in a new or completely empty directory; the default is `.`.
-The parent directory must exist. Targets that are files, symlinks, or
-nonempty directories are refused, including hidden files. No merge, Git
-initialization, automatic build, or network access occurs. Partial failures
-are reported and left for inspection.
+To inspect drafts, stop preview with Ctrl-C and restart with:
 
 ```sh
-cress site init my-site
-cress site build my-site
-cress site preview --port 0 my-site
+cress site preview --drafts --port 0
 ```
 
-The scaffold includes `cress.toml`, `.gitignore` for `public/` and `.cress/`,
-seven example pages covering all page types, and an original local SVG.
-The generated configuration documents every supported site setting, with
-commented examples for optional images, branding, and theme customizations.
-Uncomment optional tables and their fields together when needed.
-The content tour's frontmatter holds the main authoring hints; other sample
-pages explain only distinct features, such as list settings.
-The footer links to this tour of Markdown, captions, title images, and metadata;
-compare its preview with `content/tour.md`. Remove that page and its footer
-link when you no longer need the reference.
-Edit the sample identity, content, contact details, and navigation before
-publication. Set `site.host` to your public HTTP/HTTPS origin for canonicals
-and sitemap output; it is intentionally unset initially and causes a warning.
-Use `--theme clover` during initialization for the small-business layout.
-Use `--theme anemone` for the paper/Scandi editorial layout.
+Draft visibility belongs to this session. A normal build never includes
+drafts. See [local preview](#local-preview) for watching and recovery details.
+
+## Build and publish
+
+Stop preview with Ctrl-C, then build:
+
+```sh
+cress site build
+```
+
+Cress writes deployable files to `public/` and private writer state to
+`.cress/`. An unsuccessful build exits with status 1. Warnings alone do not
+fail a build. A successful build replaces recognized Cress output,
+including stale files. Do not edit `public/` or delete `.cress/` to work
+around an error. Read [output protection](#output-protection) before recovery.
+
+Review the content, identity, contact details, and navigation before
+publishing. Remove the content tour and its footer link when no longer
+needed. Deploy only the contents of `public/` with your hosting tools.
+Cress does not deploy sites. For subpath hosting, review
+[publication metadata](#publication-metadata).
 
 ## Testing a site
 
-Use the same initialization command for a disposable test site as for a
-real project. From a directory where you keep projects, choose a new name:
+Use the same walkthrough in a new disposable directory to experiment.
+Never initialize over a real project or keep source files in generated
+output. To compare themes, initialize separate sites rather than resetting
+an existing one. For local theme creation, follow
+[theme development](THEMES.md#testing-a-theme).
+
+## Command help
+
+Use the executable for the current command and flag reference:
 
 ```sh
-cress site init test-site
-cress site build test-site
-cress site preview --port 0 test-site
+cress --help
+cress site init --help
+cress site preview --help
+cress site build --help
+cress theme init --help
 ```
 
-Open the printed URL and compare the content tour with `content/tour.md`.
-Edit `test-site/cress.toml` and the sample content to try your own settings.
-Preview rebuilds on changes; refresh the browser manually. Stop with Ctrl-C.
-Omitting `site.host` is fine for local testing; the warning reminds you to
-set it before publishing.
-
-To compare built-ins, initialize another new directory with
-`cress site init --theme clover test-clover` or
-`cress site init --theme anemone test-anemone`. Initialization never resets
-or overwrites an existing nonempty project. Keep real project sources
-outside disposable directories, and deploy only their built `public/` output.
+Site commands accept a directory argument. Omit it to use the current
+directory, as in this walkthrough.
 
 ## Built-in themes
 
@@ -93,9 +154,10 @@ Filled primary links keep the next action clear.
 Clover centers ordinary and list-page headings on the reading column.
 
 Anemone uses warm paper surfaces, dark ink, and editorial serif headings.
-On wide screens a side masthead sits beside the reading column; on narrow
-screens it sits above it. Framed images have soft shadows. Body images rotate
-slightly on wide screens; title images, text, and captions never rotate.
+On wide screens a side masthead sits beside the reading column.
+On narrow screens it sits above it. Framed images have soft shadows.
+Body images rotate slightly on wide screens.
+Title images, text, and captions never rotate.
 On wide screens a landing title image sits beside the title, height-capped.
 Page title images retain their proportions without cropping. Pages work without
 photographs. It suits makers, independent shops, cafes, and creative businesses.
@@ -118,7 +180,7 @@ inside the same box and may appear smaller.
 On narrow screens, Poppy and Clover place navigation below the identity.
 Anemone keeps its stacked masthead until the desktop side layout takes over.
 Links wrap openly rather than hiding behind a menu. Identity and navigation
-links have a minimum 44px target at the default font size.
+links retain touch-sized targets.
 
 Optional publication and update dates share a compact, muted row above
 ordinary and list-page titles. Landing-page and list-entry dates remain
@@ -133,30 +195,34 @@ additional links stay ordinary prose. This is a theme choice using Cress's neutr
 `standalone-link` paragraph class, not a generator-selected primary action.
 
 In Poppy and Clover, a landing page's title image is cropped so the
-introduction stays near the top. Poppy shows a wide 5:2 band below the title.
-Clover shows the same band under the title block on narrow screens; on wide
-screens the title block and image sit side by side, and any caption stays
-below the image. Crops keep the centre unless the image sets `focus`. A
+introduction stays near the top. Poppy shows a wide band below the title.
+Clover shows the same band under the title block on narrow screens.
+On wide screens the title block and image sit side by side.
+Any caption stays below the image.
+Crops keep the center unless the image sets `focus`. A
 `[site.image]` default also appears there unless the page overrides it.
 
-On ordinary and list pages, Poppy crops title images to 16:9 and Clover to
-3:2. Clover also caps their height at the smaller of 36rem and 70% of the
-viewport height. These crops reserve space before images load. Anemone
+On ordinary and list pages, Poppy uses a wide crop. Clover uses a taller crop
+with a height cap. These crops reserve space before images load. Anemone
 keeps title images uncropped, so their space can change as they load.
 Images in page text may also move surrounding content while loading.
 Intrinsic image dimensions are not prepared; generation never fetches remote
 images to discover their size.
 
-List entries crop their images to a fixed shape for easy scanning: a 5:2
-band in Poppy, a 4:3 thumbnail left of the text in Clover, and a framed 4:3
+List entries crop their images to a fixed shape for easy scanning: a wide
+band in Poppy, a thumbnail left of the text in Clover, and a framed
 print beside the text in Anemone. On narrow screens Clover and Anemone stack
 the image below the date. Entry images load lazily; the list's own title
 image loads immediately.
 
 Captions stay upright and use each theme's muted text color, with underlined
-links. Poppy keeps them at 1rem with a small gap below the image. Clover uses
+links. Poppy keeps a small gap below the image. Clover uses
 smaller captions, with more compact list-image credits. Anemone leaves a
 larger gap beneath its framed images so the shadow does not crowd the text.
+Exact dimensions, crops, and spacing live in each theme's stylesheet:
+[Poppy](../internal/theme/builtin/poppy/public/site.css),
+[Clover](../internal/theme/builtin/clover/public/site.css), and
+[Anemone](../internal/theme/builtin/anemone/public/site.css).
 
 Select a theme with `[theme] name = "poppy"`, `"clover"`, or `"anemone"`.
 A complete same-name local package takes priority, including over the default
@@ -178,11 +244,12 @@ cress site preview
 cress site preview --drafts --port 0 my-site
 ```
 
-`cress site preview [directory]` defaults to the current directory and port
-8080. It generates its own private temporary output, never requiring or
+See `cress site preview --help` for the default port and available flags.
+Preview generates its own private temporary output, never requiring or
 modifying deployable `public/`. Multiple sessions keep separate outputs.
-The server binds only to `127.0.0.1`; `--port 0` chooses a free port and
-prints it. An occupied port fails rather than silently selecting another.
+The server binds only to `127.0.0.1`.
+Use `--port 0` to choose a free port and print it.
+An occupied port fails rather than silently selecting another.
 There is no remote-binding flag or automatic browser launch.
 
 Drafts are excluded unless `--drafts` is explicitly supplied. This choice
@@ -203,7 +270,7 @@ Native filesystem events watch `cress.toml`, `content/`, `static/`, and
 saves are supported. Generated `public/` and `.cress/` files do not trigger
 rebuilds. A short debounce coalesces edits; edits made during a build queue
 another full build. Native watching requires a filesystem that provides
-events; network and virtual filesystems may not do so. Watcher failures,
+events. Network and virtual filesystems may not do so. Watcher failures,
 including event overflow, stop unsuccessfully rather than silently losing
 edits. No polling fallback is provided.
 
@@ -252,28 +319,33 @@ draft = false
 We help small businesses.
 ```
 
-| Field | Type | Behavior |
-|-------|------|----------|
-| `title` | String | Required for published pages; must contain non-whitespace text when provided. Rendered as escaped text. |
-| `draft` | Boolean | Defaults to `false`. Draft pages are excluded from builds and need no title. |
+Use the generated
+[content tour](../internal/scaffold/site/content/tour.md) for annotated
+frontmatter examples. The
+[frontmatter schema](../schemas/frontmatter.schema.json) lists fields,
+types, and allowed values.
 
-All pages must have valid frontmatter, including drafts. Invalid TOML,
-incorrect known field types, and invalid known values fail the build.
+Published pages need a nonblank title. Titles render as escaped text.
+Draft pages are excluded from builds and need no title, but still need
+valid frontmatter. Invalid TOML, incorrect known field types, and invalid
+known values fail the build.
 Unknown fields produce warnings and have no effect. Known fields are
 validated even on excluded drafts. No directory-level inheritance occurs.
 
-| Additional field | Type | Behavior |
-|------------------|------|----------|
-| `description` | String | Inherits `site.description` when absent; `""` clears it. |
-| `type` | String | `ordinary` by default; also accepts `landing` and `list`. |
-| `image` | Table | Sets the title image. On landing pages it replaces the complete inherited `site.image`; `{ src = "" }` clears it. |
+Descriptions inherit from `site.description` when absent. An empty string
+clears the description. Ordinary pages are the default. Set `type` to
+`"landing"` for a landing page or `"list"` for a collection.
+
+The page's `[image]` sets its title image. On landing pages, it replaces the
+whole `site.image` default. Use `image = { src = "" }` before any table
+headers to clear that default.
 
 An image table requires a string `src`. A nonempty source also requires
-an explicit string `alt`; an empty alternative marks a decorative image.
+an explicit string `alt`. An empty alternative marks a decorative image.
 An optional `focus` names the part to keep in view when a theme crops the
-image: `center` (default), `top`, `bottom`, `left`, `right`, `top-left`,
-`top-right`, `bottom-left`, or `bottom-right`. For example, use
-`focus = "top"` for a portrait whose face sits in the upper third.
+image. See the schema's `image.focus` values for the supported positions.
+For example, use `focus = "top"` for a portrait whose face sits in the upper
+third.
 Sources are site-root paths, absolute HTTP/HTTPS URLs, or source-relative
 assets on a page. Site defaults cannot use source-relative paths.
 See [content and assets](#content-and-assets-contract) for asset publication
@@ -349,46 +421,19 @@ outside the selected output directory.
 
 ## Site configuration
 
+Your generated `cress.toml` is the annotated reference for site settings.
+For a complete field inventory and allowed values, use the
+[configuration schema](../schemas/site.schema.json).
+The [source template](../internal/scaffold/site/cress.toml) shows the
+configuration that initialization creates. Scaffold values are examples,
+not necessarily runtime defaults. To inspect defaults when configuration
+is absent, see [configuration loading](../internal/content/config.go).
+
 An optional `cress.toml` in the site directory configures the site.
 Only absence uses defaults; malformed, unreadable, symlinked, or non-file
 configuration fails. Each supplied known field is validated. Unknown keys
 warn at every core table level, except inside the protected open
 `theme.custom` table, where arbitrary TOML data is preserved.
-
-```toml
-[site]
-title = "Example business"
-description = "Practical help for small businesses."
-copyright = "Copyright 2026 Example business"
-language = "en"
-host = "https://example.org"
-path = "/company/"
-
-[site.image]
-src = "/images/team.jpg"
-alt = "Our team"
-
-[[navigation.main]]
-label = "About"
-url = "/about/"
-
-[[navigation.footer]]
-label = "Partner"
-url = "https://example.net/"
-
-[theme.custom]
-# Theme-specific data; no built-in consumes custom keys.
-```
-
-| Site field | Default | Meaning |
-|------------|---------|---------|
-| `title` | Omitted | Optional site identity, distinct from required page titles; supplied values must contain non-whitespace text. |
-| `description` | `""` | Default page description; explicit page values override it. |
-| `copyright` | `""` | Plain-text footer line; no inferred year or legal wording. |
-| `language` | `"en"` | Valid BCP 47 language tag; preserve spelling for exact theme-label matching. Built-ins support `en` and `de`. |
-| `host` | Omitted | Public origin, including HTTP/HTTPS scheme and optional port; not merely a hostname. |
-| `path` | `"/"` | Web URL prefix, not a filesystem destination or deployment operation. |
-| `image` | Omitted | Default title image for landing pages, using the same complete-table contract as frontmatter. |
 
 `site.title`, `site.copyright`, and `site.language` are site-only settings.
 Only the description and title image inherit into page metadata. The
@@ -412,7 +457,7 @@ nonblank `label` and `url` strings. URLs are published site-root paths
 with a single leading slash, or absolute HTTP/HTTPS URLs. Queries and
 fragments are allowed. Protocol-relative URLs, other schemes, whitespace,
 backslashes, and credentials are invalid. Target existence is not checked.
-Both groups preserve configuration order; empty groups are omitted.
+Both groups preserve configuration order. Empty groups are omitted.
 
 Internal URLs always describe paths beneath the site URL root. With
 `path = "/company/"`, `/about/` becomes `/company/about/`. An authored
@@ -422,20 +467,10 @@ remain unchanged.
 
 ### Branding and theme selection
 
-Optional brand settings stay separate from `site` and `theme.custom`:
-
-```toml
-[brand]
-color = "#346b38"
-favicon = "/images/favicon.svg"
-
-[brand.logo]
-src = "/images/logo.svg"
-alt = "Example business"
-
-[theme]
-name = "my-theme"
-```
+Brand settings stay separate from `site` and `theme.custom`.
+Use the `[brand]`, `[brand.logo]`, and `[theme]` tables in your generated
+configuration as examples. Theme-specific custom data belongs in
+`[theme.custom]`. Built-in themes do not consume custom keys.
 
 `color` is exactly six hexadecimal digits after `#`; its authored case is
 preserved. Logo and favicon URLs are site-root or HTTP/HTTPS references.
@@ -459,22 +494,14 @@ all outputs share collision checks. Only a genuinely absent local package
 permits built-in lookup for `poppy`, `clover`, or `anemone`.
 No selection means `poppy`, including a same-name complete local override.
 
-Named themes declare runtime compatibility in `theme.json`. Development
-builds reporting `dev` check against an explicit `1.0.0` compatibility
-baseline and warn; they do not skip minimum or major validation. This is
-development policy, not a release claim. See the
-[theme reference](THEMES.md) for manifests, templates, and translations.
+Named themes declare runtime compatibility in `theme.json`. See the
+[theme reference](THEMES.md#package-contract) for manifests, compatibility,
+templates, and translations.
 
-The [frontmatter schema](../schemas/frontmatter.schema.json) describes
-parsed page values; the [configuration schema](../schemas/site.schema.json)
-describes parsed site values. External tools must parse TOML and extract
-frontmatter before applying them. Normalize TOML local dates to date-only
-strings; enable date-format assertions for calendar validation.
-Unknown fields are permitted by schemas;
-Cress reports their warnings. Runtime also validates URL semantics and
-language tags. Schemas are versioned with source; select them from the same
-release tag as the executable, not from a moving branch. See
-[external schema validation](#external-schema-validation).
+Schemas describe parsed values, not raw TOML files. Use schemas from the
+same source tag as your executable. See
+[external schema validation](#external-schema-validation) for preparation
+and runtime-only checks.
 
 ## Routes
 
@@ -670,10 +697,6 @@ or resource fetching is used. Code always remains literal escaped text.
 Themes control syntax colors and code-block styling, but must respect this
 switch: disabled means no syntax coloring, including from an alternative
 highlighter. Fonts, backgrounds, padding, and scrolling remain styled.
-
-Development configuration migration: replace the former `[markdown]` table
-with `[syntax]`. The old table is no longer recognized and warns as an unknown
-setting; it does not disable highlighting.
 
 ## Output protection
 

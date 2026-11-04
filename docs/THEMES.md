@@ -26,23 +26,18 @@ without overwriting an existing target. Initialization supplies minimal CSS
 and no translated labels, since its templates request none. Select the
 package with `[theme] name = "my-theme"` in `cress.toml`.
 
-The required JSON manifest uses full semantic versions without `v`:
-
-```json
-{
-  "name": "my-theme",
-  "version": "1.0.0",
-  "cress": { "minimum": "1.0.0", "major": 1 }
-}
-```
+Open the generated `theme.json` for a manifest initialized by your
+executable. The [manifest schema](../schemas/theme.schema.json) lists its
+required fields and allowed values. Version fields use full semantic
+versions without `v`.
 
 `name` must match the selected directory. `version` identifies the theme.
 The runtime must match `cress.major` and meet `cress.minimum`, which must
-belong to that major. Prereleases follow semantic-version precedence:
-`1.0.0-rc.1` does not satisfy `1.0.0`. Development runtimes reporting `dev`
-use the explicit `1.0.0` baseline with a warning, not a compatibility bypass.
-Unknown manifest fields warn; invalid known fields fail. See the
-[manifest schema](../schemas/theme.schema.json).
+belong to that major. A prerelease does not satisfy a minimum set to its
+later stable version. Development runtimes reporting `dev` use the
+baseline in [compatibility validation](../internal/theme/manifest.go)
+with a warning, not a compatibility bypass.
+Unknown manifest fields warn. Invalid known fields fail.
 
 Only a missing local package permits built-in lookup for poppy, clover, or anemone.
 Unreadable, invalid, incompatible, or incomplete local packages
@@ -95,29 +90,25 @@ change. Refresh the browser manually. Review the home landing page, journal
 list, ordinary pages, and `/tour/` for typography, images, captions, and code.
 The initialized theme is a minimal skeleton, not a copy of a bundled theme.
 
-When working in the Cress repository, use `./bin/cress` after
-`mise run build` and put the site under ignored `tmp/`, for example
-`tmp/theme-test`; create `tmp/` first.
-See [developer test sites](DEVELOPER.md#test-sites) for the shared workflow.
+For source builds and ignored fixture directories, see
+[developer test sites](DEVELOPER.md#test-sites).
 
 ## Prepared render model
 
-The renderer accepts a prepared `page.Page` value:
+The renderer accepts a prepared `page.Page` value.
+The [render-model types](../internal/page/page.go) are the field and type
+reference for pages, sites, images, navigation, and entries. The notes below
+explain how to use those values without repeating the struct inventory.
 
-| Field | Go type | Meaning |
-|-------|---------|---------|
-| `Title` | `string` | Validated page title, escaped by `html/template`. |
-| `Description` | `string` | Resolved plain-text description after site inheritance and page overrides. |
-| `Type` | `page.Type` | Explicit `ordinary`, `landing`, or `list` behavior. |
-| `URL` | `string` | Escaped browsing path, including the site URL prefix and a trailing slash. |
-| `Image` | `*page.Image` | Optional resolved title image with `URL`, escaped plain-text `Alt`, prepared `Caption` parts, and `Focus`. Only landing pages receive the `site.image` default. |
-| `Body` | `template.HTML` | Trusted HTML produced by content preparation from the Markdown body. |
-| `Site` | `page.Site` | Prepared shared presentation data. |
-| `Canonical` | `string` | Absolute publication URL, or empty without `site.host`. |
-| `PublishedAt` | `string` | Optional validated `YYYY-MM-DD` publication date; empty when absent. |
-| `UpdatedAt` | `string` | Optional validated `YYYY-MM-DD` update date; empty when absent. |
-| `Excerpt` | `string` | Optional escaped plain-text excerpt; never derived from the body or description. |
-| `Entries` | `[]page.Entry` | Prepared membership and order for a list page; no entry bodies. |
+`Title` is a validated page title. `Description` is resolved after inheritance
+and page overrides. `Image` is optional. Only landing pages inherit the site
+image default. `URL` is an escaped browsing path with the site prefix and a
+trailing slash. `Canonical` is an absolute publication URL, or empty when no
+public origin is configured.
+
+`PublishedAt` and `UpdatedAt` are validated date-only strings, or empty when
+absent. `Excerpt` is explicit plain text, never extracted from the body or
+description. `Body` is trusted HTML from content preparation.
 
 `Site` contains plain-text `Title`, `Copyright`, and `Language`; resolved
 home `URL`; ordered `Navigation.Main` and `Navigation.Footer` slices of
@@ -137,9 +128,9 @@ Render the caption beside its image with `figure` and `figcaption`; omit
 caption markup when the slice is empty. Caption parts are ordinary data,
 not trusted HTML.
 
-`Image.Focus` is empty or one of `center`, `top`, `bottom`, `left`,
-`right`, `top-left`, `top-right`, `bottom-left`, and `bottom-right`. It
-names the part to keep in view when a theme crops the image. Built-in themes
+`Image.Focus` is empty or a keyword from the
+[image schema](../schemas/frontmatter.schema.json). It names the part to
+keep in view when a theme crops the image. Built-in themes
 add a `focus-<value>` class and keep that third in view; themes that do not
 crop may ignore it.
 
@@ -151,10 +142,9 @@ fetch remote resources to determine dimensions. Keep uncropped presentations
 proportional rather than inventing dimensions or imposing a crop solely to
 reserve space.
 
-`page.Entry` exposes `Title`, `URL`, `Description`, `Image`, `PublishedAt`,
-`UpdatedAt`, and `Excerpt` with the same prepared meanings as page fields.
-Entries do not contain page bodies, nested entries, raw source paths, or
-selection settings. Themes must preserve membership and order.
+Entries use the same prepared meanings as page fields. They do not contain
+page bodies, nested entries, raw source paths, or selection settings.
+Themes must preserve prepared membership and order.
 
 The public origin is not needed for browsing and is not exposed as raw
 configuration. Templates receive only pages visible in the current build
@@ -278,8 +268,9 @@ Anemone uses an underlined action rather than a button. It also supplies
 the side-masthead layout, image framing, rotation, and shadows entirely in
 its templates and CSS, without generator-owned layout rules.
 
-Their stable manifest baseline is Cress 1.0.0. Embedded packages ship with
-the executable and are tested together; local packages undergo runtime
-compatibility checks, including during prerelease development.
+Each package's manifest owns its version and compatibility declarations.
+Embedded packages ship with the executable and are tested together.
+Local packages undergo runtime compatibility checks, including during
+prerelease development.
 See the [accessibility assessment](ACCESSIBILITY.md) for automated evidence
 and the pending complete-page human review.

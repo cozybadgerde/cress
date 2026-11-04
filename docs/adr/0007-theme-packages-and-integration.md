@@ -103,7 +103,7 @@ with exact language matching and no default-language or regional fallback.
 
 An unavailable required language or a requested missing label fails
 clearly. Do not substitute another language, an empty value, or the key
-name. Themes own their label keys; no universal catalogue is required.
+name. Themes own their label keys; no universal catalog is required.
 A theme that requests no translated labels needs no translation file.
 
 Exact manifest fields, package layouts, label access, and prerelease or
