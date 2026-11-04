@@ -108,6 +108,12 @@ Each theme shows the logo beside the site title: in Poppy's header, Clover's
 tinted header, and Anemone's masthead. A compact square box contains square,
 circular, or other artwork without cropping. The placeholder has empty
 alternative text because the adjacent site title supplies the identity.
+The logo and title form one home link with a shared keyboard-focus outline.
+When both are present, themes treat the logo as decorative to avoid repeating
+the identity. Without a title, the link uses the logo's alternative text,
+or a localized "Home" label when that text is empty. Long titles wrap beside
+the logo. Square or circular artwork works best; wide or tall artwork fits
+inside the same box and may appear smaller.
 Optional publication and update dates share a compact, muted row above
 ordinary and list-page titles. Landing-page and list-entry dates remain
 below their titles.

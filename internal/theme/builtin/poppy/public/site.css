@@ -31,8 +31,8 @@ main:focus-visible { outline-width: 2px; outline-offset: -2px; }
 .skip-link:not(:focus) { clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; }
 .site-header, .site-footer { max-width: var(--content-width); margin: auto; padding: 2rem var(--gutter); }
 .site-header { display: flex; flex-wrap: wrap; gap: 1.5rem 3rem; align-items: center; justify-content: space-between; }
-.identity { display: flex; align-items: center; gap: 1rem; }
-.site-title { font-weight: 700; }
+.identity { display: flex; width: fit-content; max-width: 100%; align-items: center; gap: 1rem; }
+.site-title { min-width: 0; font-weight: 700; }
 .logo { width: 3rem; height: 3rem; flex-shrink: 0; object-fit: contain; }
 nav ul { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; padding: 0; margin: 0; list-style: none; }
 nav a { display: inline-block; padding: .5rem .25rem; }

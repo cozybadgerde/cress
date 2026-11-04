@@ -30,8 +30,8 @@ main:focus-visible { outline-width: 2px; outline-offset: -2px; }
 .skip-link { position: absolute; top: 1rem; left: 1rem; padding: .75rem; background: var(--background); z-index: 1; }
 .skip-link:not(:focus) { clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; }
 .site-header { padding: 2rem 0; border-bottom: 1px solid var(--border); }
-.identity { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
-.site-title { color: var(--text); font: 1.5rem/1.3 Georgia, "Times New Roman", serif; }
+.identity { display: flex; width: fit-content; max-width: 100%; align-items: center; gap: 1rem; color: var(--text); }
+.site-title { min-width: 0; font: 1.5rem/1.3 Georgia, "Times New Roman", serif; }
 .logo { width: 3rem; height: 3rem; flex-shrink: 0; object-fit: contain; }
 nav ul { display: flex; flex-wrap: wrap; gap: .25rem 1.5rem; padding: 0; margin: 0; list-style: none; }
 nav a { display: inline-block; padding: .5rem 0; }

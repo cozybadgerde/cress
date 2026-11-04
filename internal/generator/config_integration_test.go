@@ -63,7 +63,8 @@ private = "not raw configuration for templates"
 	}
 	home := readPage("")
 	for _, expected := range []string{
-		`<html lang="de">`, `href="/company/">&lt;Business&gt;</a>`,
+		`<html lang="de">`, `<a class="identity" href="/company/">`,
+		`<span class="site-title">&lt;Business&gt;</span>`,
 		`content="Shared &#34;description&#34;"`, `href="/company/first/"`,
 		`href="/company/second/?a=1&amp;b=2#team"`, `>&lt;Second&gt;</a>`,
 		`href="https://example.net/"`, `<p>&lt;Copyright&gt;</p>`,

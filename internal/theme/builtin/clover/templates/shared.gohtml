@@ -15,10 +15,12 @@
   <a class="skip-link" href="#main">{{label "skip"}}</a>
   {{if or .Site.Title .Site.Navigation.Main .Site.Brand.Logo}}
   <header class="site-header">
-    <div class="identity">
-      {{with .Site.Brand.Logo}}<img class="logo" src="{{.URL}}" alt="{{.Alt}}">{{end}}
-      {{with .Site.Title}}<a class="site-title" href="{{$.Site.URL}}">{{.}}</a>{{end}}
-    </div>
+    {{if or .Site.Title .Site.Brand.Logo}}
+    <a class="identity" href="{{.Site.URL}}"{{if not .Site.Title}}{{with .Site.Brand.Logo}}{{if not .Alt}} aria-label="{{label "home"}}"{{end}}{{end}}{{end}}>
+      {{with .Site.Brand.Logo}}<img class="logo" src="{{.URL}}" alt="{{if not $.Site.Title}}{{.Alt}}{{end}}">{{end}}
+      {{with .Site.Title}}<span class="site-title">{{.}}</span>{{end}}
+    </a>
+    {{end}}
     {{with .Site.Navigation.Main}}
     <nav aria-label="{{label "main_navigation"}}">
       <ul>{{range .}}<li><a href="{{.URL}}"{{if eq .URL $.URL}} aria-current="page"{{end}}>{{.Label}}</a></li>{{end}}</ul>

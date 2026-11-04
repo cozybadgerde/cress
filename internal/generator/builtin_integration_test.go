@@ -75,6 +75,64 @@ func TestAnemoneImageFreePagesAndLocalizedPrefix(t *testing.T) {
 	}
 }
 
+func TestBuiltinIdentityHomeLink(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping filesystem integration test")
+	}
+	for _, name := range []string{"poppy", "clover", "anemone"} {
+		for _, fixture := range []struct {
+			name, metadata, want string
+		}{
+			{"combined", "title = '<Studio>'\n[brand.logo]\nsrc = '/images/logo.svg'\nalt = '<Studio logo>'",
+				`<a class="identity" href="/company/"><img class="logo" src="/company/images/logo.svg" alt=""><span class="site-title">&lt;Studio&gt;</span></a>`},
+			{"title only", "title = '<Studio>'",
+				`<a class="identity" href="/company/"><span class="site-title">&lt;Studio&gt;</span></a>`},
+			{"logo only", "[brand.logo]\nsrc = '/images/logo.svg'\nalt = '<Studio logo>'",
+				`<a class="identity" href="/company/"><img class="logo" src="/company/images/logo.svg" alt="&lt;Studio logo&gt;"></a>`},
+			{"decorative logo only", "[brand.logo]\nsrc = '/images/logo.svg'\nalt = ''",
+				`<a class="identity" href="/company/" aria-label="Home"><img class="logo" src="/company/images/logo.svg" alt=""></a>`},
+			{"localized decorative logo", "language = 'de'\n[brand.logo]\nsrc = '/images/logo.svg'\nalt = ''",
+				`<a class="identity" href="/company/" aria-label="Startseite"><img class="logo" src="/company/images/logo.svg" alt=""></a>`},
+			{"navigation only", "[navigation]\nmain = [{ label = 'About', url = '/about/' }]", ""},
+		} {
+			t.Run(name+"/"+fixture.name, func(t *testing.T) {
+				site := t.TempDir()
+				if err := scaffold.Init(context.Background(), site, name); err != nil {
+					t.Fatal(err)
+				}
+				config := "[theme]\nname = '" + name + "'\n[site]\npath = '/company/'\n" + fixture.metadata
+				if err := os.WriteFile(filepath.Join(site, "cress.toml"), []byte(config), 0o644); err != nil {
+					t.Fatal(err)
+				}
+				if _, err := generator.Build(context.Background(), site); err != nil {
+					t.Fatal(err)
+				}
+				data, err := os.ReadFile(filepath.Join(site, "public/index.html"))
+				if err != nil {
+					t.Fatal(err)
+				}
+				html := string(data)
+				start := strings.Index(html, `<a class="identity"`)
+				if fixture.want == "" {
+					if start >= 0 {
+						t.Fatal("navigation-only header has an empty identity link")
+					}
+					return
+				}
+				if start < 0 {
+					t.Fatal("missing identity home link")
+				}
+				link := html[start : start+strings.Index(html[start:], "</a>")+4]
+				link = strings.Join(strings.Fields(link), " ")
+				link = strings.ReplaceAll(link, "> <", "><")
+				if link != fixture.want || strings.Count(html, `class="identity"`) != 1 {
+					t.Errorf("identity link = %s; want %s", link, fixture.want)
+				}
+			})
+		}
+	}
+}
+
 func TestBuiltinCompletePageStructure(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping filesystem integration test")

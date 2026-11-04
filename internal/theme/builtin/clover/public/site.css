@@ -24,8 +24,8 @@ main:focus-visible { outline-width: 2px; outline-offset: -2px; }
 .site-header, .site-footer { padding: 1.5rem max(var(--gutter), calc((100% - var(--content-width)) / 2 + var(--gutter))); background: var(--surface); }
 .site-header a, .site-footer a { color: var(--text); }
 .site-header { display: flex; flex-wrap: wrap; gap: .75rem 2rem; align-items: center; justify-content: space-between; padding-block: 1rem; }
-.identity { display: flex; gap: 1rem; align-items: center; }
-.site-title { font-weight: 650; font-size: 1.25rem; }
+.identity { display: flex; width: fit-content; max-width: 100%; gap: 1rem; align-items: center; }
+.site-title { min-width: 0; font-weight: 650; font-size: 1.25rem; }
 .logo { width: 3rem; height: 3rem; flex-shrink: 0; object-fit: contain; }
 nav ul { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; padding: 0; margin: 0; list-style: none; }
 nav a { display: inline-block; padding: .5rem .25rem; }

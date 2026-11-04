@@ -25,12 +25,6 @@ Evaluate consistency within each theme against its
 uniform. Preserve Poppy's freelancer focus, Clover's established small-business
 presentation, and Anemone's maker/shop/cafe editorial character.
 
-- [ ] Complete logo and identity review across all three themes.
-  Compare logo-only, title-only, and combined identities with square, circular,
-  wide, and tall artwork on desktop/mobile. Assess sizing, alignment,
-  navigation balance, contrast, and accessible alternatives. Make each
-  logo/title identity a coherent home-link target, with appropriate names
-  and focus treatment and without duplicate announcements.
 - [ ] Tighten mobile header/navigation composition within each theme.
   Review wrapping, identity width, and space before headings with short/long
   site titles and English/German labels at 320px and intermediate widths.
