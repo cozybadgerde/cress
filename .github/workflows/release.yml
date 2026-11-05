@@ -43,7 +43,16 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550 # v5
-      - name: Publish archives, license reports, and signed checksums
-        run: goreleaser release --clean
+      - name: Upload archives, license reports, and signed checksums to a draft
+        run: goreleaser release --clean --draft
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Smoke-test packaged archives
+        run: mise run test:release
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+      - name: Publish verified draft
+        run: gh release edit "$RELEASE_TAG" --draft=false --verify-tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}

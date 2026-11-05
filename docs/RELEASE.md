@@ -36,6 +36,7 @@ mise run check
 mise run build
 mise run check:goreleaser
 mise exec -- goreleaser release --snapshot --clean --skip=publish,sign
+mise run test:release
 ```
 
 The snapshot command replaces generated `dist/` artifacts and writes
@@ -43,12 +44,26 @@ The snapshot command replaces generated `dist/` artifacts and writes
 The [release configuration](../.goreleaser.yml) owns target platforms,
 archive contents, and report names.
 
+The smoke test checks archive contents, binary targets, license reports,
+and archive/report checksums. It extracts only the host-compatible executable
+into a temporary directory, verifies its version, and initializes and builds
+sites with all three embedded themes. Other targets are inspected, not run.
+This does not replace native-platform acceptance.
+The test never modifies `dist/` or existing sites. Ordinary checks skip it
+unless `CRESS_RELEASE_DIR` is set. The explicit task defaults to `dist/`
+and fails if artifacts are missing.
+
 ## Tag workflow
 
 The [release workflow](../.github/workflows/release.yml) validates full
 `v`-prefixed semantic version tags. A read-only job runs the existing checks
 and build.
 The publication job runs GoReleaser with release-write and OIDC permissions.
+It uploads signed artifacts to an unpublished draft, runs the archive smoke
+test against the same local files, then publishes that draft with GitHub CLI.
+Nothing is rebuilt between testing and publication. A failed test leaves
+the release unpublished for inspection. Do not manually publish a failed
+draft. Resolve the failure before retrying the release procedure.
 Tools use the versions pinned in [`mise.toml`](../mise.toml).
 
 Choose the intended version rather than copying a documentation example.
@@ -56,6 +71,9 @@ Use a full major, minor, and patch version after `v`, without an intervening
 hyphen. The workflow owns the exact tag-validation rules.
 GoReleaser marks versions with a prerelease suffix as GitHub prereleases.
 Build metadata alone does not make a release a prerelease.
+Publishing the draft preserves its prerelease flag. A prerelease phase is
+optional: publish the intended prerelease tag, assess it, then use a separate
+stable tag when ready. Each tag follows the same automated draft gate.
 
 GoReleaser injects the executable version, creates the archives and CSV
 reports, and generates `checksums.txt`. Cosign keylessly signs that file.

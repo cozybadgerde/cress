@@ -26,12 +26,6 @@ These tasks are not authorization to tag or publish.
 - [ ] Prepare fresh pre-publication evidence.
   Retain existing checks/build and run the functional suite uncached against
   the intended release revision.
-- [ ] Add an archive smoke check after packaging and before publication.
-  Confirm exactly macOS arm64, Linux amd64, and Linux arm64; required notices
-  and install guidance; nonempty per-target license CSVs; and checksum coverage
-  for every archive/report. Run the host-compatible archived binary to verify
-  its version and build initialized sites with all three embedded themes.
-  Use disposable directories and preserve existing output on failures.
 - [ ] Plan post-publication Cosign verification.
   Require the exact tag identity/issuer, verify archive/report digests, and
   reject modified checksums, modified artifacts, and wrong identities.

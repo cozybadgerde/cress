@@ -85,3 +85,7 @@ run = "go test ./..."
 [tasks.build]
 description = "Build the local executable in bin/"
 run = "go build -o bin/cress ./cmd/cress"
+
+[tasks."test:release"]
+description = "Smoke-test packaged release archives without modifying dist/"
+run = 'CRESS_RELEASE_DIR="${CRESS_RELEASE_DIR:-$PWD/dist}" go test -count=1 -timeout=5m -v ./internal/release'
