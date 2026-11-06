@@ -135,7 +135,7 @@ esac
 			cmd.Dir = dir
 			cmd.Env = append(os.Environ(),
 				"PATH="+dir+string(os.PathListSeparator)+os.Getenv("PATH"),
-				"GITHUB_REPOSITORY=example/cress", "RELEASE_TAG="+releaseTag,
+				"GITHUB_REPOSITORY=example/cress", "RELEASE_TAG="+releaseTag, "CRESS_RELEASE_DIR=dist",
 				"MOCK_LIST="+list, "MOCK_DETAIL="+detail, "MOCK_PUBLISHED="+published, "MOCK_CALLS="+calls,
 				fmt.Sprintf("MOCK_FAIL_LIST=%t", tc.failList),
 			)
