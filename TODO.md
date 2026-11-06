@@ -37,8 +37,10 @@ These tasks are not authorization to tag or publish.
   Confirm failed checks leave drafts unpublished, and establish a safe
   retry procedure for failed drafts before relying on workflow reruns.
   A 2026-11-06 failure rehearsal and retry created two unpublished drafts
-  for the same tag with different archives. Prevent ambiguous draft
-  selection and verify the published assets are the ones tested.
+  for the same tag with different archives. The updated gate published a
+  prerelease with matching artifact digests and refused retries while a
+  release or failed draft existed. Verify a stable publication and a fresh
+  retry after deliberate draft cleanup before closing this task.
 - [ ] Plan post-publication Cosign verification.
   Require the exact tag identity/issuer, verify archive/report digests, and
   reject modified checksums, modified artifacts, and wrong identities.
