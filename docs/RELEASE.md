@@ -59,11 +59,17 @@ The [release workflow](../.github/workflows/release.yml) validates full
 `v`-prefixed semantic version tags. A read-only job runs the existing checks
 and build.
 The publication job runs GoReleaser with release-write and OIDC permissions.
-It uploads signed artifacts to an unpublished draft, runs the archive smoke
-test against the same local files, then publishes that draft with GitHub CLI.
-Nothing is rebuilt between testing and publication. A failed test leaves
-the release unpublished for inspection. Do not manually publish a failed
-draft. Resolve the failure before retrying the release procedure.
+It refuses to start if a release or draft already exists for the tag. It
+uploads signed artifacts to an unpublished draft, runs the archive smoke
+test, and compares the uploaded asset digests with the tested local files.
+It then publishes that exact draft by ID, preserving its prerelease flag.
+Nothing is rebuilt between testing and publication.
+
+A failure can leave one or more drafts. Do not manually publish them or
+rerun blindly. Inspect the failed run and all drafts for that tag, resolve
+the cause, and explicitly remove the failed drafts before retrying. Confirm
+that each draft is the intended failed draft before removing it. The next
+run refuses to proceed while any release or draft for that tag remains.
 Tools use the versions pinned in [`mise.toml`](../mise.toml).
 
 Choose the intended version rather than copying a documentation example.
