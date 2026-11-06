@@ -34,6 +34,9 @@ jobs:
   release:
     needs: check
     runs-on: ubuntu-latest
+    concurrency:
+      group: release-${{ github.ref }}
+      cancel-in-progress: false
     permissions:
       contents: write
       id-token: write
@@ -43,6 +46,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550 # v5
+      - name: Refuse existing releases and drafts
+        run: bash .github/scripts/release-gate.sh check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
       - name: Upload archives, license reports, and signed checksums to a draft
         run: goreleaser release --clean --draft
         env:
@@ -52,7 +60,7 @@ jobs:
         env:
           RELEASE_TAG: ${{ github.ref_name }}
       - name: Publish verified draft
-        run: gh release edit "$RELEASE_TAG" --draft=false --verify-tag
+        run: bash .github/scripts/release-gate.sh publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ github.ref_name }}

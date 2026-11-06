@@ -23,9 +23,24 @@ and publication require maintainer approval.
 The [release reference](docs/RELEASE.md) owns the maintainer procedure.
 These tasks are not authorization to tag or publish.
 
+- [ ] Agree and implement a pre-1.0 update check.
+  Help installed users discover newer releases. Decide the CLI interface
+  and whether checking is explicit or part of version output, including
+  network behavior, version selection, and failure handling before
+  implementation. Keep site generation offline.
 - [ ] Prepare fresh pre-publication evidence.
   Retain existing checks/build and run the functional suite uncached against
   the intended release revision.
+- [ ] Verify the draft publication gate on GitHub.
+  Local snapshots do not exercise uploads or draft publication. Confirm
+  successful publication preserves assets and the stable/prerelease flag.
+  Confirm failed checks leave drafts unpublished, and establish a safe
+  retry procedure for failed drafts before relying on workflow reruns.
+  A 2026-11-06 failure rehearsal and retry created two unpublished drafts
+  for the same tag with different archives. The updated gate published a
+  prerelease with matching artifact digests and refused retries while a
+  release or failed draft existed. Verify a stable publication and a fresh
+  retry after deliberate draft cleanup before closing this task.
 - [ ] Plan post-publication Cosign verification.
   Require the exact tag identity/issuer, verify archive/report digests, and
   reject modified checksums, modified artifacts, and wrong identities.
