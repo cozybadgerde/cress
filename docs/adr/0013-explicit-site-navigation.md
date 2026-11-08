@@ -46,7 +46,6 @@ the configured entries.
 deployment path and site-root reference semantics.
 
 Invalid known field types and values follow the shared contract policy.
-Checking whether internal navigation targets exist is not required in 1.0.
 Concrete fields and configuration syntax belong to implementation.
 
 ### Consequences

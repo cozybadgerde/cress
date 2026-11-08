@@ -35,8 +35,7 @@ Poppy remains the default. This replaces only the two-theme counts in
 [ADR 0007](0007-theme-packages-and-integration.md) and
 [ADR 0012](0012-release-artifacts.md); complete-package, local-first
 integration and embedded release packaging remain unchanged. The development
-skeleton is not a selectable theme. A glass-like theme may be maintained
-externally later, but is not a promised deliverable.
+skeleton is not a selectable theme.
 
 Anemone uses warm paper surfaces, dark ink, editorial system-serif headings,
 and system-sans body text. A desktop side masthead sits beside the content;

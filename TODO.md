@@ -9,7 +9,6 @@ Git history, not repeated here.
 
 Agree material interfaces and visual choices before implementation. Work
 through one task at a time, reviewing relevant leftovers before starting.
-New proposals below are not permission to expand scope or publish a release.
 
 For code changes, run `mise run check` and `mise run build`; release
 configuration changes also require `mise run check:goreleaser`. Use focused
@@ -21,8 +20,22 @@ and publication require maintainer approval.
 ## Road to 1.0.0
 
 Follow the [release guide](docs/RELEASE.md) for each release. Tags and
-publication need maintainer approval.
+publication need maintainer approval. Ideas for later releases live in
+[GitHub issues](https://github.com/cozybadgerde/cress/issues).
 
+- [ ] Add a not-found page.
+  Generate a `404.html` that each theme presents in the site language, so
+  hosts can show it for unknown addresses.
+- [ ] Add link previews.
+  Give each page Open Graph metadata from its title, description, and title
+  image, so shared links show a preview.
+- [ ] Add business details for search engines.
+  Let publishers describe their business in `cress.toml`, such as name,
+  address, contact, and opening hours, and publish it as structured data.
+- [ ] Add feeds for list pages.
+  Publish a web feed for each list page, so readers can follow a journal.
+- [ ] Add pagination for list pages.
+  Split long lists into numbered pages with links between them.
 - [ ] Release `v1.0.0-pre.0`.
   Go through the full release guide. Then confirm the draft gate published
   it as a prerelease with all assets, and that the signature passes and all
@@ -32,24 +45,3 @@ publication need maintainer approval.
   Rerun the automated checks and repeat only the checklist rows touched since
   the prerelease. Confirm it is published as the latest stable release and
   its signature verifies.
-
-## Optional follow-up: Shell completion
-
-- [ ] Evaluate offline shell-completion generation.
-  Check the existing CLI library and agree supported shells, command syntax,
-  output behavior, and installation guidance before implementation.
-  Keep shell setup explicit.
-
-## Deferred ideas
-
-These are not implementation commitments:
-
-- An update check in a minor release after 1.0.0, tracked in
-  [issue #2](https://github.com/cozybadgerde/cress/issues/2).
-- An externally maintained glass-like theme, not a fourth bundled theme.
-- Automatic table of contents, including per-page control, after a demonstrated
-  long-page navigation need. Review dependency suitability, heading depth,
-  placement, labels, schemas, and presentation before approval.
-- Additional Markdown extensions such as definition lists for services/menu
-  content, footnotes, or typography substitutions, after a concrete use-case
-  review.

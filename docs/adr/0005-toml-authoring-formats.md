@@ -42,9 +42,7 @@ Theme manifests are a separate package interface governed by
 [the theme integration decision](0007-theme-packages-and-integration.md),
 not another site configuration format.
 
-If a future product requirement genuinely needs YAML, reconsider this
-decision and support for both frontmatter formats. Development tools that
-use YAML do not create a site-authoring requirement.
+Development tools that use YAML do not create a site-authoring requirement.
 
 ### Consequences
 

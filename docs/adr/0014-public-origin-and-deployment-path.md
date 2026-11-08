@@ -104,14 +104,11 @@ Copied asset contents remain unchanged. Authors must make references
 inside CSS and other copied assets suitable for their published location;
 Cress does not rewrite those files to repair hostname or path assumptions.
 
-### Authored HTML and link checking
+### Authored HTML
 
-Pass authored HTML through without repairing or rewriting its URLs.
-Attributes such as `href`, `src`, and `srcset`, as well as URLs in embedded
-styles or scripts, remain author-controlled. Authors are responsible for
-their correctness and suitability for the deployment location.
-[Raw HTML trust](0015-trusted-markdown-and-raw-html.md) is defined
-separately.
+Cress resolves Markdown links and images only. URLs in authored HTML stay
+as written, as the [raw HTML decision](0015-trusted-markdown-and-raw-html.md)
+defines.
 
 For example, with a deployment path of `/mysite/`:
 
@@ -123,19 +120,7 @@ For example, with a deployment path of `/mysite/`:
 | `<img src="/images/product.jpg" alt="Product">` | Leave `src="/images/product.jpg"` unchanged. |
 | `[External](https://example.net/)` | Leave the external destination unchanged. |
 
-Recognizing and resolving Markdown references is not a general link
-checker. Bare URLs and Markdown autolinks do not introduce another repair
-or validation mechanism; external destinations remain unchanged.
-
-Authored-HTML rewriting, rewrite switches, dedicated broken-link checks,
-and automatic broken-link warnings during builds or previews are outside
-the 1.0 scope.
-Required configuration, frontmatter, theme, and output-safety validation
-remain in effect.
-
-Configuration field names, URL normalization, render-model details, and
-link-generation algorithms belong to implementation. This decision does
-not promise that output built for one deployment path works unchanged at
+Output built for one deployment path does not have to work unchanged at
 another.
 
 ### Consequences
@@ -159,9 +144,8 @@ Check absolute publication URLs include the configured path exactly once.
 Without an origin, confirm successful generation, actionable warnings,
 omission of origin-dependent metadata, and no dangling sitemap reference.
 Check site-root and source-relative Markdown links and images, unchanged
-external URLs, and unchanged copied asset contents. Confirm authored HTML
-URLs pass through without rewriting or broken-link diagnostics, while
-required input and output-safety validation still applies.
+external URLs, unchanged copied asset contents, and unchanged authored
+HTML URLs.
 
 ## More information
 
@@ -172,5 +156,4 @@ and [navigation](0013-explicit-site-navigation.md).
 Hosting examples follow
 [GitHub Pages site types](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages).
 [Open Graph](https://ogp.me/) defines `og:url` as the object's canonical
-identity; it motivates the public-identity distinction without adding
-product scope.
+identity, which link previews use.

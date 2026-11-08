@@ -43,11 +43,8 @@ version information remain accessible at the root.
 |---------|-------------------|
 | `cress site init` | Initialize a site for publishing. |
 | `cress theme init` | Initialize a theme for development. |
-| `cress config validate` | Illustrate a possible future configuration scope. |
 
 These examples explain the grouping, not a complete command catalog.
-A configuration scope and standalone validation commands are outside the
-current 1.0 scope. This decision does not introduce either.
 
 Action-first grouping puts site and theme initialization under the same
 `init` group, mixing publisher and theme-development workflows.

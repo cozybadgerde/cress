@@ -104,10 +104,8 @@ preserve provided caption text and links, whether bundled or third-party.
 define the authoring capability. Exact syntax, field names, and render-model
 types remain implementation choices.
 
-These boundaries do not imply that Cress automatically certifies the
-accessibility of a theme or finished site.
-[The accessibility baseline](0016-accessibility-baseline-and-assessment.md)
-defines complete-page assessment and release expectations.
+[The accessibility decision](0016-accessibility-baseline-and-assessment.md)
+builds on these boundaries.
 
 ### Page-type composition
 

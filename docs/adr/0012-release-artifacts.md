@@ -24,7 +24,7 @@ The build-only product boundary does not prevent publishing Cress releases.
 - Automate releases with GoReleaser.
 - Provide verifiable release authenticity and integrity.
 - Keep installation independent of external runtime theme files.
-- Defer extra distribution channels and Apple-specific signing operations.
+- Keep the distribution surface small.
 
 ## Considered options
 
@@ -48,7 +48,7 @@ Use GoReleaser to produce downloadable archives for:
 - Linux Intel/AMD 64-bit.
 
 ARM64 does not include 32-bit ARM. The amd64 target supports both Intel and
-AMD processors. Intel macOS and Windows are outside the 1.0 release matrix.
+AMD processors.
 
 Each archive contains:
 
@@ -98,16 +98,11 @@ during release. Verification tooling and trust requirements must be
 documented. A verification bundle packages signing evidence; it does not
 remove the need to check the expected publisher identity and issuer.
 
-### Deferred distribution work
+### macOS trust
 
 Cosign release verification is not Apple Developer ID code signing or
-notarization. Defer both Apple mechanisms and document that macOS releases
-are not Apple-notarized. Do not promise warning-free macOS installation.
-
-Container images and Homebrew distribution remain future options.
-They can reuse the executable with embedded themes without changing the
-site build contract. No additional distribution channel is selected by
-this document.
+notarization. Document that macOS releases are not Apple-notarized and may
+show a trust warning.
 
 ### Consequences
 
@@ -134,7 +129,7 @@ Document concrete verification and macOS trust limitations with releases.
 - [Implementation language](0001-go-implementation-language.md).
 - [Generation and deployment boundary](0002-offline-generation-and-deployment-boundary.md).
 - [Theme packages and integration](0007-theme-packages-and-integration.md).
-- [Accessibility baseline and assessment](0016-accessibility-baseline-and-assessment.md).
+- [Accessibility best practices](0016-accessibility-baseline-and-assessment.md).
 - [GoReleaser artifact signing](https://goreleaser.com/customization/sign/sign/).
 - [GoReleaser Cosign bundle guidance](https://goreleaser.com/blog/cosign-v3/).
 

@@ -1,7 +1,6 @@
 # Stage complete output and guard directory ownership
 
-Status: accepted architectural direction; concrete mechanisms are
-implementation choices.
+Status: accepted.
 
 Date: 2026-10-16.
 

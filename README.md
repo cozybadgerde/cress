@@ -30,7 +30,13 @@ preview, and build.
 
 - Ordinary pages, landing pages, and journal-style lists.
 - Markdown content with page-owned images and shared static files.
-- Three offline themes for freelancers, small businesses, and makers.
+- Captions, heading links, and syntax highlighting without raw HTML.
+- Drafts that stay out of published builds.
+- Links that work at any deployment path, plus a sitemap and search engine
+  metadata.
+- Three accessible themes without JavaScript, for freelancers, small
+  businesses, and makers.
+- English and German theme text.
 - Local theme packages, explicit navigation, and automatic preview rebuilds.
 
 The [product requirements](docs/PRD.md#scope) define the scope.

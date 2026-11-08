@@ -1,12 +1,12 @@
 # Product requirements document
 
-Status: approved product direction; generator capabilities implemented.
+Status: approved.
 
 Target release: 1.0.0.
 
 Product owner: Daniel Schier (Cozy Badger).
 
-Date: 2026-10-16.
+Date: 2026-11-08.
 
 ## Product purpose
 
@@ -37,9 +37,7 @@ setup instructions belong to implementation and its documentation.
 - Provide curated themes suited to small businesses.
 - Keep content separate from presentation and deployment.
 - Report mistakes rather than silently changing the author's intent.
-- Preserve room for later features without implementing speculative systems.
-
-Cress does not need to match the breadth of Hugo or Jekyll.
+- Build what small businesses need today, and keep the rest simple.
 
 ## Users and use cases
 
@@ -52,7 +50,7 @@ Cress does not need to match the breadth of Hugo or Jekyll.
 
 The first release supports company pages, services or menus, opening hours,
 contact information, and occasional articles. Images support lightweight
-photographic content, but a specialized gallery engine is not required.
+photographic content.
 
 ## Scope
 
@@ -63,6 +61,9 @@ photographic content, but a specialized gallery engine is not required.
 - Opening hours, contact information, menus, and services as page content.
 - Site identity, brand settings, and page metadata.
 - Basic search engine optimization (SEO), a sitemap, and `robots.txt`.
+- Link previews for shared pages and structured business details.
+- A not-found page.
+- Web feeds and pagination for list pages.
 - Title images and inline images, without image transformation.
 - Optional captions for inline images, title images, and fenced code blocks.
 - One configured language per site.
@@ -71,26 +72,6 @@ photographic content, but a specialized gallery engine is not required.
 - Theme initialization for theme development.
 - Version information and usage help.
 - Machine-readable schemas and human-readable authoring references.
-
-### Excluded from 1.0
-
-- Deployment, hosting management, and automatic theme downloads.
-- Booking, reservations, payments, shopping, forms, and site search.
-- A content management system or browser-based content editor.
-- Multilingual content and browser-selected language switching.
-- Image resizing, optimization, or automatic responsive image generation.
-- Feeds, `llms.txt`, and additional wide/narrow layout variants.
-- Dedicated site, theme, and configuration validation subcommands.
-- Authored-HTML URL rewriting and optional rewrite switches.
-- Dedicated or automatic broken-link checks.
-- A generator accessibility-validation command.
-- A configurable build output directory.
-- Automatic browser reload and injected preview error overlays.
-- Future-date scheduling.
-
-External links to services remain ordinary content. They do not imply
-integrations with those services. Other unlisted features are not implied
-release commitments.
 
 ## Authoring and content
 
@@ -109,10 +90,8 @@ explicit page values override them. There is no directory-level metadata
 inheritance. Page type and draft status remain page-specific.
 
 `published_at` records an optional reader-facing publication date;
-`updated_at` records an optional last-update date. A creation-date field is
-not introduced now. Dates do not schedule publication; draft visibility
-remains separate. Date formats belong to the authoring contract defined
-during implementation.
+`updated_at` records an optional last-update date. Dates do not schedule
+publication; draft visibility remains separate.
 
 Support an optional, page-specific `excerpt` frontmatter field as plain
 text, escaped like ordinary metadata. It is separate from the page
@@ -122,12 +101,10 @@ fall back to the description.
 Main and footer navigation are explicitly configured, flat, and ordered.
 Each theme renders populated groups and omits empty groups.
 Support internal page links and external HTTP/HTTPS links. Invalid known
-values are errors; checking whether internal navigation targets exist is
-not a 1.0 requirement.
+values are errors.
 
-Markdown tables are required. Menus and opening hours can be ordinary
-tables or prose; Cress does not impose a separate business-data model.
-Footnotes are not a 1.0 requirement.
+Markdown tables are required. Menus and opening hours on pages are ordinary
+tables or prose.
 
 Expose a neutral structural hook for Markdown paragraphs containing only
 one direct link. It applies independently of page type and position.
@@ -155,8 +132,6 @@ and previews are not a browser-content security boundary.
 
 Pass authored HTML URLs through unchanged. Their correctness and
 suitability for the deployment path are the author's responsibility.
-Do not repair them or issue automatic broken-link warnings during builds
-or previews. Required input validation remains in effect.
 
 Metadata, plain-text labels, and ordinary customization values remain
 escaped. HTML in code spans and fenced blocks remains literal example
@@ -187,9 +162,6 @@ fail clearly. Themes must not introduce IDs that collide with content
 headings. Authored raw HTML is unchanged; publishers remain responsible
 for its IDs and collisions.
 
-No visible permalink controls, automatic table of contents, new
-configuration, or fragment-existence checks are required.
-
 ### Captions, attribution, and disclosures
 
 Provide optional first-class captions for inline images, title images,
@@ -205,9 +177,7 @@ existing URL policy. Captions do not change code escaping or syntax
 highlighting.
 
 Publishers decide when captions or disclosures are needed and supply their
-wording. Do not infer creators, licenses, or AI generation, require captions
-on every item, or introduce a separate attribution or disclosure data model.
-A caption is not a guarantee that a license or legal obligation is met.
+wording. Cress does not infer creators, licenses, or AI generation.
 
 ### List pages
 
@@ -247,11 +217,12 @@ without missing-date warnings.
 Entries contain prepared page metadata, including `excerpt` when provided,
 not full article bodies or automatically generated excerpts. Themes choose
 how to present the available metadata without changing membership or order.
-Manual collections can be ordinary Markdown links; no manual weights or
-general collection/query system is required.
+Manual collections are ordinary Markdown links.
 
-Frontmatter field names for selecting and reversing an order remain
-implementation choices.
+Long lists can be split into numbered pages of a configured size, with
+links between them. Every list page can also publish a web feed of its
+entries, so readers can follow a journal in a feed reader. Feeds use the
+public origin, like the sitemap.
 
 ## Routes and assets
 
@@ -322,8 +293,7 @@ and styles captioned content without dropping its text or links.
 These responsibilities apply equally to bundled and third-party themes.
 
 Keep ordinary brand settings distinct from expert theme customizations.
-Themes document the custom settings they consume; schemas for arbitrary
-customizations are not required.
+Themes document the custom settings they consume.
 
 Theme labels follow the configured site language. Missing requested labels
 or unavailable translations fail clearly rather than produce silent or
@@ -375,9 +345,8 @@ and pending retry without claiming success. This retry behavior applies
 only to a busy writer, not other failures. Explicit builds and initial
 preview startup fail immediately if another writer holds ownership.
 
-Report rebuild outcomes in the terminal. Browser refresh is manual;
-generated pages contain no injected reload client, error overlay, or
-reload-related HTML modifications.
+Report rebuild outcomes in the terminal. Browser refresh is manual, and
+preview serves the same pages a build produces.
 
 Store preview output in private temporary session directories. Clean up
 finished or verifiably inactive sessions without deleting active sessions,
@@ -425,7 +394,6 @@ not unknown core fields.
 Make published schemas usable by compatible external validation tools,
 without prescribing an editor or workflow. Schemas describe parsed data;
 tools must parse TOML or extract frontmatter from Markdown as needed.
-Specific editor integrations and custom language servers are not required.
 Schema checks cover parsed field structure and values. They do not replace
 generation-time checks such as theme compatibility and output safety.
 
@@ -464,19 +432,25 @@ resizing, and narrow screens.
 
 Use linters and continuous integration (CI), with unit tests as the default
 and integration tests where boundary coverage adds meaningful confidence.
-Automated end-to-end tests and browser automation are outside the initial
-scope. A short human accessibility review happens before 1.0 and after
-relevant markup or theme changes.
+A short human accessibility review happens before 1.0 and after relevant
+markup or theme changes.
 
 Document author responsibilities for image alternatives and content
 structure, and the limits of custom colors, raw HTML, and third-party themes.
-Generator accessibility-validation commands are outside 1.0 scope.
 
 ### Search engine optimization
 
 Support page titles, descriptions, site defaults, canonical URLs, title
-images, a sitemap, and `robots.txt`. Additional structured data and social
-metadata fields are not implied.
+images, a sitemap, and `robots.txt`.
+
+Pages carry link-preview metadata (Open Graph) from their title,
+description, and title image, so shared links show a useful preview.
+Publishers can describe their business once in the site configuration,
+such as its name, address, contact details, and opening hours. Cress
+publishes these details as structured data that search engines understand.
+
+Generate a not-found page that each theme presents in the site language.
+Common static hosts show it for unknown addresses.
 
 Without a public origin, generation succeeds with an actionable warning
 and omits metadata that requires that origin. Do not invent a hostname or
@@ -485,9 +459,8 @@ advertise an omitted sitemap. Ordinary content and browsing remain usable.
 ### Platforms and releases
 
 Support Linux for CI/build environments and Linux/macOS for development.
-Initial release targets are macOS Apple Silicon, Linux ARM64, and Linux
-Intel/AMD 64-bit. Windows, Intel macOS, and 32-bit ARM are not 1.0 targets.
-Generated files are independent of the generator's operating system.
+Release targets are macOS Apple Silicon, Linux ARM64, and Linux
+Intel/AMD 64-bit. Generated files are independent of the generator's operating system.
 
 Distribute versioned releases under BSD-3-Clause through GitHub Releases.
 Provide downloadable archives with the executable, required licenses and
@@ -505,9 +478,8 @@ dependency licenses; bundled non-code assets need separate rights review.
 The project license does not grant rights to third-party assets
 or Cozy Badger trademarks.
 
-Apple Developer ID signing and notarization are deferred. Document the
-macOS platform trust limitation rather than promise warning-free
-installation. Containers and Homebrew are future distribution options.
+macOS releases are not Apple-notarized; document the resulting trust
+warning.
 
 ## Acceptance criteria for 1.0
 
@@ -537,7 +509,7 @@ installation. Containers and Homebrew are future distribution options.
    unsuccessfully with recovery guidance. Automatic rebuilds retry writer
    contention so competing sessions catch up without another edit or restart;
    explicit builds and initial preview startup remain fail-fast.
-   Manual refresh shows successful changes without injected reload behavior.
+   Manual refresh shows successful changes.
 9. Preview cleanup protects active sessions, unrelated files, and ambiguous
    recovery evidence, and reports failures.
 10. Successful builds remove stale output. Generation failures preserve
@@ -569,8 +541,7 @@ installation. Containers and Homebrew are future distribution options.
 19. Publisher-authored raw HTML renders without sanitization in builds and
     previews. HTML examples remain literal, ordinary values stay escaped,
     and generation neither executes embedded code nor fetches resources
-    referenced by authored HTML. Authored HTML URLs pass through unchanged,
-    without broken-link checks.
+    referenced by authored HTML. Authored HTML URLs pass through unchanged.
 20. Optional captions for inline images, title images, and fenced code blocks
     display author-provided text and links with the associated content in
     all shipped themes. Keep image alternatives separate and preserve code
@@ -589,15 +560,16 @@ installation. Containers and Homebrew are future distribution options.
     preserve authored completion state with labeled, disabled checkboxes
     and usable item links, including nested and ordered lists. All shipped
     themes render these features without scripts or new configuration.
-
-No performance threshold or adoption target has been agreed.
+24. Pages carry link-preview metadata, and configured business details
+    appear as structured data. Both use the public origin and follow the
+    documented site defaults and page overrides.
+25. Every shipped theme presents a not-found page in the site language.
+26. Long list pages split into numbered pages with links between them, and
+    each list page publishes a web feed of its entries.
 
 ## Decision records
 
-Accepted ADRs provide architectural guidance, rationale, and guardrails.
-They do not imply implementation. Details explicitly left open belong to
-implementation planning. Examples are illustrative unless stated as
-requirements.
+Accepted ADRs record architectural decisions and their rationale.
 
 - [0001: Implementation language](adr/0001-go-implementation-language.md).
 - [0002: Offline generation and deployment boundary](adr/0002-offline-generation-and-deployment-boundary.md).
@@ -614,8 +586,10 @@ requirements.
 - [0013: Explicit site navigation](adr/0013-explicit-site-navigation.md).
 - [0014: Public origin and deployment path](adr/0014-public-origin-and-deployment-path.md).
 - [0015: Trusted Markdown and raw HTML](adr/0015-trusted-markdown-and-raw-html.md).
-- [0016: Accessibility baseline and assessment](adr/0016-accessibility-baseline-and-assessment.md).
+- [0016: Accessibility best practices](adr/0016-accessibility-baseline-and-assessment.md).
 - [0017: Markdown heading targets](adr/0017-markdown-heading-targets.md).
 - [0018: Strikethrough and static task lists](adr/0018-strikethrough-and-static-task-lists.md).
 - [0019: Neutral standalone-link markup](adr/0019-neutral-standalone-link-markup.md).
 - [0020: Third bundled theme](adr/0020-third-bundled-theme.md).
+- [0021: Markdown captions](adr/0021-markdown-captions.md).
+- [0022: Build-time syntax highlighting](adr/0022-build-time-syntax-highlighting.md).

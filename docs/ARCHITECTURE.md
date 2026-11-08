@@ -147,8 +147,7 @@ manual-recovery guidance.
 
 ## Preview flow
 
-Preview reuses the full build flow for every rebuild; incremental
-rendering is not required.
+Preview reuses the full build flow for every rebuild.
 
 - `cress site preview` fixes draft visibility for the running session.
   Native fsnotify events cover the configuration and source trees, not

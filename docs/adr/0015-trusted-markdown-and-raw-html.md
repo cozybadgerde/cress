@@ -75,18 +75,8 @@ resources.
 ### Scope
 
 Custom HTML and styles can affect accessibility and theme portability.
-Their use does not guarantee consistent presentation or a conforming
-finished site.
-
-This record settles trust and authored-HTML pass-through, not all Markdown
-capabilities.
-[First-class captions](../PRD.md#captions-attribution-and-disclosures)
-provide author-supplied text and links without requiring raw HTML or
-changing the escaping of ordinary values.
-[The accessibility baseline](0016-accessibility-baseline-and-assessment.md)
-defines assessment obligations without changing the content trust policy.
-The Markdown library and concrete render-model types remain implementation
-choices.
+[Captions](0021-markdown-captions.md) cover the most common reason for raw
+HTML, author-supplied text and links, without it.
 
 ### Consequences
 

@@ -48,10 +48,6 @@ Generation produces local static files. It does not upload, deploy, or
 provision hosting. Themes and other build inputs must already be available
 locally; generation does not download them.
 
-Reconsider built-in deployment only if a concrete user need justifies the
-expanded product scope and ongoing maintenance. Possible future demand is
-not an initial release commitment.
-
 This boundary does not prohibit downloading Cress or using network
 services to publish Cress releases. It does not select the implementation
 language, CPU targets, or release packaging.

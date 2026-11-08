@@ -56,7 +56,7 @@ Compatibility:
 | Versions | Schema versions match Cress releases and describe what that release validates. No separate schema lifecycle. |
 | Validation | Invalid known fields fail generation with actionable errors. Unknown fields warn without failing an otherwise valid build. |
 | External checks | Make published schemas usable by compatible validation tools, without requiring a particular editor or workflow. |
-| Customizations | Keep a documented open area for theme customizations; their own schemas are not required. |
+| Customizations | Keep a documented open area for theme customizations, documented by each theme. |
 | Compatibility | Minor and patch releases within 1.x preserve supported fields, interfaces, behavior, and defaults. Breaking these contracts requires a new major, even for deprecated features. |
 | New features | Older executables do not have to support features added in newer releases. |
 
@@ -89,8 +89,6 @@ Runtime validation remains required for conditions that schemas cannot
 check, such as theme compatibility and output ownership.
 A schema version does not declare a theme's runtime compatibility.
 
-Specific editor integrations, inline completion, and custom language servers
-are not required. This policy does not add a validation subcommand.
 Configuration and theme integration have their own domain ADRs.
 Field definitions not already agreed in the PRD, schema dialect,
 publication paths, and validation tools are implementation choices.
