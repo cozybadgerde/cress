@@ -23,11 +23,6 @@ and publication require maintainer approval.
 The [release guide](docs/RELEASE.md) owns the maintainer procedure.
 These tasks are not authorization to tag or publish.
 
-- [ ] Agree and implement a pre-1.0 update check.
-  Help installed users discover newer releases. Decide the CLI interface
-  and whether checking is explicit or part of version output, including
-  network behavior, version selection, and failure handling before
-  implementation. Keep site generation offline.
 - [ ] Prepare fresh pre-publication evidence.
   Retain existing checks/build and run the functional suite uncached against
   the intended release revision.
@@ -69,6 +64,8 @@ Depends on release readiness and explicit maintainer approval.
 
 These are not implementation commitments:
 
+- An update check in a minor release after 1.0.0, tracked in
+  [issue #2](https://github.com/cozybadgerde/cress/issues/2).
 - An externally maintained glass-like theme, not a fourth bundled theme.
 - Automatic table of contents, including per-page control, after a demonstrated
   long-page navigation need. Review dependency suitability, heading depth,
