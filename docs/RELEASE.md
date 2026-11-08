@@ -118,16 +118,48 @@ The workflow refuses to start while any release or draft for the tag exists.
 
 ## 6. Verify the published release
 
-Download the archive and follow [installation guide](INSTALL.md).
-The signature must match this certificate identity and issuer:
+Download all release files into an empty folder. Set `tag` to the tag you
+just published:
 
-```text
-https://github.com/cozybadgerde/cress/.github/workflows/release.yml@refs/tags/<exact-tag>
-https://token.actions.githubusercontent.com
+```sh
+tag=v1.0.0-pre.0
+cd "$(mktemp -d)"
+gh release download "$tag" --repo cozybadgerde/cress
+identity=https://github.com/cozybadgerde/cress/.github/workflows/release.yml@refs/tags
+issuer=https://token.actions.githubusercontent.com
 ```
 
-Also confirm that a modified checksum file or a wrong identity fails
-verification.
+Check that the signature and every file are valid. Cosign prints
+`Verified OK`, and every file shows `OK`:
+
+```sh
+cosign verify-blob --certificate-identity "$identity/$tag" \
+  --certificate-oidc-issuer "$issuer" \
+  --bundle checksums.txt.sigstore.json checksums.txt
+shasum -a 256 --check checksums.txt
+```
+
+Then check that tampering is caught. Each of these commands must fail:
+
+```sh
+# A signature for another tag
+cosign verify-blob --certificate-identity "$identity/v0.0.0" \
+  --certificate-oidc-issuer "$issuer" \
+  --bundle checksums.txt.sigstore.json checksums.txt
+
+# A changed checksum file
+cp checksums.txt changed.txt && printf '\n' >> changed.txt
+cosign verify-blob --certificate-identity "$identity/$tag" \
+  --certificate-oidc-issuer "$issuer" \
+  --bundle checksums.txt.sigstore.json changed.txt
+
+# A changed archive
+printf x >> cress_*_darwin_arm64.tar.gz
+shasum -a 256 --check --ignore-missing checksums.txt
+```
+
+If anything passes that should fail, or fails that should pass, delete the
+release and investigate before announcing it.
 
 ## Reference
 

@@ -23,9 +23,6 @@ and publication require maintainer approval.
 Follow the [release guide](docs/RELEASE.md) for each release. Tags and
 publication need maintainer approval.
 
-- [ ] Add copy-paste commands for the negative signature checks to
-  [step 6 of the release guide](docs/RELEASE.md#6-verify-the-published-release):
-  a modified checksum file, a modified archive, and a wrong tag identity.
 - [ ] Release `v1.0.0-pre.0`.
   Go through the full release guide. Then confirm the draft gate published
   it as a prerelease with all assets, and that the signature passes and all
