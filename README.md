@@ -37,17 +37,27 @@ The [product requirements](docs/PRD.md#scope) define the scope.
 
 ## Documentation
 
-- [User guide](docs/USER.md): install, write, configure, preview, and build.
-- [Installation](docs/INSTALL.md): obtain and verify an executable.
-- [Theme development](docs/THEMES.md): create a package and use prepared data.
+Guides walk you through a task or give background:
+
+- [User guide](docs/USER.md): create, write, preview, and publish a site.
+- [Installation guide](docs/INSTALL.md): download and verify Cress.
+- [Content guide](docs/CONTENT.md): write good pages in Markdown.
+- [Theme developer guide](docs/THEMES.md): build your own theme.
+- [Accessibility guide](docs/ACCESSIBILITY.md): what Cress takes care of and
+  how to write accessible content.
 - [Developer guide](docs/DEVELOPER.md): set up, build, and test the source.
-- [Product requirements](docs/PRD.md): scope and acceptance criteria.
-- [Architecture guide](docs/ARCHITECTURE.md): system boundary,
-  responsibilities, build and preview flow, and failure boundaries.
+- [Release guide](docs/RELEASE.md): check, tag, and publish a release.
+
+Documents describe details to look up:
+
+- [Build and preview document](docs/OUTPUT.md): preview, output protection,
+  and recovery.
+- [Product requirements document](docs/PRD.md): scope and acceptance
+  criteria.
+- [Architecture document](docs/ARCHITECTURE.md): system boundary,
+  responsibilities, and data flow.
 - [Architectural decision records](docs/adr/): accepted decisions and their
   rationale, listed in the [decision index](docs/PRD.md#decision-records).
-- [Accessibility assessment](docs/ACCESSIBILITY.md): evidence and blockers.
-- [Release maintenance](docs/RELEASE.md): inventory, packaging, and signing.
 
 ## Contributing
 
@@ -69,6 +79,6 @@ For questions or feedback, contact the project maintainers via:
 Cress's code is licensed under [BSD-3-Clause](LICENSE). The
 [project artwork](docs/assets/logo/README.md) is copyright Daniel Schier
 and licensed under CC BY-SA 4.0 International. Bundled dependencies retain
-their own licenses; see the
-[third-party notices](docs/THIRD-PARTY-NOTICES.md) and
+their own licenses. Each release includes their notices and
+license reports; see the
 [licensing decision](docs/adr/0011-bsd-3-clause-license.md).

@@ -176,7 +176,6 @@ func readArchiveBinary(t *testing.T, name string) []byte {
 	required := map[string]bool{
 		"cress": false, "LICENSE": false, "README.md": false,
 		"THIRD-PARTY-NOTICES.txt": false, "docs/INSTALL.md": false,
-		"docs/THIRD-PARTY-NOTICES.md": false,
 	}
 	var binary []byte
 	for {

@@ -1,43 +1,47 @@
-# Site-wide settings for this project. Edit these alongside content/.
-# Optional examples are commented out; uncomment their table and fields together.
+# Site settings. Every setting is optional unless noted; omitted ones use the
+# default shown. To enable an example, remove the "# " from its table and
+# fields together. Unknown settings produce a warning.
 
 [site]
-# Site identity, separate from each page's required frontmatter title.
+# Site name, shown in the header and browser tab. Each page still needs its
+# own title.
 title = "Your business"
-# Default page description; a page can override it or clear it with "".
+# Default page description for search engines. A page can override it,
+# or clear it with description = "".
 description = "Practical help, thoughtfully delivered."
-# Optional plain-text footer line; no year or wording is added automatically.
+# Footer line, shown as written. No year is added.
 # copyright = "Copyright Your business"
-# One language per site. Built-in labels support exactly "en" and "de".
-# Changing this does not translate your content.
+# Site language, used for theme labels and screen readers. Built-in themes
+# support "en" and "de". Content is not translated. Default: "en".
 language = "en"
-# Public HTTP/HTTPS origin, with no subpath, credentials, query, or fragment.
-# Set before publishing for canonical URLs and sitemap.xml; omit while unknown.
+# Your public address, without a path. Set it before publishing to get
+# canonical URLs and sitemap.xml. Leave it out while unknown.
 # host = "https://example.org"
-# URL prefix, not an output directory: "/" or, for example, "/company/".
-# Start and end with "/"; keep internal URLs below relative to the site root.
+# Set this when the site lives below a folder, such as "/company/". It must
+# start and end with "/". Write all other URLs here and in your pages as if
+# the site were at "/": Cress adds the prefix. Default: "/".
 path = "/"
 
-# Optional default title image for landing pages; a page replaces the whole table.
-# Put shared files in static/images/ to publish them at /images/.
+# Default title image for landing pages. A page's own [image] replaces it.
+# Files in static/images/ are published at /images/.
 # [site.image]
 # src = "/images/team.jpg"
-# alt = "Our team" # Describe the image, or use "" for a decorative image.
+# alt = "Our team" # Describe the image, or use "" if it is decorative.
 # caption = "Meet our team. [Photo credit](https://example.org/credits/)"
-# focus = "top" # Part kept in view when a theme crops: center, top, bottom-left, ...
+# focus = "top" # Part kept visible when cropped: center, top, bottom-left, ...
 
 [theme]
-# Built-ins: "poppy" (default), "clover", "anemone"; also accepts local names.
-# A complete themes/<name>/ overrides a built-in; invalid packages fail.
+# Built-in themes: "poppy" (default), "clover", or "anemone". A theme folder
+# in themes/<name>/ is used instead, including one with a built-in name.
 name = "poppy"
 
-# Optional theme-defined TOML data. No built-in uses custom keys.
-# Add only keys documented by your chosen local theme.
+# Extra settings for a local theme. Built-in themes don't use any. Add only
+# settings your theme documents.
 # [theme.custom]
 
 [navigation]
-# Flat lists, shown in this order. Use [] to hide a group.
-# URLs are site-root paths or absolute HTTP/HTTPS links, not Markdown filenames.
+# Links in the order shown. Use published addresses such as "/about/", not
+# file names, or full https:// links. Use [] to hide a group.
 main = [
   { label = "Home", url = "/" },
   { label = "Services", url = "/services/" },
@@ -51,19 +55,19 @@ footer = [
 # External link example: { label = "Partner", url = "https://example.org/" }
 
 [syntax]
-# Enable syntax coloring; themes control its appearance, not this choice.
-# Set false for plain code. Untagged and unknown languages are always plain.
+# Color code blocks by language. Set to false for plain code. Default: true.
 highlight = true
 
-# Optional branding. Omit unused fields rather than setting empty asset URLs.
-# Asset URLs can also be absolute HTTP/HTTPS URLs; Cress does not fetch them.
 [brand]
-# color = "#346b38" # Accent color for links and buttons; aim for 4.5:1 against white.
+# Accent color for links and buttons, as "#" plus six hex digits. Cress warns
+# below 4.5:1 contrast against white; check the result in your theme too.
+# color = "#346b38"
+# Browser tab icon.
 favicon = "/images/favicon.svg"
 
-# Replace the gray placeholders in static/images/ before publishing.
-# Square or circular artwork fits the compact header box without cropping.
-# Empty alt avoids repeating the adjacent site title.
+# Logo shown beside the site title. Replace the gray placeholder in
+# static/images/ before publishing. Square or round artwork fits best.
+# Leave alt empty when the site title is shown, so it isn't read twice.
 [brand.logo]
 src = "/images/logo.svg"
 alt = ""

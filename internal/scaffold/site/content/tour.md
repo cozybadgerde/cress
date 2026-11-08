@@ -185,5 +185,5 @@ its URLs; browsers may load resources or execute scripts supplied in HTML.
 ## What is not enabled
 
 This tour uses supported features, not every Markdown extension.
-Task-list checkboxes, strikethrough, footnotes, and automatic links from
-bare URLs are not enabled. Use ordinary lists, emphasis, and explicit links.
+Footnotes and automatic links from bare URLs are not enabled. Use explicit
+links instead.

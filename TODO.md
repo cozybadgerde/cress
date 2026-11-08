@@ -2,7 +2,7 @@
 
 This plan tracks open work only. Product scope lives in the
 [PRD](docs/PRD.md), rationale in the [ADRs](docs/adr/), and structure in the
-[architecture guide](docs/ARCHITECTURE.md). Completed work is retained in
+[architecture document](docs/ARCHITECTURE.md). Completed work is retained in
 Git history, not repeated here.
 
 ## Phase workflow
@@ -20,7 +20,7 @@ and publication require maintainer approval.
 
 ## Phase 3: Release tooling and acceptance
 
-The [release reference](docs/RELEASE.md) owns the maintainer procedure.
+The [release guide](docs/RELEASE.md) owns the maintainer procedure.
 These tasks are not authorization to tag or publish.
 
 - [ ] Agree and implement a pre-1.0 update check.
@@ -45,19 +45,10 @@ These tasks are not authorization to tag or publish.
   Require the exact tag identity/issuer, verify archive/report digests, and
   reject modified checksums, modified artifacts, and wrong identities.
   Keep this distinct from pre-publication gating.
-- [ ] Complete the human accessibility matrix for all three themes and
-  default page types. Record environments, scope, results, and limitations in
-  [the assessment](docs/ACCESSIBILITY.md); fix and retest applicable A/AA
-  failures. Include keyboard, screen-reader, touch, zoom/reflow, and
-  table-wrapper behavior with and without overflow. Exploratory checks do not
-  complete this gate.
-- [ ] Complete supported-target/product acceptance against the
-  [PRD criteria](docs/PRD.md#acceptance-criteria-for-10).
-  Record criterion-specific environments and results for the release revision.
-  Existing automated and native-platform checks do not replace the remaining
-  manual/product assessment.
-- [ ] Review accessibility outcomes, platform evidence, and distribution
-  rights before approving a release tag.
+- [ ] Review release readiness with the
+  [pre-tag checklist](docs/RELEASE.md#2-go-through-the-pre-tag-checklist).
+  Cover accessibility across the three themes, supported targets, product
+  behavior, and distribution rights. Keep brief notes and retest fixes.
 
 ## Phase 4: Approved publication and verification
 

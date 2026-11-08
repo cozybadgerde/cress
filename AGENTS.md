@@ -3,7 +3,7 @@
 - Read [the developer guide](docs/DEVELOPER.md) for setup,
   [the PRD](docs/PRD.md) for scope,
   [the ADRs](docs/PRD.md#decision-records) for decisions,
-  [the architecture guide](docs/ARCHITECTURE.md) for structure, and
+  [the architecture document](docs/ARCHITECTURE.md) for structure, and
   [TODO.md](TODO.md) for pending work. Agreed behavior is not necessarily
   implemented.
 - Follow the [development guidelines](docs/DEVELOPER.md#development-guidelines):
@@ -23,5 +23,11 @@
   formatting is `mise run fmt`.
 - Prefer unit tests; add integration coverage where useful. Automated
   browser/end-to-end tests are outside the initial scope.
+- Accessibility means following best practices, not a legal audit or WCAG
+  conformance claim. Don't add audit matrices, per-criterion evidence, or
+  approval gates beyond the release checklist.
+- Write `docs/` for humans: short guidance without disclaimers or meta
+  statements about the document itself. Title each file "X guide" (walks
+  through or explains) or "X document" (details to look up), never mixed.
 - Keep product requirements in the PRD, decision rationale in ADRs, and
   implementation tasks in the work plan. Avoid duplicating those policies.

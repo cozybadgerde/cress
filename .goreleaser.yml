@@ -34,7 +34,6 @@ archives:
   - files:
       - LICENSE
       - README.md
-      - docs/THIRD-PARTY-NOTICES.md
       - docs/INSTALL.md
       - src: bin/THIRD-PARTY-NOTICES.txt
         strip_parent: true
