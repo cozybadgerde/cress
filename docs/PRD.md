@@ -590,7 +590,6 @@ installation. Containers and Homebrew are future distribution options.
     and usable item links, including nested and ordered lists. All shipped
     themes render these features without scripts or new configuration.
 
-These criteria define readiness, not an implementation sequence.
 No performance threshold or adoption target has been agreed.
 
 ## Decision records

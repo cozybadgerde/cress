@@ -5,11 +5,6 @@ responsibilities, data flow, and failure boundaries. The
 [PRD](PRD.md) owns product behavior. The [ADRs](adr/) own decision
 rationale.
 
-Status: implemented generator structure. Poppy, Clover, Anemone, site/theme
-initialization, complete generation, recoverable output replacement, and
-isolated preview are available. [Release tooling](RELEASE.md) is separate
-from the offline executable.
-
 ## System context
 
 Cress is a single offline executable. A maintainer runs it locally or in

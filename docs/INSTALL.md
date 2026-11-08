@@ -35,9 +35,8 @@ cosign verify-blob \
   --bundle checksums.txt.sigstore.json checksums.txt
 ```
 
-Use the tag of the release you downloaded, not a branch or a different
-release. Never weaken the expected identity or issuer to make verification
-pass. A valid signature from an unexpected publisher is not sufficient.
+Enter the tag of the release you downloaded. Keep the identity and issuer
+exactly as shown: a signature from anyone else doesn't count.
 
 Only after signature verification succeeds, check the archive and report
 digests. With GNU coreutils:
@@ -53,11 +52,9 @@ Perl utility can verify the manifest instead:
 shasum -a 256 --check checksums.txt
 ```
 
-Missing artifacts cause that command to fail; inspect every result and
-require `OK` for both downloaded files. Do not treat an unlisted file as
-verified. Stop on any bad signature, wrong identity, or digest mismatch.
-The bundle packages verification evidence; trust still depends on the
-expected identity, issuer, and Sigstore trust roots.
+This command also reports the files you didn't download as missing. Look
+for `OK` next to both of yours. Stop if the signature, identity, or any
+digest doesn't match.
 
 ## Install
 
@@ -80,6 +77,5 @@ cress --version
 
 Continue with [creating your site](USER.md#create-your-site).
 
-macOS archives are not Apple Developer ID signed or notarized. Cosign
-verification is not Apple notarization; macOS may display trust warnings.
-Do not disable system-wide protections to install Cress.
+Cress isn't notarized by Apple, so macOS may warn about it. Don't turn off
+system-wide protections to install it.

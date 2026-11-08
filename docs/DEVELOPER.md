@@ -1,8 +1,5 @@
 # Developer guide
 
-This guide explains how to set up a local development environment, change the
-source, and build and test Cress.
-
 ## Before you start
 
 These documents explain what Cress should do and why:
@@ -149,10 +146,9 @@ and [output protection](OUTPUT.md#output-protection) for safety rules.
 
 Theme authors can use the same scaffold with a
 [local development theme](THEMES.md#create-your-first-theme).
-Manual test sites do not replace automated tests.
 
 For packaging changes, also run `mise run check:goreleaser`.
-The [release guide](RELEASE.md) cover the pre-tag checklist, local
+The [release guide](RELEASE.md) covers the pre-tag checklist, local
 rehearsal, and publication.
 
 ## Testing and checks
