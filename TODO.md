@@ -23,7 +23,6 @@ and publication require maintainer approval.
 Follow the [release guide](docs/RELEASE.md) for each release. Tags and
 publication need maintainer approval.
 
-- [ ] Review accessibility across the three themes and fix what you find.
 - [ ] Add copy-paste commands for the negative signature checks to
   [step 6 of the release guide](docs/RELEASE.md#6-verify-the-published-release):
   a modified checksum file, a modified archive, and a wrong tag identity.
