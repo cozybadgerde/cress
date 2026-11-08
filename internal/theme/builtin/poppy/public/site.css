@@ -43,6 +43,7 @@ main { max-width: var(--content-width); margin: auto; padding: 2rem var(--gutter
 h1, h2, h3 { line-height: 1.2; font-weight: 650; letter-spacing: -.02em; text-wrap: balance; }
 h1 { font-size: clamp(2rem, 4.5vw, 3rem); margin: 0 0 1.5rem; }
 h2 { margin-top: 2rem; font-size: 1.8rem; }
+h5, h6 { font-size: 1em; }
 main.landing { padding-top: 1.5rem; }
 @media (max-width: 40rem) {
   .site-header { gap: .75rem; padding-block: 1.25rem; }
