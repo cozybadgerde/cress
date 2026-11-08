@@ -2,6 +2,10 @@
 
 Status: accepted.
 
+Note, 2026-11-07: the assessment approach below is replaced by lighter
+guidance in the [PRD](../PRD.md#accessibility) and
+[release checklist](../RELEASE.md#2-go-through-the-pre-tag-checklist).
+
 Date: 2026-10-15.
 
 Decision-maker: Daniel Schier, Product Owner of Cozy Badger.

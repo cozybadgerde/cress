@@ -1,9 +1,9 @@
-# Cress architecture
+# Architecture document
 
-This guide describes Cress's agreed structure: its boundary, main
+This document describes Cress's structure: its boundary, main
 responsibilities, data flow, and failure boundaries. The
 [PRD](PRD.md) owns product behavior. The [ADRs](adr/) own decision
-rationale. This guide links to both instead of repeating them.
+rationale.
 
 Status: implemented generator structure. Poppy, Clover, Anemone, site/theme
 initialization, complete generation, recoverable output replacement, and
@@ -147,7 +147,7 @@ and allowed path combinations. It restores interrupted previous output or
 retains confirmed new output, never promotes a merely staged directory.
 Unexpected paths or an uncommitted next record stop with preserved
 evidence. Cleanup failure remains an error without rolling back published
-output. The [user reference](USER.md#output-protection) owns migration and
+output. The [build and preview document](OUTPUT.md#output-protection) owns migration and
 manual-recovery guidance.
 
 ## Preview flow
@@ -246,15 +246,16 @@ test seam or a second implementation.
 
 Prefer the Go standard library, including `html/template` for rendering.
 The theme skeleton, all three complete built-in packages, and site scaffold are
-embedded in the executable. The [user reference](USER.md) describes usage,
-and the [theme reference](THEMES.md) owns the render-model fields.
+embedded in the executable. The [user](USER.md) and [content](CONTENT.md) guides and the
+[build and preview document](OUTPUT.md) describe usage, and the [theme developer guide](THEMES.md) owns the render-model
+fields.
 See the [developer guide](DEVELOPER.md) for commands and layout.
 
 Release hooks use go-licenses to generate CSV dependency-license reports
 and notice text. Outputs are release artifacts, not checked-in catalogues
 or application code. Cosign signs the checksum manifest covering archives
 and reports.
-See [release maintenance](RELEASE.md).
+See the [release guide](RELEASE.md).
 
 ## Architecture decision records
 

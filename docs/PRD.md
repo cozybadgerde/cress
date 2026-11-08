@@ -1,4 +1,4 @@
-# Cress product requirements
+# Product requirements document
 
 Status: approved product direction; generator capabilities implemented.
 
@@ -179,8 +179,7 @@ IDs receive numeric suffixes.
 
 Use Goldmark's built-in automatic ID rules, including their non-ASCII
 limitations. Authors can supply stable IDs when wording changes or an
-automatic ID is unsuitable. Document the syntax and exact rules in the
-authoring reference.
+automatic ID is unsuitable. Explain the syntax in the content guide.
 
 Reserve `main`, `page-title`, and `cress-*` for theme and generated markup.
 Automatic heading IDs avoid these names; explicit heading IDs using them
@@ -293,7 +292,7 @@ Provide three built-in themes:
 
 All support the required content capabilities, responsive layouts, and
 the accessibility target. Names and presentation contracts belong to the
-[theme reference](USER.md#built-in-themes) and
+[user guide](USER.md#choosing-a-theme) and
 [third-theme decision](adr/0020-third-bundled-theme.md).
 
 A theme is a named presentation package. Bundled and third-party themes
@@ -458,27 +457,19 @@ structure, navigation markup, styling, focus presentation, contrast, and
 responsive behavior, whether bundled or third-party. Publishers own content
 structure, image alternatives, and the effects of custom HTML and styles.
 
-Target Web Content Accessibility Guidelines (WCAG) 2.2 Level AA for complete
-default pages generated with each theme shipped with Cress, covering
-supported page types and default interactions. Known applicable Level A or
-AA failures in assessed default pages block release until fixed.
+Default pages from each shipped theme follow accessibility best practices,
+with Web Content Accessibility Guidelines (WCAG) 2.2 Level AA as a reference.
+Focus on keyboard use, visible focus, meaningful structure, contrast,
+resizing, and narrow screens.
 
 Use linters and continuous integration (CI), with unit tests as the default
 and integration tests where boundary coverage adds meaningful confidence.
 Automated end-to-end tests and browser automation are outside the initial
-scope. Complement automation with documented human accessibility review
-before 1.0 and after relevant generated-markup or theme-behavior changes.
-Record scope, environments, results, and limitations.
+scope. A short human accessibility review happens before 1.0 and after
+relevant markup or theme changes.
 
 Document author responsibilities for image alternatives and content
-structure, and limitations of custom colors, raw HTML, and third-party
-themes. Assessment covers the reviewed default pages. It does not certify
-a publisher's finished site or prove legal compliance.
-
-Do not treat a passing build or automated check as certification.
-Additional AAA goals, broader compatibility coverage, and usability studies
-can follow, but do not justify deferring known baseline failures.
-Concrete tools and assessment coverage belong to implementation planning.
+structure, and the limits of custom colors, raw HTML, and third-party themes.
 Generator accessibility-validation commands are outside 1.0 scope.
 
 ### Search engine optimization
@@ -555,10 +546,9 @@ installation. Containers and Homebrew are future distribution options.
     Competing writers cannot corrupt output.
 11. Site and theme initialization work offline without silent overwrites.
     Version information, usage help, and maintainer workflows are documented.
-12. Complete default pages produced with shipped themes meet the documented
-    accessibility release baseline. Record automated and manual assessment,
-    scope, environments, results, limitations, and author responsibilities;
-    known applicable A or AA failures in assessed default pages block release.
+12. Default pages produced with shipped themes pass automated checks and a
+    human accessibility review, with fixes for barriers found. Author
+    responsibilities are documented.
 13. Releases cover the supported targets and work without separate built-in
     theme files. Authenticity and integrity verification accepts genuine
     artifacts and rejects tampering or unexpected publisher identities.

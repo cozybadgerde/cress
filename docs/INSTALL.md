@@ -1,4 +1,4 @@
-# Install and verify Cress
+# Installation guide
 
 Check the [releases page](https://github.com/cozybadgerde/cress/releases)
 for available archives. If no suitable release is available, follow
@@ -23,7 +23,6 @@ toolchain or separate runtime theme files.
 
 Install Cosign using
 <https://docs.sigstore.dev/cosign/system_config/installation/>.
-The release tooling's version is pinned in [`mise.toml`](../mise.toml).
 Use a shell in the download directory. Enter the exact release tag,
 including its leading `v`, at the prompt:
 
@@ -72,8 +71,8 @@ mkdir -p "$HOME/.local/bin"
 install -m 755 cress "$HOME/.local/bin/cress"
 ```
 
-Add `$HOME/.local/bin` to your shell's `PATH` if needed. Keep `LICENSE`, the
-third-party notices, and this reference when redistributing the archive.
+Add `$HOME/.local/bin` to your shell's `PATH` if needed. Keep `LICENSE`,
+`THIRD-PARTY-NOTICES.txt`, and this guide when redistributing the archive.
 
 ```sh
 cress --version

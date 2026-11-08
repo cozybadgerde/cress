@@ -39,9 +39,9 @@ position. Other themes may use it differently or ignore it entirely.
 Do not add primary-action metadata, change link semantics, inject styles,
 or interpret authored HTML.
 
-The [theme reference](../THEMES.md#prepared-render-model) owns the markup
-contract; the [user reference](../USER.md#built-in-themes) owns bundled
-presentation behavior. The broader content/presentation review remains
+The [theme developer guide](../THEMES.md#markup-inside-the-body) owns the
+markup contract; the [built-in themes](../../internal/theme/builtin/) own
+bundled presentation behavior. The broader content/presentation review remains
 separate work.
 
 ## Confirmation

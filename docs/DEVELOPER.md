@@ -8,7 +8,7 @@ source, and build and test Cress.
 These documents explain what Cress should do and why:
 
 - [Product requirements](PRD.md): scope and acceptance criteria for 1.0.
-- [Architecture guide](ARCHITECTURE.md): responsibilities, data flow, and
+- [Architecture document](ARCHITECTURE.md): responsibilities, data flow, and
   failure boundaries.
 - [Architectural decision records](PRD.md#decision-records): accepted
   decisions and their rationale.
@@ -58,14 +58,14 @@ modules automatically.
 | `cmd/cress/` | Executable entry point. |
 | `internal/` | CLI, generator, content, render model, renderer, and output handling. |
 | `schemas/` | Authoring schemas and schema/runtime agreement tests. |
-| `docs/` | Product requirements, architecture guide, and this guide. |
+| `docs/` | Guides and documents; see the [README](../README.md#documentation). |
 | `docs/adr/` | Architectural decision records. |
 | `mise.toml` | Pinned tools and developer tasks. |
 | `.github/workflows/` | CI and version-tag release workflows. |
 | `.goreleaser.yml` | Archive, dependency-report, checksum, and signing configuration. |
 
 New packages follow the responsibilities in the
-[architecture guide](ARCHITECTURE.md#responsibilities) as code arrives.
+[architecture document](ARCHITECTURE.md#responsibilities) as code arrives.
 
 ## Development guidelines
 
@@ -98,13 +98,14 @@ go run ./cmd/cress site build /path/to/site
 ```
 
 Replace `/path/to/site` with a site directory containing `content/`.
-The [user reference](USER.md) documents the current authoring contract and
-output ownership and recovery workflow. The
-[theme reference](THEMES.md) documents the prepared render model.
+The generated `cress.toml`, the [content guide](CONTENT.md), and the
+[build and preview document](OUTPUT.md) describe authoring, output
+ownership, and recovery. The
+[theme developer guide](THEMES.md) documents the prepared render model.
 
-See the [architecture guide](ARCHITECTURE.md#responsibilities) for component
-responsibilities and [third-party notices](THIRD-PARTY-NOTICES.md) for
-generated dependency reports and redistribution notices.
+See the [architecture document](ARCHITECTURE.md#responsibilities) for component
+responsibilities and the [release guide](RELEASE.md#license-reports) for
+dependency license reports and notices.
 
 Use `mise tasks ls` to list the tasks defined in
 [`mise.toml`](../mise.toml). The tasks call ordinary tools, so native Go
@@ -143,15 +144,16 @@ Review the content tour and pages with and without images.
 
 Edit the fixture's sources to test a change. Do not initialize over an
 existing project. Add test-specific content, drafts, or shared assets as
-needed. See the [user guide](USER.md#testing-a-site) for the authoring workflow
-and output-safety rules.
+needed. See the [user guide](USER.md) for the authoring workflow
+and [output protection](OUTPUT.md#output-protection) for safety rules.
 
 Theme authors can use the same scaffold with a
-[local development theme](THEMES.md#testing-a-theme).
+[local development theme](THEMES.md#create-your-first-theme).
 Manual test sites do not replace automated tests.
 
 For packaging changes, also run `mise run check:goreleaser`.
-The [release guide](RELEASE.md) owns rehearsal and publication procedures.
+The [release guide](RELEASE.md) cover the pre-tag checklist, local
+rehearsal, and publication.
 
 ## Testing and checks
 
@@ -180,7 +182,7 @@ the configuration/frontmatter schema tests and filesystem integration
 tests.
 
 EditorConfig supplies basic editor defaults. External schema validation is
-documented in the [user reference](USER.md#external-schema-validation);
+documented in the [user guide](USER.md#editor-support);
 no editor-specific integration is required.
 
 ## Troubleshooting

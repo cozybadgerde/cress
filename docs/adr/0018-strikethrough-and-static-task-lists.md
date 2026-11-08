@@ -39,8 +39,8 @@ This needs no generated IDs, translated status labels, or custom renderer.
 Themes preserve this markup; the browser supplies native checkbox styling.
 
 The [product requirements](../PRD.md#authoring-and-content) own behavior.
-The [authoring reference](../USER.md#strikethrough-and-task-lists) owns syntax
-and publisher guidance. Raw HTML remains publisher-controlled under
+The [content guide](../CONTENT.md#use-lists-and-tables) explains syntax and
+publisher guidance. Raw HTML remains publisher-controlled under
 [the content trust policy](0015-trusted-markdown-and-raw-html.md).
 
 ### Consequences

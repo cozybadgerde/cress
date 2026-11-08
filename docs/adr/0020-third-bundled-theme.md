@@ -50,8 +50,8 @@ on an arbitrary accent as a text background. Consume no custom settings.
 Ship exact English and German labels, local CSS, no browser JavaScript,
 and no downloaded fonts or other remote resources.
 
-The [theme reference](../THEMES.md#built-in-packages) and
-[user reference](../USER.md#built-in-themes) own current package and
+The [theme developer guide](../THEMES.md) and
+[user guide](../USER.md#choosing-a-theme) own current package and
 presentation details. Product scope belongs to the [PRD](../PRD.md#themes).
 
 ## Confirmation

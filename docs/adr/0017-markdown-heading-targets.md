@@ -38,8 +38,8 @@ and no dependency or configuration growth.
 Content preparation parses heading attributes, validates and reserves all
 explicit IDs, then uses Goldmark's ID generator for remaining headings.
 The [product requirements](../PRD.md#heading-links) own observable behavior;
-the [authoring reference](../USER.md#heading-links) owns syntax and exact
-allocation rules.
+the [content guide](../CONTENT.md#structure-with-headings) explains the
+syntax.
 
 The reserved `main` and `page-title` IDs preserve existing theme targets.
 The `cress-*` namespace protects generated captions and provides a namespace

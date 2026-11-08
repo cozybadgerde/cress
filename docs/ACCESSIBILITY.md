@@ -1,173 +1,107 @@
-# Accessibility assessment
+# Accessibility guide
 
-## Scope and release status
+A website is accessible when people can use it however they browse. Some
+readers are blind and listen to a screen reader. Others navigate with a
+keyboard or switch device, zoom text to 200 percent, read on a small phone in
+bright sunlight, or need plain language and a predictable layout. Many people
+fit several of these at once, and most of us fit one of them at some point,
+with a broken arm, a tired evening, or an old laptop.
 
-**Release blocked: criterion-by-criterion assessment is pending.** Cress targets
-WCAG 2.2 Level AA for complete default pages, not arbitrary customized sites.
-No conformance or legal-compliance claim is made.
+Cress tries to make the accessible result the default one. It follows common
+best practices and uses the
+[Web Content Accessibility Guidelines (WCAG) 2.2](https://www.w3.org/TR/WCAG22/)
+at level AA as a reference. The [product requirements](PRD.md#accessibility)
+describe how responsibility is shared.
 
-The assessment fixtures are the seven English pages created by `site init`
-with each of `poppy`, `clover`, and `anemone`: home landing, services with a table,
-about, contact with opening hours, journal list, and dated article with
-captioned code, plus a content tour with Markdown and authored HTML examples.
-The tour also demonstrates automatic and explicit Markdown heading targets
-with same-page links. Verify fragment navigation and heading reading order
-without treating IDs as additional interactive controls.
-The tour includes strikethrough and static task lists with labeled native
-disabled checkboxes. Check announced names, completion state, disabled
-state, nested-list reading order, and usable links inside task text.
-These are not interactive forms. Confirm important changes remain clear
-when strikethrough is not announced.
-The home includes an original captioned SVG. Automated
-tests additionally cover German labels, supplied metadata, title images,
-caption links, and page-type composition. No scripts, forms, media players,
-authentication, menus that open/close, or timed interactions are shipped.
+## Meaningful structure
 
-Automated evidence recorded on 2026-10-21: Go unit and filesystem tests on
-macOS pass for default palette contrast, one main landmark and page heading,
-skip target, labeled navigation, local assets, page types, and initialization.
-`mise run check` runs those tests. Contrast checks use WCAG relative
-luminance: at least 4.5:1 for text, including syntax colors, and 3:1 for
-boundaries. These checks do not measure rendered pixels or browser behavior.
+Screen readers let people jump between headings, landmarks, and links, much
+like sighted readers skim a page. That only works when the markup says what
+each part is.
 
-On 2026-10-30, Anemone passed the same automated palette, markup, localization,
-and initialized-site checks. Filesystem tests also cover image-free pages,
-an empty list, German dates, and a deployment prefix.
+- Every page declares its language with `lang`, so screen readers pronounce
+  it correctly.
+- The bundled themes use `header`, `nav`, `main`, and `footer` landmarks.
+  Navigation areas have names such as "Main navigation".
+- The current page in the navigation carries `aria-current="page"`.
+- Markdown headings become real headings with stable anchors.
+- Captioned images become `figure` and `figcaption`. Task lists use native,
+  labelled checkboxes, and strikethrough uses `del`.
+- Decorative separators are hidden from screen readers.
 
-A scoped visual review on macOS with Firefox 158.0.1 inspected Anemone at
-1280 and 320 CSS pixels: default landing and list pages, the content tour,
-image-free and title-image landings, long titles, links, code, and tables.
-Desktop inspection confirmed image-only rotation, upright captions, and
-the side masthead. Narrow screenshots confirmed stacked layout, unrotated
-images, wrapped long content, and table overflow contained in its wrapper.
-These one-off checks are not a complete-page accessibility assessment.
+## Keyboard use
 
-On 2026-11-01, the maintainer reports manual exploratory accessibility testing
-across the three themes with a "works for me" result. No failures were reported.
-The report does not specify the tested pages, executable version, browser,
-assistive technology, keyboard, touch, zoom, or criterion-specific outcomes.
-It records exploratory evidence, not completion of the A/AA matrix below.
-A persistent browser automation suite remains outside the agreed scope.
+Many people never touch a mouse. Everything that works with a pointer should
+work with <kbd>Tab</kbd>, <kbd>Enter</kbd>, and the arrow keys.
 
-On 2026-11-04, a scoped Firefox 159.0 headless review on macOS compared
-short/long identities, English/German navigation labels, and title-, body-,
-inline-, code-, and list-image captions in all three themes. Rendered
-measurements at 320, 640, 768, 960, and 1440 CSS pixels found no horizontal
-page overflow, including text-spacing overrides at 320px. Identity and
-navigation targets measured at least 44px in each dimension; muted caption
-text exceeded 4.5:1 against the default backgrounds. Screenshots also covered
-390px layouts. Tab input followed the skip link, identity, and main links in
-document order. The headless session did not expose `:focus-visible` states,
-so visible keyboard-focus verification remains part of the human review.
-These exploratory checks do not complete the release matrix.
+- A skip link, visible on focus, jumps straight to the main content.
+- Focus outlines are clearly visible on links and other focusable areas.
+- Wide tables can receive focus, so keyboard users can scroll them.
+- The bundled themes ship no JavaScript, so there are no custom widgets that
+  trap focus or change the page unexpectedly.
 
-## Human review procedure
+## Readable presentation
 
-Generate fresh fixtures using the current executable:
+Text must stand out from its background, and meaning must not depend on
+color alone.
 
-```sh
-cress site init --theme poppy poppy-review
-cress site init --theme clover clover-review
-cress site init --theme anemone anemone-review
-cress site preview --port 0 poppy-review
-```
+- The default theme palettes are tested for a contrast of at least 4.5:1.
+- Links are underlined and the current page is bold, so neither relies on
+  color alone.
+- Cress warns when a configured brand color has low contrast against white.
+  Check the result in the actual theme as well.
+- In Anemone, Windows high-contrast mode keeps image borders visible, and
+  reduced-motion settings turn off image effects.
 
-Stop each preview before reviewing the next theme with the equivalent command.
-Use each printed URL. Also review German exact-language labels by changing
-`site.language` to `de`; sample page content itself remains English and
-must be translated or language-marked for a German-language assessment.
+## Adaptable layout
 
-For each theme and page, record executable version/commit, OS, browser and
-version, assistive technology/version, viewport and zoom settings, reviewer,
-date, observations, applicability, failures, and remediation/retest results.
-Do not mark a criterion passed from source inspection alone.
+People zoom, enlarge fonts, rotate phones, and adjust text spacing. Pages
+should reflow rather than break.
 
-Check keyboard-only navigation, skip-link focus, link purpose, focus
-visibility and order, screen-reader landmarks/headings/tables/images,
-200% text resizing, 400% zoom/reflow at 320 CSS pixels, text spacing
-overrides, landscape/portrait, target sizes, contrast in rendered states,
-and user color/forced-color modes where supported. Verify long titles,
-navigation labels, captions, code lines, and table contents. Review raw
-HTML and customizations separately when they are present.
+- Layouts use relative units and adapt down to phone widths without
+  sideways page scrolling.
+- Long words and URLs wrap instead of overflowing.
+- Wide tables and code blocks scroll within their own area.
+- Navigation links are at least 44 by 44 CSS pixels, which helps on touch
+  screens and for people with limited fine motor control.
 
-## WCAG 2.2 A/AA review matrix
+## Understandable and predictable
 
-Every row remains pending human confirmation. "Not present" is a proposed
-applicability decision for these fixtures, not a universal exemption.
-Record a separate outcome for all three themes and every affected page.
+Clear wording and a consistent layout help everyone, especially people with
+cognitive disabilities or those reading in a second language.
 
-| Criteria | Current evidence or applicability to confirm |
-|----------|---------------------------------------------|
-| 1.1.1 Non-text content | Sample SVG has descriptive alternative; inspect equivalent purpose and caption. |
-| 1.2.1–1.2.5 Audio/video | No audio/video in fixtures; confirm not applicable. |
-| 1.3.1 Info and relationships | Markup checks cover landmarks/headings; inspect table headers and accessibility tree. |
-| 1.3.2 Meaningful sequence | Inspect reading order for all page types. |
-| 1.3.3 Sensory characteristics | Review content instructions. |
-| 1.3.4 Orientation | Check portrait and landscape without restriction. |
-| 1.3.5 Identify input purpose | No personal-data entry; task checkboxes are disabled. Confirm applicability. |
-| 1.4.1 Use of color | Links are underlined; inspect all states and content. |
-| 1.4.2 Audio control | No audio; confirm not applicable. |
-| 1.4.3 Contrast (minimum) | Default CSS text palette passes automated ratios; inspect rendered states. |
-| 1.4.4 Resize text | Check 200% text resizing. |
-| 1.4.5 Images of text | SVG contains no text; inspect all fixtures. |
-| 1.4.10 Reflow | Check 320 CSS pixel width and 400% zoom. |
-| 1.4.11 Non-text contrast | CSS boundaries pass ratios; inspect focus indicators and imagery. |
-| 1.4.12 Text spacing | Apply spacing overrides and check clipping/overlap. |
-| 1.4.13 Content on hover or focus | No extra popovers/tooltips; confirm not applicable. |
-| 2.1.1 Keyboard | Exercise every link and scrollable area. |
-| 2.1.2 No keyboard trap | Verify entry/exit and skip-link behavior. |
-| 2.1.4 Character key shortcuts | No shortcuts; confirm not applicable. |
-| 2.2.1 Timing adjustable | No time limits; confirm not applicable. |
-| 2.2.2 Pause, stop, hide | No moving/auto-updating page content; confirm not applicable. |
-| 2.3.1 Three flashes or below threshold | No flashing; confirm not applicable. |
-| 2.4.1 Bypass blocks | Skip link and one main target are tested; verify actual focus movement. |
-| 2.4.2 Page titled | Templates emit escaped page/site titles; inspect browser titles. |
-| 2.4.3 Focus order | Verify logical order at every layout. |
-| 2.4.4 Link purpose (in context) | Review sample and navigation link text. |
-| 2.4.5 Multiple ways | Main/footer navigation and ordinary links connect the sample pages; verify findability. |
-| 2.4.6 Headings and labels | Review descriptive headings and navigation labels. |
-| 2.4.7 Focus visible | CSS defines focus outlines; inspect keyboard states. |
-| 2.4.11 Focus not obscured (minimum) | No sticky headers; verify focused links remain visible. |
-| 2.5.1 Pointer gestures | No multipoint/path gestures; confirm not applicable. |
-| 2.5.2 Pointer cancellation | Standard links; check normal activation/cancellation. |
-| 2.5.3 Label in name | Check accessible link and checkbox names match visible labels. |
-| 2.5.4 Motion actuation | No motion controls; confirm not applicable. |
-| 2.5.7 Dragging movements | No dragging; confirm not applicable. |
-| 2.5.8 Target size (minimum) | Navigation has padded targets; measure rendered targets and inline exceptions. |
-| 3.1.1 Language of page | Configured `lang` is tested; verify content language. |
-| 3.1.2 Language of parts | Review author content and code applicability. |
-| 3.2.1 On focus | No scripted navigation; verify no unexpected changes. |
-| 3.2.2 On input | Task checkboxes are disabled; confirm no input-driven changes. |
-| 3.2.3 Consistent navigation | Shared templates preserve order; inspect across page types. |
-| 3.2.4 Consistent identification | Review repeated links and identity. |
-| 3.2.6 Consistent help | Contact link repeats in footer; inspect position and ordering. |
-| 3.3.1–3.3.4 Input errors/instructions/prevention | No forms; confirm not applicable. |
-| 3.3.7 Redundant entry | No data entry; confirm not applicable. |
-| 3.3.8 Accessible authentication (minimum) | No authentication; confirm not applicable. |
-| 4.1.2 Name, role, value | Inspect links, landmarks, and checkbox names, completion, and disabled states. |
-| 4.1.3 Status messages | No dynamic page status messages; terminal preview diagnostics are not injected. |
+- Navigation stays in the same place on every page and is set explicitly by
+  the publisher.
+- Theme labels such as "Skip to content" come in English and German.
+- Dates use the `time` element with a machine-readable value.
 
-WCAG 2.2 removes 4.1.1 Parsing; it is not an additional 2.2 criterion.
-Known applicable A/AA failures block release until fixed and retested.
+## What publishers can do
 
-## Publisher responsibilities
+Cress can only preserve what the content provides.
 
-Use meaningful content headings below the theme's page-level heading.
-Supply useful image alternatives or an explicit empty alternative for
-decorative images. Captions are not replacements for alternatives.
-Review translations and language changes within content.
-Give every task meaningful text. Explain important changes in words
-rather than relying on strikethrough alone.
+- Use one main heading per page and keep heading levels in order.
+- Write link text that makes sense on its own, rather than "click here".
+- Give every informative image alternative text that conveys its purpose.
+  Use empty alternative text for purely decorative images. A caption does
+  not replace the alternative.
+- Set the site language, and review translated labels and content.
+- Explain important changes in words, not only with strikethrough.
+- Check contrast after changing brand colors or CSS.
+- Review the result when adding raw HTML or custom styles.
 
-Built-in themes use the brand color as their accent for links, buttons,
-and Clover's title block. Cress warns when it has less than 4.5:1 contrast
-against white as a reference only, not an assessment of the selected theme.
-Dark or tinted themes may intentionally use colors with low contrast
-against white. Check actual text/background pairs whether or not a warning
-appears; Poppy's off-white and Anemone's paper backgrounds also change
-the measured contrast. In Anemone, inspect framed images at wide and narrow
-widths, unrotated captions, image-free pages, and side-masthead reading order.
-Arbitrary custom CSS, raw HTML,
-third-party themes, changed navigation/content, or brand assets need
-assessment of the resulting complete pages. Passing tests is not
-certification of a finished site.
+## What theme authors can do
+
+Third-party themes own their markup and styles. The bundled themes are good
+starting points.
+
+- Keep landmarks, the skip link, and visible focus styles.
+- Respect user settings such as `prefers-reduced-motion` and
+  `forced-colors`.
+- Test with a keyboard, at 200 percent zoom, and on a narrow screen.
+- See the [theme developer guide](THEMES.md) for the template contract.
+
+## Learn more
+
+- [WCAG 2.2 at a glance](https://www.w3.org/WAI/standards-guidelines/wcag/glance/)
+- [Easy checks: a first review of web accessibility](https://www.w3.org/WAI/test-evaluate/easy-checks/)
+- [WebAIM contrast checker](https://webaim.org/resources/contrastchecker/)

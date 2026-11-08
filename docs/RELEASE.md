@@ -1,35 +1,57 @@
-# Release maintenance
+# Release guide
 
-## Generated reports
+Follow these steps to publish a Cress release. The maintainer performs every
+step that tags, publishes, or deletes something.
 
-GoReleaser invokes [go-licenses](https://github.com/google/go-licenses)
-to generate a CSV dependency-license report for each supported platform.
-Each row contains a library path, license URL, and detected license name,
-without a header. These `.licenses.csv` files are release artifacts,
-covered by the signed checksum manifest.
+## 1. Choose the version
 
-The before hook also uses `go-licenses report` with
-[the notices template](../.github/notices.tpl) to generate license texts
-for the archives.
-`mise run check:licenses`, included in `mise run check`, uses
-`go-licenses check` to enforce the approved dependency-license allowlist for
-all three release targets. Unknown or unapproved licenses fail the check.
-Approval applies to license types, not individual dependency records; see
-the [license policy](adr/0011-bsd-3-clause-license.md#dependency-license-policy).
-Bundled non-code assets still need separate distribution-rights review.
-The approved names include OFL-1.1 for font software; Chroma's combined
-COPYING file causes detection even though its SVG font formatter is not
-imported. Generated notices retain the font copyright and license text.
-There is no custom release executable, exclusion list, or checked-in
-generated inventory.
+Use a full semantic version with a `v` prefix, such as `v1.2.0`. Add a
+prerelease suffix such as `-rc.1` to publish a GitHub prerelease. Build
+metadata alone, such as `+build.1`, does not make a prerelease. The
+[release workflow](../.github/workflows/release.yml) owns the exact tag rules.
 
-To print a report locally:
+Check that no tag, release, or draft with that version exists yet:
 
 ```sh
-mise exec -- go-licenses report ./cmd/cress
+tag=v1.2.0
+git ls-remote --tags origin "$tag"
+gh release list --repo cozybadgerde/cress
 ```
 
-## Local release rehearsal
+Replace `v1.2.0` with the intended version.
+
+## 2. Go through the pre-tag checklist
+
+Do this for every major and minor release. For patch releases, check what
+changed. Note the version, the commit, and anything unusual in the release
+issue or pull request.
+
+Use the intended release revision and fresh test sites from
+[the developer guide](DEVELOPER.md#test-sites). For the accessibility rows,
+try a landing page and the content tour in each theme. The
+[accessibility guide](ACCESSIBILITY.md) explains what to look for.
+
+| # | Check | What to look for | Notes |
+|---|-------|------------------|-------|
+| 1 | Source is ready | Local `trunk` matches remote. No stray fixtures, generated output, or secrets in tracked or leftover files. | |
+| 2 | Scope and version are clear | Changes since the last release match the [PRD](PRD.md) and [compatibility policy](adr/0004-shared-contract-policy.md). Breaking changes, migrations, and known limits are described. | |
+| 3 | Automated checks are green | [Checks, CI](DEVELOPER.md#testing-and-checks), and build pass for the release commit. Warnings make sense. | |
+| 4 | Maintainer workflow works | Following the [user guide](USER.md) and [theme developer guide](THEMES.md#create-your-first-theme): initialize a site and theme, build, preview, edit, refresh, stop. Help and errors are clear. Works offline. | |
+| 5 | Content and deployment look right | Pages, lists, images, captions, code, navigation, and English/German labels. Domain-root and URL-prefix output, metadata, sitemap, and robots. | |
+| 6 | Safety behavior works | On a test site: an invalid edit, draft preview, and a removed page give useful errors, keep the last good preview, isolate drafts, and remove stale output. | |
+| 7 | Keyboard navigation works | Tab through navigation and content links, and try the skip link. Focus is visible, order makes sense, no traps. | |
+| 8 | Screen reader makes sense | With VoiceOver or NVDA, headings, navigation, images, a table, and task lists read sensibly. | |
+| 9 | Zoom and narrow layouts work | At 200% zoom and phone width, text and links stay readable without sideways page scrolling. | |
+| 10 | Tables and code stay usable | Wide content scrolls within its area, also by keyboard. | |
+| 11 | Touch works | If a touch device is at hand: navigation and links are easy to use in both orientations. | |
+| 12 | Visual clarity is good | Text, links, and focus have readable contrast. Meaning doesn't depend on color alone. | |
+| 13 | Problems are handled | Barriers and bugs found above are fixed and retried, or noted as known limits. | |
+| 14 | Distribution is ready | Target acceptance, [license reports](#license-reports), and [asset rights](adr/0011-bsd-3-clause-license.md) are fine. The [installation guide](INSTALL.md) is accurate. | |
+| 15 | Ready to tag | Open issues are acceptable, and you know how to handle a failed run (step 5). | |
+
+## 3. Rehearse locally
+
+Run from the repository root:
 
 ```sh
 mise run check
@@ -39,57 +61,101 @@ mise exec -- goreleaser release --snapshot --clean --skip=publish,sign
 mise run test:release
 ```
 
-The snapshot command replaces generated `dist/` artifacts and writes
-`bin/THIRD-PARTY-NOTICES.txt`. It does not tag, publish, or sign.
-The [release configuration](../.goreleaser.yml) owns target platforms,
-archive contents, and report names.
+The snapshot replaces `dist/` and writes `bin/THIRD-PARTY-NOTICES.txt`. It
+does not tag, publish, or sign. The smoke test checks archive contents,
+binary targets, license reports, and checksums. It runs the host executable
+and builds a site with each bundled theme. Other targets are only inspected,
+so native-platform checks remain part of checklist row 14.
 
-The smoke test checks archive contents, binary targets, license reports,
-and archive/report checksums. It extracts only the host-compatible executable
-into a temporary directory, verifies its version, and initializes and builds
-sites with all three embedded themes. Other targets are inspected, not run.
-This does not replace native-platform acceptance.
-The test never modifies `dist/` or existing sites. Ordinary checks skip it
-unless `CRESS_RELEASE_DIR` is set. The explicit task defaults to `dist/`
-and fails if artifacts are missing.
+## 4. Tag and push
 
-## Tag workflow
+```sh
+git switch trunk
+git pull --ff-only
+git tag -a "$tag" -m "Cress $tag"
+git push origin "$tag"
+```
 
-The [release workflow](../.github/workflows/release.yml) validates full
-`v`-prefixed semantic version tags. A read-only job runs the existing checks
-and build.
-The publication job runs GoReleaser with release-write and OIDC permissions.
-It refuses to start if a release or draft already exists for the tag. It
-uploads signed artifacts to an unpublished draft, runs the archive smoke
-test, and compares the uploaded asset digests with the tested local files.
-It then publishes that exact draft by ID, preserving its prerelease flag.
-Nothing is rebuilt between testing and publication.
+The push starts the [release workflow](../.github/workflows/release.yml):
 
-A failure can leave one or more drafts. Do not manually publish them or
-rerun blindly. Inspect the failed run and all drafts for that tag, resolve
-the cause, and explicitly remove the failed drafts before retrying. Confirm
-that each draft is the intended failed draft before removing it. The next
-run refuses to proceed while any release or draft for that tag remains.
-Tools use the versions pinned in [`mise.toml`](../mise.toml).
+1. It validates the tag and runs the checks and build.
+2. It stops if a release or draft already exists for the tag.
+3. GoReleaser builds the archives and license reports, writes
+   `checksums.txt`, signs it with Cosign, and uploads everything to a draft.
+4. The archive smoke test runs against the built files.
+5. The workflow compares the uploaded digests with the tested files and
+   publishes that exact draft. Nothing is rebuilt in between.
 
-Choose the intended version rather than copying a documentation example.
-Use a full major, minor, and patch version after `v`, without an intervening
-hyphen. The workflow owns the exact tag-validation rules.
-GoReleaser marks versions with a prerelease suffix as GitHub prereleases.
-Build metadata alone does not make a release a prerelease.
-Publishing the draft preserves its prerelease flag. A prerelease phase is
-optional: publish the intended prerelease tag, assess it, then use a separate
-stable tag when ready. Each tag follows the same automated draft gate.
+Watch the run:
 
-GoReleaser injects the executable version, creates the archives and CSV
-reports, and generates `checksums.txt`. Cosign keylessly signs that file.
-The expected certificate identity is:
+```sh
+gh run watch --repo cozybadgerde/cress
+```
+
+## 5. If the run fails
+
+A failed run can leave drafts behind. Don't publish them by hand.
+
+1. Read the failed run's log and fix the cause.
+2. List all releases and drafts for the tag with their IDs:
+
+   ```sh
+   gh api repos/cozybadgerde/cress/releases \
+     --jq ".[] | select(.tag_name == \"$tag\") | [.id, .draft, .created_at] | @tsv"
+   ```
+
+3. Delete each failed draft by ID. Several drafts can share a tag, so don't
+   delete by tag name:
+
+   ```sh
+   gh api -X DELETE repos/cozybadgerde/cress/releases/<id>
+   ```
+
+4. Rerun the failed workflow. If the fix needs a new commit, release it
+   under a new version.
+
+The workflow refuses to start while any release or draft for the tag exists.
+
+## 6. Verify the published release
+
+Download the archive and follow [installation guide](INSTALL.md).
+The signature must match this certificate identity and issuer:
 
 ```text
 https://github.com/cozybadgerde/cress/.github/workflows/release.yml@refs/tags/<exact-tag>
+https://token.actions.githubusercontent.com
 ```
 
-The issuer is `https://token.actions.githubusercontent.com`.
-See [installation and verification](INSTALL.md) for download verification.
+Also confirm that a modified checksum file or a wrong identity fails
+verification.
 
-Tagging and publishing require the maintainer's approval.
+## Reference
+
+### Tools
+
+The workflow and local commands use the tool versions pinned in
+[`mise.toml`](../mise.toml). The [release configuration](../.goreleaser.yml)
+owns target platforms, archive contents, and report names.
+
+### License reports
+
+GoReleaser runs [go-licenses](https://github.com/google/go-licenses) to
+create a `.licenses.csv` report for each platform. Each row holds a library
+path, license URL, and license name, without a header. The signed checksum
+file covers these reports.
+
+The same tool fills [the notices template](../.github/notices.tpl) to create
+the license texts shipped in the archives. `mise run check:licenses`, part
+of `mise run check`, fails on unknown or unapproved licenses for all three
+targets. The [license policy](adr/0011-bsd-3-clause-license.md#dependency-license-policy)
+lists the approved license types. Bundled non-code assets need their own
+rights review.
+
+Chroma's combined license file lists OFL-1.1 for a font formatter Cress does
+not use. OFL-1.1 is approved, and the notices keep that font's license text.
+
+To print a report locally:
+
+```sh
+mise exec -- go-licenses report ./cmd/cress
+```

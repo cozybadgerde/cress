@@ -1,184 +1,227 @@
-# Theme development
+# Theme developer guide
 
-Themes are complete embedded or local packages. The embedded skeleton exercises all
-page types and supplies offline initialization; it is not a selectable
-built-in theme. Poppy is the default; Clover and Anemone are alternatives.
-See [built-in presentation and labels](USER.md#built-in-themes).
+A Cress theme decides how a site looks. Cress does the rest: it reads the
+content, checks it, works out the pages, lists, and links, and hands each page
+to your templates as ready-made data. Your theme only presents that data. It
+never picks pages, sorts lists, or builds URLs.
 
-## Package contract
+This guide walks you through creating a theme and explains what you can rely
+on. The three built-in themes, Poppy, Clover, and Anemone, are good examples
+to learn from. They live in
+[`internal/theme/builtin/`](../internal/theme/builtin/).
 
-```text
-themes/my-theme/
-  theme.json
-  templates/
-    page.gohtml
-    landing.gohtml
-    list.gohtml
-    shared.gohtml
-  public/
-    site.css
-  locales/
-    en.toml
-```
+## Create your first theme
 
-Run `cress theme init my-theme [site-directory]` to create this structure
-without overwriting an existing target. Initialization supplies minimal CSS
-and no translated labels, since its templates request none. Select the
-package with `[theme] name = "my-theme"` in `cress.toml`.
-
-Open the generated `theme.json` for a manifest initialized by your
-executable. The [manifest schema](../schemas/theme.schema.json) lists its
-required fields and allowed values. Version fields use full semantic
-versions without `v`.
-
-`name` must match the selected directory. `version` identifies the theme.
-The runtime must match `cress.major` and meet `cress.minimum`, which must
-belong to that major. A prerelease does not satisfy a minimum set to its
-later stable version. Development runtimes reporting `dev` use the
-baseline in [compatibility validation](../internal/theme/manifest.go)
-with a warning, not a compatibility bypass.
-Unknown manifest fields warn. Invalid known fields fail.
-
-Only a missing local package permits built-in lookup for poppy, clover, or anemone.
-Unreadable, invalid, incompatible, or incomplete local packages
-never fall back. No package files merge. Symlinks and special files anywhere
-inside a selected package are rejected.
-
-Templates are UTF-8 Go `html/template` files below `templates/`; nested
-partials retain their relative names, such as `partials/header.gohtml`.
-Every package requires nonempty `page.gohtml`, `landing.gohtml`, and
-`list.gohtml`. Template errors and missing map keys fail generation.
-Templates remain trusted sources requiring publisher review.
-
-Two presentation-only helpers are available:
-
-- `{{asset "css/site.css"}}` requires an existing file at
-  `public/css/site.css` and returns its prepared, URL-escaped
-  `<site.path>themes/<name>/css/site.css` browsing URL.
-- `{{label "read_more"}}` reads a string from `locales/<site.language>.toml`,
-  whose top level is a plain-text label map, such as
-  `read_more = "Read more"`. Matching is exact: `en-US` never falls back to
-  `en`. A missing requested language or key fails, without empty/key-name
-  substitution. An explicitly authored empty label remains empty.
-
-Packages that request no labels need no locale file. A supplied matching
-locale must parse as a string map even when unused. Private files, manifests,
-templates, and locale sources never publish. Public files copy unchanged
-into the theme namespace, including nested paths, with normal collision
-checks. CSS URLs are not rewritten.
-
-## Testing a theme
-
-Start with a disposable site containing every page type and the content
-tour, then add a local theme:
+Start with a test site, which includes every page type and the content tour,
+and add a theme to it:
 
 ```sh
 cress site init theme-test
 cress theme init my-theme theme-test
 ```
 
-In `theme-test/cress.toml`, change the existing `[theme]` table's name to
-`"my-theme"`. Build and preview:
+In `theme-test/cress.toml`, set the theme name:
+
+```toml
+[theme]
+name = "my-theme"
+```
+
+Start the preview:
 
 ```sh
-cress site build theme-test
 cress site preview --port 0 theme-test
 ```
 
-Edit files under `theme-test/themes/my-theme/`; preview rebuilds when they
-change. Refresh the browser manually. Review the home landing page, journal
-list, ordinary pages, and `/tour/` for typography, images, captions, and code.
-The initialized theme is a minimal skeleton, not a copy of a bundled theme.
+Now edit the files in `theme-test/themes/my-theme/`. Preview rebuilds on every
+save. Refresh the browser to see the result. Look at the landing page, the
+journal list, an ordinary page, and `/tour/`, which shows images, captions,
+code, tables, and task lists.
 
-For source builds and ignored fixture directories, see
-[developer test sites](DEVELOPER.md#test-sites).
+The new theme is a deliberately bare skeleton, not a copy of a built-in theme.
+It renders everything correctly but plainly, so you can build up from there.
 
-## Prepared render model
+## What a theme contains
 
-The renderer accepts a prepared `page.Page` value.
-The [render-model types](../internal/page/page.go) are the field and type
-reference for pages, sites, images, navigation, and entries. The notes below
-explain how to use those values without repeating the struct inventory.
+```text
+themes/my-theme/
+  theme.json        name, version, and supported Cress versions
+  templates/
+    page.gohtml     ordinary pages
+    landing.gohtml  landing pages
+    list.gohtml     list pages
+    shared.gohtml   anything shared, such as header and footer
+  public/
+    site.css        files published with the site
+  locales/
+    en.toml         translated labels, if you use any
+```
 
-`Title` is a validated page title. `Description` is resolved after inheritance
-and page overrides. `Image` is optional. Only landing pages inherit the site
-image default. `URL` is an escaped browsing path with the site prefix and a
-trailing slash. `Canonical` is an absolute publication URL, or empty when no
-public origin is configured.
+`page.gohtml`, `landing.gohtml`, and `list.gohtml` are required. You can add
+more templates, including in subfolders such as `partials/header.gohtml`.
+Only files in `public/` are published, under `/themes/my-theme/`. Templates,
+the manifest, and locale files stay private.
 
-`PublishedAt` and `UpdatedAt` are validated date-only strings, or empty when
-absent. `Excerpt` is explicit plain text, never extracted from the body or
-description. `Body` is trusted HTML from content preparation.
+A local theme with a built-in name, such as `themes/poppy/`, replaces that
+built-in completely. Cress never mixes files from two themes, and it never
+falls back to a built-in when your theme has an error. It fails and tells you
+why instead. Symlinks and special files anywhere in a theme fail too.
 
-`Site` contains plain-text `Title`, `Copyright`, and `Language`; resolved
-home `URL`; ordered `Navigation.Main` and `Navigation.Footer` slices of
-`page.Link` values with `Label` and `URL`; and open `Custom` TOML data.
-The supplied language spelling is preserved. Missing site title or
-copyright is represented by an empty string, and missing navigation groups
-have no entries.
+## The manifest
 
-`Site.Brand` holds optional `Color`, `Favicon`, and `Logo` values. Colors
-are validated `#RRGGBB` strings; asset URLs are already prefixed or external.
-`Logo` uses the image URL/alternative fields without captions. Do not
-reinterpret brand settings as routing or content-selection rules.
+`theme.json` names your theme and says which Cress versions it supports:
 
-`Image.Caption` is an ordered slice of `page.CaptionPart` values. Each part
-has escaped plain-text `Text` and an optional resolved `URL` for a link.
-Render the caption beside its image with `figure` and `figcaption`; omit
-caption markup when the slice is empty. Caption parts are ordinary data,
-not trusted HTML.
+```json
+{
+  "name": "my-theme",
+  "version": "1.0.0",
+  "cress": {
+    "major": 1,
+    "minimum": "1.0.0"
+  }
+}
+```
 
-`Image.Focus` is empty or a keyword from the
-[image schema](../schemas/frontmatter.schema.json). It names the part to
-keep in view when a theme crops the image. Built-in themes
-add a `focus-<value>` class and keep that third in view; themes that do not
-crop may ignore it.
+- `name` must match the folder name.
+- `version` is your theme's own version, without a `v`.
+- Cress loads the theme only if its major version equals `cress.major` and it
+  is at least `cress.minimum`. A prerelease such as `1.2.0-rc.1` doesn't meet
+  a minimum of `1.2.0`.
+- Development builds of Cress report `dev` and check against a
+  [baseline version](../internal/theme/manifest.go), with a warning.
+- Unknown fields produce a warning. Invalid known fields fail.
 
-The render model does not expose intrinsic image width or height. Built-in
-themes reserve space for fixed crops and logos through CSS; uncropped images
-may shift surrounding content while loading. This applies to local raster
-images, SVGs, and remote or unknown-size images alike. Generation does not
-fetch remote resources to determine dimensions. Keep uncropped presentations
-proportional rather than inventing dimensions or imposing a crop solely to
-reserve space.
+The [manifest schema](../schemas/theme.schema.json) lists the allowed values.
 
-Entries use the same prepared meanings as page fields. They do not contain
-page bodies, nested entries, raw source paths, or selection settings.
-Themes must preserve prepared membership and order.
+## Writing templates
 
-The public origin is not needed for browsing and is not exposed as raw
-configuration. Templates receive only pages visible in the current build
-or preview, including drafts only in explicit draft-inclusive preview.
-They receive no raw source metadata or unfiltered content tree.
-Custom data remains ordinary data, not trusted
-HTML; the developer skeleton does not interpret it.
+Templates use Go's [`html/template`](https://pkg.go.dev/html/template), which
+escapes text automatically. Each template receives one page. A minimal
+`page.gohtml` looks like this:
 
-Content preparation alone marks the rendered body as trusted HTML.
-Ordinary strings must not be converted to trusted HTML.
+```html
+<!doctype html>
+<html lang="{{.Site.Language}}">
+<head>
+  <meta charset="utf-8">
+  <title>{{.Title}}</title>
+  <link rel="stylesheet" href="{{asset "site.css"}}">
+</head>
+<body>
+  <main id="main">
+    <h1>{{.Title}}</h1>
+    {{.Body}}
+  </main>
+</body>
+</html>
+```
 
-### Syntax highlighting
+Template errors and missing fields stop the build. In preview, the terminal
+shows the error and the last working version stays visible.
 
-`.Site.Syntax.Highlight` is the resolved site-wide syntax-highlighting choice
-from `[syntax] highlight`, enabled by default. It controls visible syntax
-coloring, not just token generation. Themes must respect `false`: do not
-apply token coloring or activate an alternative highlighter. Ordinary code
-fonts, backgrounds, padding, and scrolling remain theme-owned.
+### Helpers
 
-Fenced code blocks render inside `<pre><code>`. A specified language adds
-`language-<name>` to `<code>`, preserving the authored language name. When
-highlighting is enabled, Chroma adds token `<span>` elements with CSS classes.
-Common token classes include `k` for keywords, `s` for strings, and `c` for
-comments. Chroma's class-based output leaves token colors to theme CSS; the
-bundled themes style these classes in their public stylesheets. Untagged or
-unrecognized languages remain escaped plain code, and highlighting can be
-disabled with `[syntax] highlight = false`. The language class remains when
-disabled; its presence is not permission to highlight. The markup has no
-Chroma-specific IDs or `data-*` attributes. See Chroma's
-[HTML formatter documentation](https://github.com/alecthomas/chroma#the-html-formatter)
-for formatter details.
+Two helpers are available:
 
-The initialized theme demonstrates conditional token-color CSS using
-`{{if .Site.Syntax.Highlight}}`. A separate stylesheet can be linked likewise:
+- `{{asset "css/site.css"}}` returns the URL of `public/css/site.css`,
+  including the site's URL prefix. The file must exist.
+- `{{label "read_more"}}` returns a translated text from
+  `locales/<language>.toml`, for example `read_more = "Read more"`. The
+  language must match exactly: `en-US` doesn't fall back to `en`. A missing
+  file or key fails the build. An empty label stays empty.
+
+You need locale files only if you use `label`. A locale file that exists must
+be valid, even if unused.
+
+Templates have no access to files, the network, environment variables, or
+commands. This keeps themes predictable and safe to share.
+
+## The page data
+
+Each template receives a `page.Page`. The
+[render model](../internal/page/page.go) lists every field. The ones you use
+most:
+
+| Field | What it holds |
+|-------|---------------|
+| `.Title` | Page title, as plain text. |
+| `.Type` | `ordinary`, `landing`, or `list`. |
+| `.Body` | The page content as finished HTML. |
+| `.Description` | Page description, already inherited from the site if needed. |
+| `.Image` | Optional title image with `URL`, `Alt`, `Caption`, and `Focus`. |
+| `.URL` | The page's address, including the URL prefix. |
+| `.Canonical` | Full public URL, or empty when no host is configured. |
+| `.PublishedAt`, `.UpdatedAt` | Optional `YYYY-MM-DD` dates. |
+| `.Excerpt` | Optional plain-text summary, used in lists. |
+| `.Entries` | On list pages, the entries to show, already selected and sorted. |
+| `.Site.Title`, `.Site.Copyright` | Site identity, possibly empty. |
+| `.Site.Language` | The site language, such as `en`. |
+| `.Site.URL` | The home page address. |
+| `.Site.Navigation.Main`, `.Footer` | Ordered links with `Label` and `URL`. |
+| `.Site.Brand` | Optional `Color`, `Favicon`, and `Logo`. |
+| `.Site.Syntax.Highlight` | Whether syntax coloring is on. |
+| `.Site.Custom` | Free-form data from `[theme.custom]`. |
+
+Some things to keep in mind:
+
+- **Everything is ready to use.** URLs already include the prefix, dates are
+  validated, and descriptions are inherited. Don't rebuild or reinterpret
+  them.
+- **Lists are already decided.** Show `.Entries` in the given order. Entries
+  have the same fields as pages, but no body.
+- **Only `.Body` is HTML.** Everything else is plain text and gets escaped.
+  Never turn other values into trusted HTML.
+- **Images have no size.** Cress doesn't measure images. To avoid layout
+  shifts, give cropped images a fixed shape in CSS. Let uncropped images keep
+  their proportions.
+- **Focus helps cropping.** `.Image.Focus` names the part of the image to
+  keep visible, such as `top`. The built-in themes turn it into a
+  `focus-<value>` class. Ignore it if you don't crop.
+- **Captions are data.** `.Image.Caption` is a list of parts with `Text` and
+  an optional `URL`. Render them inside `figcaption`, and leave the markup out
+  when the list is empty.
+- **Custom data is yours.** Document any `[theme.custom]` keys your theme
+  reads. It is plain data, never HTML.
+
+Drafts reach templates only in draft preview. Templates never see source
+files, raw configuration, or pages outside the current build.
+
+## Markup inside the body
+
+`.Body` already contains some markup your CSS can style:
+
+| Markup | Meaning |
+|--------|---------|
+| `<div class="table-wrapper" tabindex="0">` | Wraps every Markdown table, so wide tables can scroll and receive keyboard focus. Style the overflow and focus. |
+| `align-left`, `align-center`, `align-right` | Column alignment from Markdown on table cells. |
+| `<figure>` and `<figcaption>` | Captioned images and code blocks. |
+| `<span class="captioned-image">` and `.image-caption` | Captioned images inside a paragraph. |
+| `<p class="standalone-link">` | A paragraph with exactly one link and nothing else. Built-in themes highlight it as the main action on landing pages. |
+| `<del>` | Strikethrough. |
+| `<label>` with a disabled checkbox | A task list item. Keep the checkbox visible and disabled. |
+| Heading IDs | Link targets for every heading. Don't replace them. |
+| `<pre><code class="language-go">` | Code blocks, with token spans when highlighting is on. |
+
+`standalone-link` only describes structure. Your theme decides whether it
+means anything, for example combined with the page type.
+
+Avoid IDs that might clash with content headings. `main`, `page-title`, and
+IDs starting with `cress-` are reserved for themes and Cress, so content
+can't use them. Cress uses `cress-caption-1` and similar IDs for inline
+captions, so avoid those too.
+
+## Syntax highlighting
+
+When highlighting is on, code blocks contain `<span>` elements with short
+[Chroma](https://github.com/alecthomas/chroma#the-html-formatter) classes,
+such as `k` for keywords, `s` for strings, and `c` for comments. Your CSS
+gives them color. Style them under `pre code`, because Cress doesn't add
+Chroma's usual `.chroma` wrapper. Highlight.js themes use different classes
+and won't work as they are.
+
+Respect the site's choice. When `.Site.Syntax.Highlight` is false, don't color
+code, even though the `language-*` class is still present. A simple way is to
+load the colors conditionally:
 
 ```html
 {{if .Site.Syntax.Highlight}}
@@ -186,91 +229,41 @@ The initialized theme demonstrates conditional token-color CSS using
 {{end}}
 ```
 
-Place that stylesheet at `public/highlight.css`. Target token spans beneath
-`pre code`; Cress does not emit Chroma's usual `.chroma` wrapper. Common
-subtypes include `kd` (keyword declaration), `s2` (double-quoted string), and
-`c1` (single-line comment). Not every token has a span or a class.
-Highlight.js styles use different classes and are not drop-in Chroma styles.
-If a custom theme adds an alternative highlighter, honor the same switch and
-do not reprocess already-tokenized Chroma blocks. Cress and its supplied
-themes need no browser highlighter.
+Cress themes need no JavaScript highlighter. If you add one anyway, follow the
+same switch and leave already highlighted blocks alone.
 
-### Other prepared markup
+## Making your theme accessible
 
-Markdown paragraphs containing only one direct link receive
-`class="standalone-link"`, independently of page type and position.
-CommonMark autolinks and reference-style links qualify, as does formatting
-inside a link. Surrounding text, additional links, or formatting wrapped
-around the link do not. Tight-list text blocks are not paragraphs and
-receive no class. Authored HTML remains unchanged.
+A good theme works for everyone. The
+[accessibility guide](ACCESSIBILITY.md) explains why, and what the built-in
+themes do. The essentials:
 
-This hook describes structure, not a primary action or button. Themes may
-combine it with page type, position, or other presentation rules, or ignore
-it. Cress does not choose its appearance or change the link's semantics.
+- Set `lang` from `.Site.Language`.
+- Use `header`, `nav`, `main`, and `footer`, and label each `nav`.
+- Add a skip link to `#main`, and give `main` `tabindex="-1"` so it can
+  receive focus.
+- Mark the current page in navigation with `aria-current="page"`.
+- Keep focus outlines clearly visible.
+- Check text contrast, and don't rely on color alone for links.
+- Make sure the layout works at 200% zoom and on narrow screens.
+- Respect `prefers-reduced-motion` and `forced-colors`.
 
-Strikethrough in `Body` uses `<del>`. Task lists contain native disabled
-checkboxes, each wrapped with its first paragraph's inline content in a
-`<label>`. Preserve labels, completion state, list structure, and item links.
-Do not enable the checkboxes or add task-state persistence. Native styling
-is the default; themes may style these elements without hiding their state.
+## Translating labels
 
-Markdown headings in `Body` already have prepared link targets. Preserve
-them without generating replacement IDs. `main`, `page-title`, and the
-`cress-*` namespace are reserved for theme and generated markup; other
-theme IDs must not collide with content headings. Avoid generated caption
-IDs such as `cress-caption-1` even inside the reserved namespace. Raw HTML
-IDs remain publisher-controlled. See [heading links](USER.md#heading-links).
+Built-in themes provide `en` and `de`. If your theme uses `label`, add a
+locale file for each language your users need. A site whose language has no
+locale file fails to build with your theme, rather than showing the wrong
+language.
 
-Markdown tables retain their table markup inside a
-`<div class="table-wrapper" tabindex="0">`. This wrapper provides a styling
-hook and keyboard focus target. Themes own overflow handling, spacing, and
-focus styling; Cress supplies no table layout styles. Authored HTML tables
-remain unchanged.
+## Sharing your theme
 
-Explicit Markdown column alignment becomes `align-left`, `align-center`,
-or `align-right` classes on header and body cells, not inline styles.
-Unspecified alignment adds no class. Themes decide how to display this
-author-provided intent; the bundled themes and skeleton apply matching
-`text-align` rules.
+Others install your theme by copying it to `themes/<name>/` in their site.
+Before sharing:
 
-The renderer receives no raw configuration, source tree, or generator
-internals. It neither discovers pages nor resolves routes. The skeleton
-uses `html/template` with no filesystem, network, environment, or shell
-helpers, and template errors stop generation.
+- Test every page type and the content tour, with and without images.
+- Test with highlighting on and off.
+- Set `cress.minimum` to the oldest Cress version you have tested.
+- Document any `[theme.custom]` keys and the languages you support.
 
-## Embedded skeleton
-
-The executable embeds the package in `internal/theme/skeleton/`.
-Ordinary, landing, and list pages select distinct templates, with shared
-document composition. Missing or unknown type support fails, without substitution.
-Lists render their introduction before linked entry titles, explicit dates,
-and excerpts. Empty collections add no list markup or prescribed wording.
-
-The skeleton renders the configured document language, page title,
-description, title image and caption, site identity, main/footer links,
-copyright, main landmark, and prepared body. Empty optional groups are omitted.
-It adds no hardcoded translated labels or translation fallback. The footer
-links use a list; main links use a navigation landmark.
-Minimal inline styles keep code readable without browser JavaScript.
-Canonical links are included only when the prepared URL is nonempty.
-
-## Built-in packages
-
-`internal/theme/builtin/poppy/`, `clover/`, and `anemone/` each contain complete
-templates, public CSS, manifest, and exact `en`/`de` labels. They do not
-merge with the skeleton or with each other. None consumes custom keys.
-Same-name local packages replace them completely.
-
-Their landing CSS emphasizes the body's first paragraph and a directly
-following paragraph that contains only one link. This is a styling
-convention over the neutral `standalone-link` hook, not primary-action metadata.
-Anemone uses an underlined action rather than a button. It also supplies
-the side-masthead layout, image framing, rotation, and shadows entirely in
-its templates and CSS, without generator-owned layout rules.
-
-Each package's manifest owns its version and compatibility declarations.
-Embedded packages ship with the executable and are tested together.
-Local packages undergo runtime compatibility checks, including during
-prerelease development.
-See the [accessibility assessment](ACCESSIBILITY.md) for automated evidence
-and the pending complete-page human review.
+Remember that templates and CSS are trusted code. Site owners should review a
+theme before using it, just like raw HTML in content.
