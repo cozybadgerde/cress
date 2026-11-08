@@ -18,40 +18,24 @@ Update affected schemas and owning references alongside behavior changes.
 Remove completed tasks and keep remaining work here. Commits, pushes, tags,
 and publication require maintainer approval.
 
-## Phase 3: Release tooling and acceptance
+## Road to 1.0.0
 
-The [release guide](docs/RELEASE.md) owns the maintainer procedure.
-These tasks are not authorization to tag or publish.
+Follow the [release guide](docs/RELEASE.md) for each release. Tags and
+publication need maintainer approval.
 
-- [ ] Prepare fresh pre-publication evidence.
-  Retain existing checks/build and run the functional suite uncached against
-  the intended release revision.
-- [ ] Verify the draft publication gate on GitHub.
-  Local snapshots do not exercise uploads or draft publication. Confirm
-  successful publication preserves assets and the stable/prerelease flag.
-  Confirm failed checks leave drafts unpublished, and establish a safe
-  retry procedure for failed drafts before relying on workflow reruns.
-  A 2026-11-06 failure rehearsal and retry created two unpublished drafts
-  for the same tag with different archives. The updated gate published a
-  prerelease with matching artifact digests and refused retries while a
-  release or failed draft existed. Verify a stable publication and a fresh
-  retry after deliberate draft cleanup before closing this task.
-- [ ] Plan post-publication Cosign verification.
-  Require the exact tag identity/issuer, verify archive/report digests, and
-  reject modified checksums, modified artifacts, and wrong identities.
-  Keep this distinct from pre-publication gating.
-- [ ] Review release readiness with the
-  [pre-tag checklist](docs/RELEASE.md#2-go-through-the-pre-tag-checklist).
-  Cover accessibility across the three themes, supported targets, product
-  behavior, and distribution rights. Keep brief notes and retest fixes.
-
-## Phase 4: Approved publication and verification
-
-Depends on release readiness and explicit maintainer approval.
-
-- [ ] Publish the approved release through the documented tag workflow.
-- [ ] Record real keyless-signature and negative-verification evidence for
-  the published artifacts. Snapshots cannot provide this evidence.
+- [ ] Review accessibility across the three themes and fix what you find.
+- [ ] Add copy-paste commands for the negative signature checks to
+  [step 6 of the release guide](docs/RELEASE.md#6-verify-the-published-release):
+  a modified checksum file, a modified archive, and a wrong tag identity.
+- [ ] Release `v1.0.0-pre.0`.
+  Go through the full release guide. Then confirm the draft gate published
+  it as a prerelease with all assets, and that the signature passes and all
+  three negative checks fail. If a draft fails, test the cleanup and retry
+  from step 5.
+- [ ] Release `v1.0.0`.
+  Rerun the automated checks and repeat only the checklist rows touched since
+  the prerelease. Confirm it is published as the latest stable release and
+  its signature verifies.
 
 ## Optional follow-up: Shell completion
 
