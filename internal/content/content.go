@@ -108,7 +108,7 @@ func prepareMetadata(name string, source []byte, config Config) (Page, []string,
 	if err != nil {
 		return prepared, warnings, err
 	}
-	prepared.list, err = input.readList(prepared.Data.Type)
+	prepared.list, err = input.readList(prepared.Data.Type, config.ListPerPage)
 	if err != nil {
 		return prepared, warnings, err
 	}

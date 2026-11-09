@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{.Title}}</title>
+  <title>{{.Title}}{{with .Pagination}}{{if gt .Number 1}} ({{label "page"}} {{.Number}}){{end}}{{end}}</title>
   {{if .Description}}<meta name="description" content="{{.Description}}">{{end}}
   {{if .Canonical}}<link rel="canonical" href="{{.Canonical}}">
   <meta property="og:type" content="website">
@@ -67,3 +67,13 @@
 </body>
 </html>
 {{end}}
+
+{{define "pagination"}}{{with .Pagination}}
+    <nav class="pagination" aria-label="{{label "pagination"}}">
+      <ul>
+        {{with .Previous}}<li><a href="{{.}}" rel="prev">{{label "previous_page"}}</a></li>{{end}}
+        {{range .Pages}}<li><a href="{{.URL}}" aria-label="{{label "page"}} {{.Number}}"{{if .Current}} aria-current="page"{{end}}>{{.Number}}</a></li>{{end}}
+        {{with .Next}}<li><a href="{{.}}" rel="next">{{label "next_page"}}</a></li>{{end}}
+      </ul>
+    </nav>
+{{end}}{{end}}

@@ -25,8 +25,6 @@ publication need maintainer approval. Ideas for later releases live in
 
 - [ ] Add feeds for list pages.
   Publish a web feed for each list page, so readers can follow a journal.
-- [ ] Add pagination for list pages.
-  Split long lists into numbered pages with links between them.
 - [ ] Release `v1.0.0-pre.0`.
   Go through the full release guide. Then confirm the draft gate published
   it as a prerelease with all assets, and that the signature passes and all

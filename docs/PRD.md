@@ -219,8 +219,13 @@ not full article bodies or automatically generated excerpts. Themes choose
 how to present the available metadata without changing membership or order.
 Manual collections are ordinary Markdown links.
 
-Long lists can be split into numbered pages of a configured size, with
-links between them. Every list page can also publish a web feed of its
+Split long lists into numbered pages. `[list] per_page` in `cress.toml`
+sets the page size, 10 by default, and a list page's frontmatter overrides
+it. `0` keeps every entry on one page. The first page keeps the list's
+route; later pages use `<route>2/`, `<route>3/`, and so on. Every numbered
+page repeats the introduction and title image, has its own canonical URL
+and sitemap entry, and gives themes the page number, the total, and links
+to the previous, next, and all pages. Every list page can also publish a web feed of its
 entries, so readers can follow a journal in a feed reader. Feeds use the
 public origin, like the sitemap.
 

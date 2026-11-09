@@ -148,3 +148,5 @@ input[type="checkbox"] { accent-color: var(--text); }
 @media (forced-colors: active) {
   .title-image img, .prose > figure img { border: 1px solid CanvasText; box-shadow: none; }
 }
+.pagination { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+.pagination [aria-current="page"] { font-weight: 700; text-decoration: none; }

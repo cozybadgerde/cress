@@ -70,7 +70,9 @@ func Load(ctx context.Context, site string, config Config) (prepared Prepared, w
 			return prepared, warnings, err
 		}
 	}
-	warnings = append(warnings, prepareLists(prepared.Pages, config)...)
+	var listWarnings []string
+	prepared.Pages, listWarnings = prepareLists(prepared.Pages, config)
+	warnings = append(warnings, listWarnings...)
 	publication, diagnostics, err := preparePublication(prepared.Pages, config)
 	warnings = append(warnings, diagnostics...)
 	if err != nil {

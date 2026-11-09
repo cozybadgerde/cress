@@ -302,3 +302,46 @@ func TestBuiltinLinkPreviewsAndProfile(t *testing.T) {
 		}
 	}
 }
+
+func TestBuiltinPagination(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping filesystem integration test")
+	}
+	for _, name := range []string{"poppy", "clover", "anemone"} {
+		site := t.TempDir()
+		if err := scaffold.Init(context.Background(), site, name); err != nil {
+			t.Fatal(err)
+		}
+		config := "[site]\nhost = 'https://example.org'\n[theme]\nname = '" + name + "'\n[list]\nper_page = 1\n"
+		if err := os.WriteFile(filepath.Join(site, "cress.toml"), []byte(config), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(site, "content/journal/second.md"), []byte(
+			"+++\ntitle = 'Second'\npublished_at = 2020-01-01\n+++\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := generator.Build(context.Background(), site); err != nil {
+			t.Fatal(err)
+		}
+		second, err := os.ReadFile(filepath.Join(site, "public/journal/list/2/index.html"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		sitemap, err := os.ReadFile(filepath.Join(site, "public/sitemap.xml"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, want := range []string{
+			`<title>Journal (Page 2)`, `<link rel="canonical" href="https://example.org/journal/list/2/">`,
+			`<nav class="pagination" aria-label="Pagination">`, `<a href="/journal/list/" rel="prev">Previous page</a>`,
+			`aria-label="Page 2" aria-current="page">2</a>`, `href="/journal/second/"`,
+		} {
+			if !strings.Contains(string(second), want) {
+				t.Errorf("%s page 2 missing %s", name, want)
+			}
+		}
+		if !strings.Contains(string(sitemap), "https://example.org/journal/list/2/") {
+			t.Errorf("%s sitemap missing page 2", name)
+		}
+	}
+}

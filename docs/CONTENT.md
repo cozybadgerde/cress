@@ -191,6 +191,15 @@ lists show the newest page first and leave out pages without a date, so a
 missing date is the most common reason a page doesn't show up. Cress warns
 you when that happens.
 
+Long lists are split into pages of 10 entries, linked at the bottom. Change
+the size for the whole site in `cress.toml`, or for one list in its
+settings. `0` shows every entry on one page:
+
+```toml
+[list]
+per_page = 20
+```
+
 ## Work on drafts
 
 Add `draft = true` to a page's settings to keep it out of the build. Drafts and

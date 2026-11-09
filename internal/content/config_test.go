@@ -46,6 +46,9 @@ url = "/contact/"
 
 [theme.custom]
 title = { nested = ["kept", "as data"] }
+
+[list]
+per_page = 0
 `))
 	if err != nil {
 		t.Fatal(err)
@@ -76,7 +79,7 @@ title = { nested = ["kept", "as data"] }
 
 func TestConfigDefaults(t *testing.T) {
 	config := defaultConfig(t)
-	want := content.Config{Site: page.Site{Language: "en", URL: "/", Syntax: page.Syntax{Highlight: true}}}
+	want := content.Config{Site: page.Site{Language: "en", URL: "/", Syntax: page.Syntax{Highlight: true}}, ListPerPage: 10}
 	if !reflect.DeepEqual(config, want) {
 		t.Fatalf("config = %#v, want %#v", config, want)
 	}

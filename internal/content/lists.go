@@ -2,8 +2,10 @@ package content
 
 import (
 	"cmp"
+	"math"
 	"path"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -17,6 +19,7 @@ import (
 type listOptions struct {
 	order   string
 	reverse bool
+	perPage int
 }
 
 func (input fields) readDate(key string) (string, error) {
@@ -40,8 +43,20 @@ func (input fields) readDate(key string) (string, error) {
 	return date, nil
 }
 
-func (input fields) readList(pageType page.Type) (listOptions, error) {
-	options := listOptions{order: "published_at"}
+func (input fields) readPerPage(fallback int) (int, error) {
+	value, exists := input.values["per_page"]
+	if !exists {
+		return fallback, nil
+	}
+	size, ok := value.(int64)
+	if !ok || size < 0 || size > math.MaxInt32 {
+		return 0, input.invalidField("per_page", "must be a nonnegative integer; 0 keeps lists on one page")
+	}
+	return int(size), nil
+}
+
+func (input fields) readList(pageType page.Type, perPage int) (listOptions, error) {
+	options := listOptions{order: "published_at", perPage: perPage}
 	if _, exists := input.values["list"]; exists && pageType != page.List {
 		return options, input.invalidField("list", "is only valid on list pages")
 	}
@@ -49,7 +64,11 @@ func (input fields) readList(pageType page.Type) (listOptions, error) {
 	if err != nil {
 		return options, err
 	}
-	list.warnUnknown("order", "reverse")
+	list.warnUnknown("order", "reverse", "per_page")
+	options.perPage, err = list.readPerPage(options.perPage)
+	if err != nil {
+		return options, err
+	}
 	options.order, err = list.readString("order", options.order)
 	if err != nil {
 		return options, err
@@ -67,8 +86,9 @@ func (input fields) readList(pageType page.Type) (listOptions, error) {
 	return options, nil
 }
 
-func prepareLists(pages []Page, config Config) []string {
+func prepareLists(pages []Page, config Config) ([]Page, []string) {
 	var warnings []string
+	var numbered []Page
 	for index := range pages {
 		list := &pages[index]
 		if (list.Draft && !config.IncludeDrafts) || list.Data.Type != page.List {
@@ -106,8 +126,52 @@ func prepareLists(pages []Page, config Config) []string {
 			slices.Reverse(entries)
 		}
 		list.Data.Entries = entries
+		numbered = append(numbered, paginate(list, config)...)
 	}
-	return warnings
+	return append(pages, numbered...), warnings
+}
+
+// paginate keeps the first page of entries on the list and returns the
+// numbered pages that follow it.
+func paginate(list *Page, config Config) []Page {
+	size, entries := list.list.perPage, list.Data.Entries
+	if size == 0 || len(entries) <= size {
+		return nil
+	}
+	links := make([]page.PageLink, (len(entries)+size-1)/size)
+	for index := range links {
+		links[index] = page.PageLink{Number: index + 1, URL: list.Data.URL}
+		if index > 0 {
+			links[index].URL += strconv.Itoa(index+1) + "/"
+		}
+	}
+	var numbered []Page
+	for index, link := range links {
+		item := *list
+		if index > 0 {
+			item.Destination = path.Join(path.Dir(list.Destination), strconv.Itoa(link.Number), "index.html")
+			item.Data.URL = link.URL
+			if config.Host != "" {
+				item.Data.Canonical = config.Host + link.URL
+			}
+		}
+		item.Data.Entries = entries[index*size : min((index+1)*size, len(entries))]
+		pagination := &page.Pagination{Number: link.Number, Total: len(links), Pages: slices.Clone(links)}
+		pagination.Pages[index].Current = true
+		if index > 0 {
+			pagination.Previous = links[index-1].URL
+		}
+		if index < len(links)-1 {
+			pagination.Next = links[index+1].URL
+		}
+		item.Data.Pagination = pagination
+		if index == 0 {
+			list.Data = item.Data
+		} else {
+			numbered = append(numbered, item)
+		}
+	}
+	return numbered
 }
 
 func titleKey(title string) string {

@@ -90,6 +90,19 @@
       },
       "additionalProperties": true
     },
+    "list": {
+      "type": "object",
+      "properties": {
+        "per_page": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647,
+          "default": 10,
+          "description": "Entries per list page; 0 keeps every entry on one page."
+        }
+      },
+      "additionalProperties": true
+    },
     "profile": {
       "type": "object",
       "description": "Runtime requires name when site.title is absent.",

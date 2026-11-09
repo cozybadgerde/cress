@@ -83,6 +83,24 @@ type Page struct {
 	UpdatedAt      string
 	Excerpt        string
 	Entries        []Entry
+	// Pagination is nil unless the list is split into numbered pages.
+	Pagination *Pagination
+}
+
+// Pagination holds prepared links between the numbered pages of a list.
+type Pagination struct {
+	Number   int
+	Total    int
+	Previous string
+	Next     string
+	Pages    []PageLink
+}
+
+// PageLink is one numbered page of a list.
+type PageLink struct {
+	Number  int
+	URL     string
+	Current bool
 }
 
 // Entry holds prepared list metadata without an article body or nested entries.

@@ -3,3 +3,4 @@ body { max-width: 70rem; margin: 0 auto; padding: 1rem; font-family: sans-serif;
 .not-found-code { margin: 0; color: currentColor; font-size: clamp(4rem, 18vw, 7rem); font-weight: 700; line-height: 1; }
 .not-found h1 { margin: 1rem 0; }
 a:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
+.pagination [aria-current="page"] { font-weight: bold; }

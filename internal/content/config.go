@@ -22,6 +22,7 @@ type Config struct {
 	Description   string
 	Image         *page.Image
 	Profile       map[string]any
+	ListPerPage   int
 	Host          string
 	Theme         string
 	IncludeDrafts bool
@@ -29,7 +30,7 @@ type Config struct {
 
 // ParseConfig validates TOML site configuration and resolves shared URLs.
 func ParseConfig(source []byte) (Config, []string, error) {
-	config := Config{Site: page.Site{Language: "en", URL: "/", Syntax: page.Syntax{Highlight: true}}}
+	config := Config{Site: page.Site{Language: "en", URL: "/", Syntax: page.Syntax{Highlight: true}}, ListPerPage: 10}
 	var warnings []string
 	if !utf8.Valid(source) {
 		return config, warnings, fmt.Errorf("cress.toml: configuration must be UTF-8")
@@ -39,7 +40,7 @@ func ParseConfig(source []byte) (Config, []string, error) {
 		return config, warnings, fmt.Errorf("cress.toml: parse configuration: %w", err)
 	}
 	input := fields{values: values, source: "cress.toml", kind: "configuration", warnings: &warnings}
-	input.warnUnknown("site", "navigation", "theme", "syntax", "brand", "profile")
+	input.warnUnknown("site", "navigation", "theme", "syntax", "brand", "profile", "list")
 	site, err := input.readTable("site")
 	if err != nil {
 		return config, warnings, err
@@ -114,6 +115,15 @@ func ParseConfig(source []byte) (Config, []string, error) {
 	}
 	config.Site.Custom = custom.values
 	config.Site.Brand, err = input.readBrand(config.Site.URL)
+	if err != nil {
+		return config, warnings, err
+	}
+	list, err := input.readTable("list")
+	if err != nil {
+		return config, warnings, err
+	}
+	list.warnUnknown("per_page")
+	config.ListPerPage, err = list.readPerPage(config.ListPerPage)
 	if err != nil {
 		return config, warnings, err
 	}

@@ -102,7 +102,7 @@ func TestPreparedLists(t *testing.T) {
 						makePage("blog/archive/old.md", "title = 'Deep'"),
 						makePage("outside.md", "title = 'Outside'"),
 					}
-					warnings := prepareLists(pages, Config{})
+					_, warnings := prepareLists(pages, Config{})
 					want := []string{"/company/blog/a/", "/company/blog/b/", "/company/blog/c/"}
 					if order == "title" {
 						want = []string{"/company/blog/b/", "/company/blog/c/", "/company/blog/undated/", "/company/blog/a/"}
@@ -170,7 +170,83 @@ func TestTitleOrderingAndEmptyLists(t *testing.T) {
 		t.Fatalf("prepared entry metadata changed: %+v", entry)
 	}
 	empty := []Page{{Data: page.Page{Type: page.List}, Destination: "index.html"}}
-	if warnings := prepareLists(empty, Config{}); len(warnings) != 0 || len(empty[0].Data.Entries) != 0 {
+	if _, warnings := prepareLists(empty, Config{}); len(warnings) != 0 || len(empty[0].Data.Entries) != 0 {
 		t.Fatalf("empty list failed: %+v, %v", empty, warnings)
+	}
+}
+
+func TestPagination(t *testing.T) {
+	makePages := func(section string, perPage, count int) []Page {
+		pages := []Page{{Source: "list.md", Destination: section + "index.html",
+			Data: page.Page{Type: page.List, URL: "/" + section}, list: listOptions{order: "title", perPage: perPage}}}
+		for index := range count {
+			name := string(rune('a' + index))
+			pages = append(pages, Page{Destination: name + "/index.html",
+				Data: page.Page{Type: page.Ordinary, Title: name, URL: "/" + name + "/"}})
+		}
+		return pages
+	}
+	pages := makePages("blog/", 2, 5)
+	all, _ := prepareLists(pages, Config{Host: "https://example.com"})
+	all = slices.DeleteFunc(all, func(item Page) bool { return item.Source != "list.md" })
+	if len(all) != 3 {
+		t.Fatalf("pages = %d, want 3", len(all))
+	}
+	for index, want := range []struct {
+		destination, url, canonical, previous, next string
+		entries                                     []string
+	}{
+		{"blog/index.html", "/blog/", "", "", "/blog/2/", []string{"/a/", "/b/"}},
+		{"blog/2/index.html", "/blog/2/", "https://example.com/blog/2/", "/blog/", "/blog/3/", []string{"/c/", "/d/"}},
+		{"blog/3/index.html", "/blog/3/", "https://example.com/blog/3/", "/blog/2/", "", []string{"/e/"}},
+	} {
+		item := all[index]
+		var entries []string
+		for _, entry := range item.Data.Entries {
+			entries = append(entries, entry.URL)
+		}
+		pagination := item.Data.Pagination
+		if item.Destination != want.destination || item.Data.URL != want.url || item.Data.Canonical != want.canonical ||
+			item.Source != "list.md" || !slices.Equal(entries, want.entries) || pagination.Number != index+1 ||
+			pagination.Total != 3 || pagination.Previous != want.previous || pagination.Next != want.next {
+			t.Fatalf("page %d = %+v, pagination = %+v", index+1, item, pagination)
+		}
+		for linkIndex, link := range pagination.Pages {
+			if link.Current != (linkIndex == index) {
+				t.Fatalf("page %d links = %+v", index+1, pagination.Pages)
+			}
+		}
+	}
+	home := makePages("", 1, 2)
+	if all, _ := prepareLists(home, Config{}); len(all) != 4 || all[3].Destination != "2/index.html" {
+		t.Fatalf("home pagination = %+v", all)
+	}
+	for _, perPage := range []int{0, 5} {
+		pages := makePages("blog/", perPage, 5)
+		if all, _ := prepareLists(pages, Config{}); len(all) != 6 || all[0].Data.Pagination != nil ||
+			len(all[0].Data.Entries) != 5 {
+			t.Fatalf("per_page %d split the list: %+v", perPage, all)
+		}
+	}
+}
+
+func TestListPerPage(t *testing.T) {
+	config, _, err := ParseConfig([]byte("[list]\nper_page = 3"))
+	if err != nil || config.ListPerPage != 3 {
+		t.Fatalf("config = %+v, error = %v", config, err)
+	}
+	for fields, want := range map[string]int{"": 3, "[list]\nper_page = 0": 0, "[list]\nper_page = 7": 7} {
+		item, _, err := Prepare("list.md", []byte("+++\ntitle = 'List'\ntype = 'list'\n"+fields+"\n+++"), config)
+		if err != nil || item.list.perPage != want {
+			t.Fatalf("%q: per_page = %d, error = %v", fields, item.list.perPage, err)
+		}
+	}
+	for _, value := range []string{"-1", "'10'", "1.5", "2147483648"} {
+		if _, _, err := ParseConfig([]byte("[list]\nper_page = " + value)); err == nil {
+			t.Fatalf("site per_page %s accepted", value)
+		}
+		if _, _, err := Prepare("list.md", []byte("+++\ntype = 'list'\n[list]\nper_page = "+value+"\n+++"), config); err == nil {
+			t.Fatalf("page per_page %s accepted", value)
+		}
 	}
 }

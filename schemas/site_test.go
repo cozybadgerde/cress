@@ -103,6 +103,10 @@ func TestSiteSchemaMatchesRuntime(t *testing.T) {
 		{"profile hours duplicate", "[profile]\nname = 'A'\n[[profile.hours]]\ndays = ['mo', 'mo']\nopens = '08:00'\ncloses = '18:00'", false},
 		{"profile hours empty", "[profile]\nname = 'A'\n[[profile.hours]]\ndays = []\nopens = '08:00'\ncloses = '18:00'", false},
 		{"profile hours time", "[profile]\nname = 'A'\n[[profile.hours]]\ndays = ['mo']\nopens = '8:00'\ncloses = '18:00'", false},
+		{"list per page", "[list]\nper_page = 0", true},
+		{"list per page negative", "[list]\nper_page = -1", false},
+		{"list per page type", "[list]\nper_page = '10'", false},
+		{"list type", "list = 1", false},
 		{"profile hours missing", "[profile]\nname = 'A'\n[[profile.hours]]\ndays = ['mo']\nopens = '08:00'", false},
 	}
 	for _, test := range tests {

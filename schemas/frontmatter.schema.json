@@ -21,7 +21,13 @@
       "type": "object",
       "properties": {
         "order": { "enum": ["published_at", "title"], "default": "published_at" },
-        "reverse": { "type": "boolean", "default": false }
+        "reverse": { "type": "boolean", "default": false },
+        "per_page": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647,
+          "description": "Entries per page; 0 keeps every entry on one page. Default: site list.per_page."
+        }
       },
       "additionalProperties": true
     },
