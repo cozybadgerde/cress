@@ -92,6 +92,18 @@ func TestSiteSchemaMatchesRuntime(t *testing.T) {
 		{"brand logo alternative", "[brand.logo]\nsrc = '/logo.svg'", false},
 		{"brand logo type", "[brand]\nlogo = false", false},
 		{"brand logo empty", "[brand.logo]\nsrc = ''\nalt = ''", false},
+		{"profile", "[profile]\ntype = 'NGO'\nname = 'Club'\ntelephone = '+49 1'\nemail = 'a@example.org'\n" +
+			"[profile.address]\ncity = 'Berlin'\n[[profile.hours]]\ndays = ['mo', 'su']\nopens = '08:00'\ncloses = '23:59'", true},
+		{"profile type", "profile = 1", false},
+		{"profile type name", "[profile]\ntype = 'local business'\nname = 'A'", false},
+		{"profile name empty", "[profile]\nname = ' '", false},
+		{"profile address type", "[profile]\nname = 'A'\naddress = 1", false},
+		{"profile hours type", "[profile]\nname = 'A'\nhours = 1", false},
+		{"profile hours day", "[profile]\nname = 'A'\n[[profile.hours]]\ndays = ['monday']\nopens = '08:00'\ncloses = '18:00'", false},
+		{"profile hours duplicate", "[profile]\nname = 'A'\n[[profile.hours]]\ndays = ['mo', 'mo']\nopens = '08:00'\ncloses = '18:00'", false},
+		{"profile hours empty", "[profile]\nname = 'A'\n[[profile.hours]]\ndays = []\nopens = '08:00'\ncloses = '18:00'", false},
+		{"profile hours time", "[profile]\nname = 'A'\n[[profile.hours]]\ndays = ['mo']\nopens = '8:00'\ncloses = '18:00'", false},
+		{"profile hours missing", "[profile]\nname = 'A'\n[[profile.hours]]\ndays = ['mo']\nopens = '08:00'", false},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

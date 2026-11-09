@@ -77,10 +77,12 @@ type Page struct {
 	Body        template.HTML
 	Site        Site
 	Canonical   string
-	PublishedAt string
-	UpdatedAt   string
-	Excerpt     string
-	Entries     []Entry
+	// StructuredData is schema.org JSON-LD for the home page, or nil.
+	StructuredData map[string]any
+	PublishedAt    string
+	UpdatedAt      string
+	Excerpt        string
+	Entries        []Entry
 }
 
 // Entry holds prepared list metadata without an article body or nested entries.

@@ -66,7 +66,9 @@ Open `cress.toml`. Every setting has a comment explaining what it does.
   their settings from `[brand]`.
 - Set `[site] host` to your public address, such as `https://example.org`,
   before you publish. Until then, Cress reminds you that it can't create
-  canonical URLs, link previews, or a sitemap.
+  canonical URLs, link previews, structured data, or a sitemap.
+- Describe who is behind the site in `[profile]`, such as your address and
+  opening hours. Search engines can then show them in their results.
 
 ## Preview your changes
 

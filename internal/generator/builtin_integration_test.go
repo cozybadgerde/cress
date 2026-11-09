@@ -239,7 +239,7 @@ func TestBuiltinCompletePageStructure(t *testing.T) {
 	}
 }
 
-func TestBuiltinLinkPreviews(t *testing.T) {
+func TestBuiltinLinkPreviewsAndProfile(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping filesystem integration test")
 	}
@@ -248,7 +248,8 @@ func TestBuiltinLinkPreviews(t *testing.T) {
 		if err := scaffold.Init(context.Background(), site, name); err != nil {
 			t.Fatal(err)
 		}
-		config := "[site]\ntitle = 'Shop & Co'\nhost = 'https://example.org'\npath = '/company/'\n[theme]\nname = '" + name + "'\n"
+		config := "[site]\ntitle = 'Shop & Co'\nhost = 'https://example.org'\npath = '/company/'\n[theme]\nname = '" + name + "'\n" +
+			"[profile]\ntype = 'Bakery'\n"
 		if err := os.WriteFile(filepath.Join(site, "cress.toml"), []byte(config), 0o644); err != nil {
 			t.Fatal(err)
 		}
@@ -277,6 +278,11 @@ func TestBuiltinLinkPreviews(t *testing.T) {
 			if !strings.Contains(string(about), want) {
 				t.Errorf("%s missing %s", name, want)
 			}
+		}
+		home, err := os.ReadFile(filepath.Join(site, "public/index.html"))
+		if err != nil || !strings.Contains(string(home), `<script type="application/ld+json">{"@context":"https://schema.org","@type":"Bakery","name":"Shop \u0026 Co","url":"https://example.org/company/"}</script>`) ||
+			strings.Contains(string(about), "ld+json") {
+			t.Errorf("%s structured data missing on home or present elsewhere: %s, %v", name, home, err)
 		}
 		notFound, err := os.ReadFile(filepath.Join(site, "public/404.html"))
 		if err != nil || strings.Contains(string(notFound), "og:") {

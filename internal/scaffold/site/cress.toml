@@ -15,7 +15,8 @@ description = "Practical help, thoughtfully delivered."
 # support "en" and "de". Content is not translated. Default: "en".
 language = "en"
 # Your public address, without a path. Set it before publishing to get
-# canonical URLs, link previews, and sitemap.xml. Leave it out while unknown.
+# canonical URLs, link previews, structured data, and sitemap.xml. Leave it
+# out while unknown.
 # host = "https://example.org"
 # Set this when the site lives below a folder, such as "/company/". It must
 # start and end with "/". Write all other URLs here and in your pages as if
@@ -71,3 +72,28 @@ favicon = "/images/favicon.svg"
 [brand.logo]
 src = "/images/logo.svg"
 alt = ""
+
+# Who is behind the site, published on the home page as structured data for
+# search engines. Needs [site] host. Fill in only what applies.
+# [profile]
+# Kind of business or organization, from https://schema.org/, such as
+# "LocalBusiness", "Bakery", "NGO", "SportsClub", "ProfessionalService", or
+# "Person". Default: "Organization".
+# type = "LocalBusiness"
+# name = "Your business" # Default: the site title.
+# telephone = "+49 30 1234567"
+# email = "hello@example.org"
+
+# [profile.address]
+# street = "Hauptstraße 1"
+# postal_code = "10115"
+# city = "Berlin"
+# region = "Berlin"
+# country = "DE"
+
+# Opening hours, one table per set of days. Days: mo, tu, we, th, fr, sa, su.
+# Times use 24 hours. A "Person" profile has no opening hours.
+# [[profile.hours]]
+# days = ["mo", "tu", "we", "th", "fr"]
+# opens = "08:00"
+# closes = "18:00"

@@ -160,6 +160,7 @@ most:
 | `.Image` | Optional title image with `URL`, `Canonical`, `Alt`, `Caption`, and `Focus`. `Canonical` is its full public URL, or empty when no host is configured. |
 | `.URL` | The page's address, including the URL prefix. |
 | `.Canonical` | Full public URL, or empty when no host is configured. |
+| `.StructuredData` | On the home page, the site's `[profile]` as schema.org data, or empty. |
 | `.PublishedAt`, `.UpdatedAt` | Optional `YYYY-MM-DD` dates. |
 | `.Excerpt` | Optional plain-text summary, used in lists. |
 | `.Entries` | On list pages, the entries to show, already selected and sorted. |
@@ -192,6 +193,9 @@ Some things to keep in mind:
 - **Link previews are yours to render.** The built-in themes add Open Graph
   tags from the title, description, and `.Image.Canonical` when `.Canonical`
   is set. Leave them out when it is empty.
+- **Structured data is ready to embed.** Write
+  `<script type="application/ld+json">{{.StructuredData}}</script>` when it
+  is set. The template engine encodes it as safe JSON.
 - **Custom data is yours.** Document any `[theme.custom]` keys your theme
   reads. It is plain data, never HTML.
 

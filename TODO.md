@@ -23,9 +23,6 @@ Follow the [release guide](docs/RELEASE.md) for each release. Tags and
 publication need maintainer approval. Ideas for later releases live in
 [GitHub issues](https://github.com/cozybadgerde/cress/issues).
 
-- [ ] Add business details for search engines.
-  Let publishers describe their business in `cress.toml`, such as name,
-  address, contact, and opening hours, and publish it as structured data.
 - [ ] Add feeds for list pages.
   Publish a web feed for each list page, so readers can follow a journal.
 - [ ] Add pagination for list pages.

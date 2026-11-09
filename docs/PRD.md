@@ -61,7 +61,7 @@ photographic content.
 - Opening hours, contact information, menus, and services as page content.
 - Site identity, brand settings, and page metadata.
 - Basic search engine optimization (SEO), a sitemap, and `robots.txt`.
-- Link previews for shared pages and structured business details.
+- Link previews for shared pages and structured profile details.
 - A not-found page.
 - Web feeds and pagination for list pages.
 - Title images and inline images, without image transformation.
@@ -445,9 +445,11 @@ images, a sitemap, and `robots.txt`.
 
 Pages carry link-preview metadata (Open Graph) from their title,
 description, and title image, so shared links show a useful preview.
-Publishers can describe their business once in the site configuration,
-such as its name, address, contact details, and opening hours. Cress
-publishes these details as structured data that search engines understand.
+Publishers can describe who is behind the site once in its `[profile]`
+configuration: a business, organization, club, or person. It holds a
+schema.org type, name, address, contact details, and opening hours. Cress
+publishes these details on the home page as structured data that search
+engines understand.
 
 Generate `404.html` at the output root with each theme's `404.gohtml`
 template and translated labels. Common static hosts show it for unknown
@@ -562,7 +564,7 @@ warning.
     preserve authored completion state with labeled, disabled checkboxes
     and usable item links, including nested and ordered lists. All shipped
     themes render these features without scripts or new configuration.
-24. Pages carry link-preview metadata, and configured business details
+24. Pages carry link-preview metadata, and configured profile details
     appear as structured data. Both use the public origin and follow the
     documented site defaults and page overrides.
 25. Every shipped theme generates a `404.html` page in the site language

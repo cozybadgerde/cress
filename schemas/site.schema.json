@@ -89,10 +89,56 @@
         }
       },
       "additionalProperties": true
+    },
+    "profile": {
+      "type": "object",
+      "description": "Runtime requires name when site.title is absent.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z0-9]*$",
+          "default": "Organization",
+          "description": "schema.org type name, such as LocalBusiness or NGO."
+        },
+        "name": { "$ref": "frontmatter.schema.json#/$defs/nonblank" },
+        "telephone": { "type": "string" },
+        "email": { "type": "string", "description": "Runtime validates a plain email address." },
+        "address": {
+          "type": "object",
+          "properties": {
+            "street": { "type": "string" },
+            "postal_code": { "type": "string" },
+            "city": { "type": "string" },
+            "region": { "type": "string" },
+            "country": { "type": "string" }
+          },
+          "additionalProperties": true
+        },
+        "hours": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "days": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": { "enum": ["mo", "tu", "we", "th", "fr", "sa", "su"] }
+              },
+              "opens": { "$ref": "#/$defs/time" },
+              "closes": { "$ref": "#/$defs/time" }
+            },
+            "required": ["days", "opens", "closes"],
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
     }
   },
   "additionalProperties": true,
   "$defs": {
+    "time": { "type": "string", "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$" },
     "links": {
       "type": "array",
       "items": {

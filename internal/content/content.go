@@ -128,6 +128,9 @@ func prepareMetadata(name string, source []byte, config Config) (Page, []string,
 	if config.Host != "" {
 		prepared.Data.Canonical = config.Host + prepared.Data.URL
 	}
+	if prepared.Data.URL == config.Site.URL {
+		prepared.Data.StructuredData = config.Profile
+	}
 
 	prepared.body = body
 	return prepared, warnings, nil

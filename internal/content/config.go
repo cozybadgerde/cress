@@ -21,6 +21,7 @@ type Config struct {
 	Site          page.Site
 	Description   string
 	Image         *page.Image
+	Profile       map[string]any
 	Host          string
 	Theme         string
 	IncludeDrafts bool
@@ -38,7 +39,7 @@ func ParseConfig(source []byte) (Config, []string, error) {
 		return config, warnings, fmt.Errorf("cress.toml: parse configuration: %w", err)
 	}
 	input := fields{values: values, source: "cress.toml", kind: "configuration", warnings: &warnings}
-	input.warnUnknown("site", "navigation", "theme", "syntax", "brand")
+	input.warnUnknown("site", "navigation", "theme", "syntax", "brand", "profile")
 	site, err := input.readTable("site")
 	if err != nil {
 		return config, warnings, err
@@ -115,6 +116,23 @@ func ParseConfig(source []byte) (Config, []string, error) {
 	config.Site.Brand, err = input.readBrand(config.Site.URL)
 	if err != nil {
 		return config, warnings, err
+	}
+	profile, err := input.readProfile(config.Site.Title)
+	if err != nil {
+		return config, warnings, err
+	}
+	if profile != nil && config.Host != "" {
+		profile["url"] = config.Host + config.Site.URL
+		if config.Description != "" {
+			profile["description"] = config.Description
+		}
+		if logo := config.Site.Brand.Logo; logo != nil {
+			profile["logo"] = publicURL(config.Host, logo.URL)
+		}
+		if config.Image != nil {
+			profile["image"] = config.Image.Canonical
+		}
+		config.Profile = profile
 	}
 	syntax, err := input.readTable("syntax")
 	if err != nil {
