@@ -39,6 +39,35 @@ func TestRender(t *testing.T) {
 	}
 }
 
+func TestRenderNotFound(t *testing.T) {
+	renderer, err := NewRenderer()
+	if err != nil {
+		t.Fatal(err)
+	}
+	output, err := renderer.RenderNotFound(page.Site{
+		Language: "en", URL: "/company/",
+		Navigation: page.Navigation{Main: []page.Link{{Label: "Home", URL: "/company/"}}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	html := string(output)
+	for _, want := range []string{
+		`<html lang="en">`, "<title>Page not found</title>",
+		`<main id="main"`, `aria-hidden="true">404</p>`,
+		"<h1>Page not found</h1>",
+		"The page you are looking for may have moved or no longer exists.",
+		`<a href="/company/">Home</a>`,
+	} {
+		if !strings.Contains(html, want) {
+			t.Errorf("output does not contain %q:\n%s", want, html)
+		}
+	}
+	if strings.Contains(html, `aria-current="page"`) {
+		t.Fatalf("not-found page marked home as current: %s", html)
+	}
+}
+
 func TestSyntaxHighlightingStyles(t *testing.T) {
 	renderer, err := NewRenderer()
 	if err != nil {

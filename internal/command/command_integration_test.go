@@ -46,7 +46,7 @@ func TestBuildCommand(t *testing.T) {
 			if err := cmd.Run(context.Background(), args); err != nil {
 				t.Fatal(err)
 			}
-			if !strings.Contains(stdout.String(), "Built 1 page(s)") ||
+			if !strings.Contains(stdout.String(), "Built 2 page(s)") ||
 				!strings.Contains(stderr.String(), `warning: content/index.md: unknown frontmatter field "unknown"`) {
 				t.Fatalf("stdout = %q; stderr = %q", stdout.String(), stderr.String())
 			}

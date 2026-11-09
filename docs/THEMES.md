@@ -50,6 +50,7 @@ themes/my-theme/
     page.gohtml     ordinary pages
     landing.gohtml  landing pages
     list.gohtml     list pages
+    404.gohtml      not-found page
     shared.gohtml   anything shared, such as header and footer
   public/
     site.css        files published with the site
@@ -57,10 +58,10 @@ themes/my-theme/
     en.toml         translated labels, if you use any
 ```
 
-`page.gohtml`, `landing.gohtml`, and `list.gohtml` are required. You can add
-more templates, including in subfolders such as `partials/header.gohtml`.
-Only files in `public/` are published, under `/themes/my-theme/`. Templates,
-the manifest, and locale files stay private.
+`page.gohtml`, `landing.gohtml`, `list.gohtml`, and `404.gohtml` are required.
+You can add more templates, including in subfolders such as
+`partials/header.gohtml`. Only files in `public/` are published, under
+`/themes/my-theme/`. Templates, the manifest, and locale files stay private.
 
 A local theme with a built-in name, such as `themes/poppy/`, replaces that
 built-in completely. Cress never mixes files from two themes, and it never
@@ -128,13 +129,21 @@ Two helpers are available:
 - `{{label "read_more"}}` returns a translated text from
   `locales/<language>.toml`, for example `read_more = "Read more"`. The
   language must match exactly: `en-US` doesn't fall back to `en`. A missing
-  file or key fails the build. An empty label stays empty.
+file or key fails the build. An empty optional label stays empty.
 
-You need locale files only if you use `label`. A locale file that exists must
-be valid, even if unused.
+Every theme needs a locale file for the site's exact language with non-empty
+`not_found_title` and `not_found_message` labels. Other labels are optional
+unless your templates use them. A language such as `en-US` does not fall back
+to `en`. A locale file that exists must be valid, even if unused.
 
 Templates have no access to files, the network, environment variables, or
 commands. This keeps themes predictable and safe to share.
+
+`404.gohtml` receives site data as a `page.Page`, like the other templates.
+Cress renders it to `404.html` at the output root. Use the `not_found_title`
+and `not_found_message` labels so the page appears in the site's language.
+The shared `document-start` and `document-end` templates provide the usual
+metadata, navigation, and skip link.
 
 ## The page data
 

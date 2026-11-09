@@ -95,8 +95,8 @@ cleanup errors after confirmed publication leave the new result in place.
    before rendering.
 7. **Render.** Compose each page from the render model and theme
    templates.
-8. **Stage.** Write pages, sitemap, `robots.txt`, page assets, shared
-   static files, and public theme assets into a staging area. Reject
+8. **Stage.** Write pages, `404.html`, sitemap, `robots.txt`, page assets,
+   shared static files, and public theme assets into a staging area. Reject
    destination collisions and name the competing sources.
 9. **Publish.** Verify ownership of the target and replace the previous
    output as a complete result. Restore it on

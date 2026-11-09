@@ -43,7 +43,10 @@ func TestBuildInitializedTheme(t *testing.T) {
 			t.Errorf("missing %q in %s", want, data)
 		}
 	}
-	for _, private := range []string{"themes/demo/theme.json", "themes/demo/templates/page.gohtml", "themes/demo/locales/en.toml"} {
+	for _, private := range []string{
+		"themes/demo/theme.json", "themes/demo/templates/page.gohtml",
+		"themes/demo/templates/404.gohtml", "themes/demo/locales/en.toml",
+	} {
 		if _, err := os.Lstat(filepath.Join(site, "public", private)); !os.IsNotExist(err) {
 			t.Errorf("private file published: %s %v", private, err)
 		}
@@ -58,7 +61,10 @@ func TestThemeErrorsPreserveOutput(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping filesystem integration test")
 	}
-	for _, kind := range []string{"missing", "manifest", "incompatible", "name", "template", "locale", "asset", "symlink", "parent-symlink"} {
+	for _, kind := range []string{
+		"missing", "manifest", "incompatible", "name", "template", "locale",
+		"missing-404-labels", "empty-404-labels", "asset", "symlink", "parent-symlink",
+	} {
 		t.Run(kind, func(t *testing.T) {
 			site := createSite(t, map[string]string{
 				"cress.toml":       "[site]\nhost = 'https://example.org'\nlanguage = 'en-US'\n[theme]\nname = 'demo'",
@@ -86,10 +92,11 @@ func TestThemeErrorsPreserveOutput(t *testing.T) {
 					write("templates/list.gohtml", `{{missing}}`)
 				case "locale":
 					write("templates/page.gohtml", `{{label "more"}}`)
-					if err := os.Mkdir(filepath.Join(site, "themes", "demo", "locales"), 0o755); err != nil {
-						t.Fatal(err)
-					}
-					write("locales/en.toml", `more = 'Wrong fallback'`)
+					write("locales/en-US.toml", "not_found_title = 'Page not found'\nnot_found_message = 'Missing'\n")
+				case "missing-404-labels":
+					write("locales/en-US.toml", "more = 'No 404 labels'\n")
+				case "empty-404-labels":
+					write("locales/en-US.toml", "not_found_title = ' '\nnot_found_message = ''\n")
 				case "asset":
 					write("templates/page.gohtml", `{{asset "../theme.json"}}`)
 				case "symlink":
@@ -128,10 +135,10 @@ func TestExactThemeLabelsAndAssetCollisions(t *testing.T) {
 		if err := theme.Init(context.Background(), site, "demo"); err != nil {
 			t.Fatal(err)
 		}
-		if err := os.Mkdir(filepath.Join(site, "themes", "demo", "locales"), 0o755); err != nil {
-			t.Fatal(err)
-		}
-		for name, data := range map[string]string{"locales/en.toml": `more = '<More>'`, "templates/page.gohtml": `<p>{{label "more"}}</p>`} {
+		for name, data := range map[string]string{
+			"locales/en.toml":       "more = '<More>'\nhome = 'Home'\nnot_found_title = 'Page not found'\nnot_found_message = 'Missing'\n",
+			"templates/page.gohtml": `<p>{{label "more"}}</p>`,
+		} {
 			if err := os.WriteFile(filepath.Join(site, "themes", "demo", name), []byte(data), 0o644); err != nil {
 				t.Fatal(err)
 			}

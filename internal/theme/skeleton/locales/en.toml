@@ -1,0 +1,4 @@
+skip = "Skip to content"
+home = "Home"
+not_found_title = "Page not found"
+not_found_message = "The page you are looking for may have moved or no longer exists."

@@ -53,7 +53,7 @@ func TestBuildSite(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result.Pages != 3 || len(result.Warnings) != 2 ||
+	if result.Pages != 4 || len(result.Warnings) != 2 ||
 		!strings.Contains(result.Warnings[0], `unknown frontmatter field "extra"`) {
 		t.Fatalf("unexpected result: %+v", result)
 	}
@@ -75,8 +75,13 @@ func TestBuildSite(t *testing.T) {
 		t.Fatal(err)
 	}
 	slices.Sort(published)
-	if !slices.Equal(published, []string{".cress-output.json", "about/index.html", "blog/first/index.html", "index.html", "robots.txt", "shared.txt", "themes/poppy/site.css"}) {
+	if !slices.Equal(published, []string{".cress-output.json", "404.html", "about/index.html", "blog/first/index.html", "index.html", "robots.txt", "shared.txt", "themes/poppy/site.css"}) {
 		t.Fatalf("unexpected published files: %v", published)
+	}
+	notFound, err := os.ReadFile(filepath.Join(site, "public", "404.html"))
+	if err != nil || !strings.Contains(string(notFound), `<html lang="en">`) ||
+		!strings.Contains(string(notFound), "<h1>Page not found</h1>") {
+		t.Fatalf("unexpected not-found page: %s, %v", notFound, err)
 	}
 	home, err := os.ReadFile(filepath.Join(site, "public", "index.html"))
 	if err != nil {
@@ -164,6 +169,25 @@ func TestBuildCollisions(t *testing.T) {
 	}
 }
 
+func TestBuildNotFoundPageCollision(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping filesystem integration test")
+	}
+	site := createSite(t, map[string]string{
+		"content/index.md": "+++\ntitle = 'Home'\n+++\nWelcome",
+		"static/404.html":  "site-owned file",
+	})
+	_, err := generator.Build(context.Background(), site)
+	if err == nil || !strings.Contains(err.Error(), "collision") ||
+		!strings.Contains(err.Error(), "generated 404.html") ||
+		!strings.Contains(err.Error(), "static/404.html") {
+		t.Fatalf("error = %v, want collision between generated and site-owned files", err)
+	}
+	if _, err := os.Lstat(filepath.Join(site, "public")); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("output created despite collision: %v", err)
+	}
+}
+
 func TestBuildRefusesContentSymlinks(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping filesystem integration test")
@@ -234,13 +258,18 @@ func TestBuildWithNoPublishedPages(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			site := createSite(t, sources)
 			result, err := generator.Build(context.Background(), site)
-			if err != nil || result.Pages != 0 {
+			if err != nil || result.Pages != 1 {
 				t.Fatalf("result = %+v, error = %v", result, err)
 			}
 			entries, err := os.ReadDir(filepath.Join(site, "public"))
-			if err != nil || len(entries) != 3 ||
-				entries[0].Name() != ".cress-output.json" || entries[1].Name() != "robots.txt" || entries[2].Name() != "themes" {
+			if err != nil || len(entries) != 4 ||
+				entries[0].Name() != ".cress-output.json" || entries[1].Name() != "404.html" ||
+				entries[2].Name() != "robots.txt" || entries[3].Name() != "themes" {
 				t.Fatalf("unpublished output = %v, error = %v", entries, err)
+			}
+			notFound, err := os.ReadFile(filepath.Join(site, "public", "404.html"))
+			if err != nil || !strings.Contains(string(notFound), "<h1>Page not found</h1>") {
+				t.Fatalf("not-found page missing from empty site: %s, %v", notFound, err)
 			}
 
 		})

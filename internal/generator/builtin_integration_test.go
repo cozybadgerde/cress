@@ -52,6 +52,19 @@ func TestAnemoneImageFreePagesAndLocalizedPrefix(t *testing.T) {
 				t.Errorf("%s missing %s", file, want)
 			}
 		}
+		notFound, err := os.ReadFile(filepath.Join(site, "public", "404.html"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, want := range []string{
+			`<html lang="de">`, `<h1>Seite nicht gefunden</h1>`,
+			"Die angeforderte Seite wurde nicht gefunden.",
+			`<a href="/company/">Startseite</a>`,
+		} {
+			if !strings.Contains(string(notFound), want) {
+				t.Errorf("localized 404 missing %q: %s", want, notFound)
+			}
+		}
 		for _, absent := range []string{`class="site-header"`, `class="site-footer"`, `<img`, `class="entries"`, `with-image`} {
 			if strings.Contains(html, absent) {
 				t.Errorf("%s rendered empty optional group %s", file, absent)
@@ -197,6 +210,11 @@ func TestBuiltinCompletePageStructure(t *testing.T) {
 					t.Errorf("%s/%s: list page image must load eagerly before lazy entry images", name, file)
 				}
 			}
+		}
+		notFound, err := os.ReadFile(filepath.Join(site, "public", "404.html"))
+		if err != nil || !strings.Contains(string(notFound), `<html lang="en">`) ||
+			!strings.Contains(string(notFound), "<h1>Page not found</h1>") {
+			t.Errorf("%s missing its localized 404 page: %s, %v", name, notFound, err)
 		}
 		if err := theme.Init(context.Background(), site, name); err != nil {
 			t.Fatal(err)

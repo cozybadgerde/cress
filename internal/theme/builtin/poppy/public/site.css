@@ -40,6 +40,10 @@ nav li { min-width: 0; max-width: 100%; }
 nav a { display: inline-flex; align-items: center; min-width: 2.75rem; min-height: 2.75rem; max-width: 100%; padding: .5rem .25rem; }
 [aria-current="page"] { font-weight: 700; text-decoration-thickness: .15em; }
 main { max-width: var(--content-width); margin: auto; padding: 2rem var(--gutter) 4rem; }
+.not-found { display: grid; justify-items: center; padding-block: clamp(2rem, 12vh, 7rem); text-align: center; }
+.not-found-code { margin: 0; color: var(--link); font-size: clamp(4rem, 20vw, 8rem); font-weight: 750; letter-spacing: -.03em; line-height: .9; }
+.not-found h1 { margin: 1rem 0 .75rem; }
+.not-found > p:not(.not-found-code) { max-width: 42ch; }
 h1, h2, h3 { line-height: 1.2; font-weight: 650; letter-spacing: -.02em; text-wrap: balance; }
 h1 { font-size: clamp(2rem, 4.5vw, 3rem); margin: 0 0 1.5rem; }
 h2 { margin-top: 2rem; font-size: 1.8rem; }

@@ -33,6 +33,10 @@ nav li { min-width: 0; max-width: 100%; }
 nav a { display: inline-flex; align-items: center; min-width: 2.75rem; min-height: 2.75rem; max-width: 100%; padding: .5rem .25rem; }
 [aria-current="page"] { font-weight: 700; text-decoration-thickness: .15em; }
 main { max-width: var(--content-width); margin: auto; padding: 2.5rem var(--gutter) 4rem; }
+.not-found { max-width: var(--reading-width); }
+.not-found-code { margin: 0 0 1rem; color: var(--link); font-size: clamp(4rem, 16vw, 7rem); font-variant-numeric: tabular-nums; line-height: 1; }
+.not-found h1 { max-width: 15ch; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+.not-found > p:not(.not-found-code) { max-width: 42ch; }
 @media (max-width: 40rem) {
   .site-header { align-items: flex-start; }
   .site-header nav { flex-basis: 100%; }

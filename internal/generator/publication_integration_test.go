@@ -41,7 +41,7 @@ func TestBuildListsAndPublication(t *testing.T) {
 				"content/contact.md":                 "+++\ntitle = 'Contact'\n+++",
 			})
 			result, err := generator.Build(context.Background(), site)
-			if err != nil || result.Pages != 11 || len(result.Warnings) != 1 ||
+			if err != nil || result.Pages != 12 || len(result.Warnings) != 1 ||
 				!strings.Contains(result.Warnings[0], "content/blog/undated.md") ||
 				!strings.Contains(result.Warnings[0], "content/blog/list.md") {
 				t.Fatalf("result = %+v, error = %v", result, err)
@@ -94,7 +94,7 @@ func TestBuildListsAndPublication(t *testing.T) {
 			if err := xml.Unmarshal([]byte(read("sitemap.xml")), &sitemap); err != nil {
 				t.Fatal(err)
 			}
-			if len(sitemap.URLs) != result.Pages ||
+			if len(sitemap.URLs) != result.Pages-1 ||
 				sitemap.XMLName.Space != "http://www.sitemaps.org/schemas/sitemap/0.9" {
 				t.Fatalf("sitemap = %+v", sitemap)
 			}

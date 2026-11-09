@@ -172,7 +172,7 @@ func loadPackage(ctx context.Context, source fs.FS, request Request) (Package, [
 			})
 		}
 	}
-	for _, name := range []string{"page.gohtml", "landing.gohtml", "list.gohtml"} {
+	for _, name := range []string{"page.gohtml", "landing.gohtml", "list.gohtml", "404.gohtml"} {
 		if _, exists := pkg.Templates[name]; !exists {
 			return pkg, warnings, fmt.Errorf("missing required templates/%s", name)
 		}

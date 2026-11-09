@@ -95,9 +95,12 @@ func TestPackageHelpersAndBoundaries(t *testing.T) {
 		"templates/page.gohtml":    {Data: []byte(`{{label "more"}}`)},
 		"templates/landing.gohtml": {Data: []byte(`Landing`)},
 		"templates/list.gohtml":    {Data: []byte(`List`)},
+		"templates/404.gohtml":     {Data: []byte(`404`)},
 		"public/css/site.css":      {Data: []byte("unchanged")},
 		"private.txt":              {Data: []byte("private")},
-		"locales/en.toml":          {Data: []byte("more = '<More>'")},
+		"locales/en.toml": {Data: []byte(
+			"more = '<More>'\nnot_found_title = 'Page not found'\nnot_found_message = 'Missing'\n",
+		)},
 	}
 
 	pkg, _, err := loadPackage(context.Background(), files, Request{Name: "demo", Language: "en", Prefix: "/company/"})
@@ -136,6 +139,11 @@ func TestPackageHelpersAndBoundaries(t *testing.T) {
 		}
 	}
 	delete(files, "locales/en-US.toml")
+	delete(files, "templates/404.gohtml")
+	if _, _, err := loadPackage(context.Background(), files, Request{}); err == nil {
+		t.Fatal("theme without required 404 template accepted")
+	}
+	files["templates/404.gohtml"] = &fstest.MapFile{Data: []byte("404")}
 	delete(files, "templates/list.gohtml")
 	if _, _, err := loadPackage(context.Background(), files, Request{}); err == nil {
 		t.Fatal("incomplete theme accepted")
@@ -148,8 +156,9 @@ func TestPackageValidatesPrivateFilesWithoutReadingBodies(t *testing.T) {
 		"templates/page.gohtml":    {Data: []byte("Page")},
 		"templates/landing.gohtml": {Data: []byte("Landing")},
 		"templates/list.gohtml":    {Data: []byte("List")},
+		"templates/404.gohtml":     {Data: []byte("404")},
 		"public/site.css":          {Data: []byte("unchanged")},
-		"locales/en.toml":          {Data: []byte("more = 'More'")},
+		"locales/en.toml":          {Data: []byte("more = 'More'\nnot_found_title = 'Page not found'\nnot_found_message = 'Missing'")},
 		"locales/de.toml":          {Data: []byte("unused")},
 		"templates/design.txt":     {Data: []byte("private")},
 		"originals/image.png":      {Data: []byte("private")},
@@ -181,7 +190,7 @@ func TestPackageValidatesPrivateFilesWithoutReadingBodies(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if len(pkg.Templates) != 3 || pkg.Templates["page.gohtml"] != "Page" ||
+			if len(pkg.Templates) != 4 || pkg.Templates["page.gohtml"] != "Page" ||
 				len(pkg.Assets) != 1 || string(pkg.Assets[0].Data) != "unchanged" {
 				t.Fatalf("generation inputs changed: %+v", pkg)
 			}

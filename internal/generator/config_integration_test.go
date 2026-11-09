@@ -50,7 +50,7 @@ private = "not raw configuration for templates"
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result.Pages != 5 || len(result.Warnings) != 0 {
+	if result.Pages != 6 || len(result.Warnings) != 0 {
 		t.Fatalf("unexpected result: %+v", result)
 	}
 	readPage := func(name string) string {
@@ -139,7 +139,7 @@ func TestBuildWarningsIncludeConfigurationAndPages(t *testing.T) {
 		"content/index.md": "+++\ntitle = 'Home'\nunknown = 'warning'\n+++\nBody",
 	})
 	result, err := generator.Build(context.Background(), site)
-	if err != nil || result.Pages != 1 || len(result.Warnings) != 3 {
+	if err != nil || result.Pages != 2 || len(result.Warnings) != 3 {
 		t.Fatalf("result = %+v, error = %v", result, err)
 	}
 	if !strings.Contains(result.Warnings[0], "cress.toml:") ||

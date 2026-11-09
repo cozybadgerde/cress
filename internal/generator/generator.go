@@ -109,6 +109,13 @@ func generate(ctx context.Context, request buildRequest) (result Result, buildEr
 			Path: item.Destination, Source: item.Source, Data: rendered,
 		})
 	}
+	notFound, err := renderer.RenderNotFound(config.Site)
+	if err != nil {
+		return result, fmt.Errorf("render not-found page: %w", err)
+	}
+	files = append(files, output.File{
+		Path: "404.html", Source: "generated 404.html", Data: notFound,
+	})
 	for _, asset := range prepared.Assets {
 		files = append(files, output.File{Path: asset.Destination, Source: asset.Source, Data: asset.Data})
 	}
@@ -118,6 +125,6 @@ func generate(ctx context.Context, request buildRequest) (result Result, buildEr
 	if err := request.writer.Write(ctx, files); err != nil {
 		return result, err
 	}
-	result.Pages = len(prepared.Pages)
+	result.Pages = len(prepared.Pages) + 1
 	return result, nil
 }

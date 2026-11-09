@@ -449,8 +449,9 @@ Publishers can describe their business once in the site configuration,
 such as its name, address, contact details, and opening hours. Cress
 publishes these details as structured data that search engines understand.
 
-Generate a not-found page that each theme presents in the site language.
-Common static hosts show it for unknown addresses.
+Generate `404.html` at the output root with each theme's `404.gohtml`
+template and translated labels. Common static hosts show it for unknown
+addresses.
 
 Without a public origin, generation succeeds with an actionable warning
 and omits metadata that requires that origin. Do not invent a hostname or
@@ -563,7 +564,8 @@ warning.
 24. Pages carry link-preview metadata, and configured business details
     appear as structured data. Both use the public origin and follow the
     documented site defaults and page overrides.
-25. Every shipped theme presents a not-found page in the site language.
+25. Every shipped theme generates a `404.html` page in the site language
+    with its `404.gohtml` template and translated labels.
 26. Long list pages split into numbered pages with links between them, and
     each list page publishes a web feed of its entries.
 
