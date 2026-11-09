@@ -87,9 +87,9 @@
 {{define "pagination"}}{{with .Pagination}}
     <nav class="pagination" aria-label="{{label "pagination"}}">
       <ul>
-        {{with .Previous}}<li><a href="{{.}}" rel="prev">{{label "previous_page"}}</a></li>{{end}}
+        {{with .Previous}}<li><a href="{{.}}" rel="prev" aria-label="{{label "previous_page"}}">←</a></li>{{end}}
         {{range .Pages}}<li><a href="{{.URL}}" aria-label="{{label "page"}} {{.Number}}"{{if .Current}} aria-current="page"{{end}}>{{.Number}}</a></li>{{end}}
-        {{with .Next}}<li><a href="{{.}}" rel="next">{{label "next_page"}}</a></li>{{end}}
+        {{with .Next}}<li><a href="{{.}}" rel="next" aria-label="{{label "next_page"}}">→</a></li>{{end}}
       </ul>
     </nav>
 {{end}}{{end}}

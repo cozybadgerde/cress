@@ -76,7 +76,7 @@ alt = ""
 [list]
 # Entries per list page. Later pages get numbered URLs such as
 # /journal/list/2/. A list page can override this; 0 shows every entry.
-per_page = 10
+per_page = 3
 
 # Who is behind the site, published on the home page as structured data for
 # search engines. Needs [site] host. Fill in only what applies.

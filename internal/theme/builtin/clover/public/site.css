@@ -120,4 +120,5 @@ blockquote { border-inline-start: 3px solid var(--border); margin-inline: 0; pad
 .landing .prose > p:first-child + p.standalone-link > a:hover { background: var(--text); }
 .landing .prose > h2 { font-size: clamp(1.5rem, 3vw, 1.875rem); font-weight: 650; letter-spacing: -.01em; text-wrap: balance; margin: clamp(2.5rem, 6vw, 4rem) 0 .75rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
 .pagination { max-width: var(--reading-width); margin: 1rem auto 0; padding-top: 1rem; border-top: 1px solid var(--border); }
+.pagination ul { justify-content: center; }
 .pagination [aria-current="page"] { font-weight: 700; text-decoration: none; }

@@ -333,7 +333,7 @@ func TestBuiltinPagination(t *testing.T) {
 		}
 		for _, want := range []string{
 			`<title>Journal (Page 2)`, `<link rel="canonical" href="https://example.org/journal/list/2/">`,
-			`<nav class="pagination" aria-label="Pagination">`, `<a href="/journal/list/" rel="prev">Previous page</a>`,
+			`<nav class="pagination" aria-label="Pagination">`, `<a href="/journal/list/" aria-label="Page 1">1</a>`,
 			`aria-label="Page 2" aria-current="page">2</a>`, `href="/journal/second/"`,
 		} {
 			if !strings.Contains(string(second), want) {
