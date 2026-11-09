@@ -23,9 +23,6 @@ Follow the [release guide](docs/RELEASE.md) for each release. Tags and
 publication need maintainer approval. Ideas for later releases live in
 [GitHub issues](https://github.com/cozybadgerde/cress/issues).
 
-- [ ] Add link previews.
-  Give each page Open Graph metadata from its title, description, and title
-  image, so shared links show a preview.
 - [ ] Add business details for search engines.
   Let publishers describe their business in `cress.toml`, such as name,
   address, contact, and opening hours, and publish it as structured data.

@@ -59,6 +59,7 @@ func renderContent(prepared *Page, config Config, files map[string]reference) er
 		if err := resolvePageImage(prepared, references); err != nil {
 			return err
 		}
+		prepared.Data.Image.Canonical = publicURL(config.Host, prepared.Data.Image.URL)
 	}
 	captions := &imageCaptionParser{captions: make(map[*ast.Image]string)}
 	markdown := goldmark.New(

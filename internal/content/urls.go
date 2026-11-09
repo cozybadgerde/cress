@@ -76,6 +76,20 @@ func ResolveURL(value, prefix string) (string, error) {
 	return strings.TrimSuffix(prefix, "/") + value, nil
 }
 
+// publicURL returns a resolved URL as a full public URL, or "" when unknown.
+func publicURL(host, value string) string {
+	parsed, err := url.Parse(value)
+	switch {
+	case host == "" || err != nil:
+		return ""
+	case parsed.IsAbs():
+		return value
+	case strings.HasPrefix(value, "/") && !strings.HasPrefix(value, "//"):
+		return host + value
+	}
+	return ""
+}
+
 func validatePath(value string) (string, error) {
 	if !strings.HasPrefix(value, "/") || !strings.HasSuffix(value, "/") ||
 		strings.Contains(value, "//") || strings.ContainsAny(value, "%\\?#") {

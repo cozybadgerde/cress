@@ -28,7 +28,8 @@ We help small businesses build a useful presence online.
 
 The theme shows the title as the page's main heading. A good description is
 one plain sentence that tells search engines and visitors what the page is
-about.
+about. Once `[site] host` is set, the title, description, and title image
+also form the preview shown when someone shares a link to the page.
 
 The settings at the top of `content/tour.md` explain every page setting in a
 comment. The [frontmatter schema](../schemas/frontmatter.schema.json) lets
@@ -150,7 +151,8 @@ links:
 A caption doesn't replace the description; use both.
 
 The large image at the top of a page is a page setting. The tour shows how
-to set it.
+to set it. Use a JPEG or PNG title image for link previews; most services
+don't show SVG images.
 
 ## Show code
 

@@ -16,9 +16,11 @@ const (
 
 // Image holds a resolved image URL and its plain-text alternative.
 type Image struct {
-	URL     string
-	Alt     string
-	Caption []CaptionPart
+	URL string
+	// Canonical is the full public URL, or "" without a configured host.
+	Canonical string
+	Alt       string
+	Caption   []CaptionPart
 	// Focus is "" or a crop keyword such as "top" or "bottom-left".
 	Focus string
 }

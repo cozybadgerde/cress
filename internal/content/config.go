@@ -88,6 +88,9 @@ func ParseConfig(source []byte) (Config, []string, error) {
 	if err != nil {
 		return config, warnings, err
 	}
+	if config.Image != nil {
+		config.Image.Canonical = publicURL(config.Host, config.Image.URL)
+	}
 	config.Site.Navigation, err = input.readNavigation(config.Site.URL)
 	if err != nil {
 		return config, warnings, err

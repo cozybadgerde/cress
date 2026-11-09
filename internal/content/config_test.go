@@ -67,7 +67,7 @@ title = { nested = ["kept", "as data"] }
 			Syntax: page.Syntax{Highlight: true},
 		},
 		Description: "Shared description", Host: "https://example.org:8443",
-		Image: &page.Image{URL: "/company/team.jpg", Alt: "Our team"},
+		Image: &page.Image{URL: "/company/team.jpg", Canonical: "https://example.org:8443/company/team.jpg", Alt: "Our team"},
 	}
 	if !reflect.DeepEqual(config, want) {
 		t.Fatalf("config = %#v, want %#v", config, want)

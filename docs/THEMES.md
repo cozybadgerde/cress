@@ -157,7 +157,7 @@ most:
 | `.Type` | `ordinary`, `landing`, or `list`. |
 | `.Body` | The page content as finished HTML. |
 | `.Description` | Page description, already inherited from the site if needed. |
-| `.Image` | Optional title image with `URL`, `Alt`, `Caption`, and `Focus`. |
+| `.Image` | Optional title image with `URL`, `Canonical`, `Alt`, `Caption`, and `Focus`. `Canonical` is its full public URL, or empty when no host is configured. |
 | `.URL` | The page's address, including the URL prefix. |
 | `.Canonical` | Full public URL, or empty when no host is configured. |
 | `.PublishedAt`, `.UpdatedAt` | Optional `YYYY-MM-DD` dates. |
@@ -189,6 +189,9 @@ Some things to keep in mind:
 - **Captions are data.** `.Image.Caption` is a list of parts with `Text` and
   an optional `URL`. Render them inside `figcaption`, and leave the markup out
   when the list is empty.
+- **Link previews are yours to render.** The built-in themes add Open Graph
+  tags from the title, description, and `.Image.Canonical` when `.Canonical`
+  is set. Leave them out when it is empty.
 - **Custom data is yours.** Document any `[theme.custom]` keys your theme
   reads. It is plain data, never HTML.
 

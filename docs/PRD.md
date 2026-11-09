@@ -529,8 +529,9 @@ warning.
     Required licenses and notices are supplied, and unknown or unapproved
     dependency licenses fail release checks. Bundled non-code assets have
     separately reviewed distribution rights.
-15. Titles, descriptions, title images, canonical URLs, sitemap entries,
-    and `robots.txt` reflect the documented metadata and deployment location.
+15. Titles, descriptions, title images, canonical URLs, link previews,
+    sitemap entries, and `robots.txt` reflect the documented metadata and
+    deployment location.
     Without a public origin, generation warns and omits origin-dependent
     metadata while preserving ordinary browsing.
 16. Syntax highlighting works without browser JavaScript, can be disabled,

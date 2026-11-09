@@ -15,7 +15,7 @@ description = "Practical help, thoughtfully delivered."
 # support "en" and "de". Content is not translated. Default: "en".
 language = "en"
 # Your public address, without a path. Set it before publishing to get
-# canonical URLs and sitemap.xml. Leave it out while unknown.
+# canonical URLs, link previews, and sitemap.xml. Leave it out while unknown.
 # host = "https://example.org"
 # Set this when the site lives below a folder, such as "/company/". It must
 # start and end with "/". Write all other URLs here and in your pages as if

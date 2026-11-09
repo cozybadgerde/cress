@@ -94,3 +94,25 @@ func TestCanonicalURLPreparation(t *testing.T) {
 		})
 	}
 }
+
+func TestImageCanonicalPreparation(t *testing.T) {
+	const site = "[site.image]\nsrc = '/team.jpg'\nalt = 'Team'\n"
+	for _, test := range []struct{ config, metadata, want string }{
+		{site, "type = 'landing'\n", ""},
+		{"[site]\nhost = 'https://example.org'\npath = '/company/'\n" + site, "type = 'landing'\n",
+			"https://example.org/company/team.jpg"},
+		{"[site]\nhost = 'https://example.org'\n", "image = { src = '/shop.jpg', alt = '' }\n",
+			"https://example.org/shop.jpg"},
+		{"[site]\nhost = 'https://example.org'\n", "image = { src = 'https://cdn.example.net/a.jpg', alt = '' }\n",
+			"https://cdn.example.net/a.jpg"},
+	} {
+		config, _, err := ParseConfig([]byte(test.config))
+		if err != nil {
+			t.Fatal(err)
+		}
+		item, _, err := Prepare("index.md", []byte("+++\ntitle = 'Page'\n"+test.metadata+"+++\n"), config)
+		if err != nil || item.Data.Image == nil || item.Data.Image.Canonical != test.want {
+			t.Fatalf("image = %+v, error = %v; want canonical %q", item.Data.Image, err, test.want)
+		}
+	}
+}

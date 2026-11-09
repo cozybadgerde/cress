@@ -238,3 +238,61 @@ func TestBuiltinCompletePageStructure(t *testing.T) {
 		}
 	}
 }
+
+func TestBuiltinLinkPreviews(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping filesystem integration test")
+	}
+	for _, name := range []string{"poppy", "clover", "anemone"} {
+		site := t.TempDir()
+		if err := scaffold.Init(context.Background(), site, name); err != nil {
+			t.Fatal(err)
+		}
+		config := "[site]\ntitle = 'Shop & Co'\nhost = 'https://example.org'\npath = '/company/'\n[theme]\nname = '" + name + "'\n"
+		if err := os.WriteFile(filepath.Join(site, "cress.toml"), []byte(config), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(site, "content/about.md"), []byte(
+			"+++\ntitle = 'About <us>'\ndescription = 'Who we are'\n"+
+				"image = { src = 'index.assets/placeholder.svg', alt = 'Our team' }\n+++\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := generator.Build(context.Background(), site); err != nil {
+			t.Fatal(err)
+		}
+		about, err := os.ReadFile(filepath.Join(site, "public/about/index.html"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, want := range []string{
+			`<meta property="og:type" content="website">`,
+			`<meta property="og:url" content="https://example.org/company/about/">`,
+			`<meta property="og:title" content="About &lt;us&gt;">`,
+			`<meta property="og:site_name" content="Shop &amp; Co">`,
+			`<meta property="og:description" content="Who we are">`,
+			`<meta property="og:image" content="https://example.org/company/placeholder.svg">`,
+			`<meta property="og:image:alt" content="Our team">`,
+			`<meta name="twitter:card" content="summary_large_image">`,
+		} {
+			if !strings.Contains(string(about), want) {
+				t.Errorf("%s missing %s", name, want)
+			}
+		}
+		notFound, err := os.ReadFile(filepath.Join(site, "public/404.html"))
+		if err != nil || strings.Contains(string(notFound), "og:") {
+			t.Errorf("%s 404 has link preview or failed: %v", name, err)
+		}
+		if err := os.WriteFile(filepath.Join(site, "cress.toml"), []byte("[theme]\nname = '"+name+"'\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		result, err := generator.Build(context.Background(), site)
+		if err != nil {
+			t.Fatal(err)
+		}
+		about, err = os.ReadFile(filepath.Join(site, "public/about/index.html"))
+		if err != nil || strings.Contains(string(about), "og:") || strings.Contains(string(about), "twitter:") ||
+			!strings.Contains(strings.Join(result.Warnings, "\n"), "link previews") {
+			t.Errorf("%s without host: preview tags or missing warning %v: %v", name, result.Warnings, err)
+		}
+	}
+}
