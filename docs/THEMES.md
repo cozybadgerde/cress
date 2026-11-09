@@ -164,6 +164,7 @@ most:
 | `.PublishedAt`, `.UpdatedAt` | Optional `YYYY-MM-DD` dates. |
 | `.Excerpt` | Optional plain-text summary, used in lists. |
 | `.Entries` | On list pages, the entries to show, already selected and sorted. |
+| `.Feed` | On list pages, the Atom feed URL, or empty without a host or dated entries. |
 | `.Pagination` | On split list pages, `Number`, `Total`, `Previous` and `Next` URLs, and `Pages` with `Number`, `URL`, and `Current`. Empty otherwise. |
 | `.Site.Title`, `.Site.Copyright` | Site identity, possibly empty. |
 | `.Site.Language` | The site language, such as `en`. |
@@ -183,6 +184,9 @@ Some things to keep in mind:
 - **Render pagination.** A long list is split into numbered pages, and
   `.Entries` holds only the current page. Link to the others from
   `.Pagination`, or readers can't reach the older entries.
+- **Advertise feeds.** When `.Feed` is set, add
+  `<link rel="alternate" type="application/atom+xml" href="{{.Feed}}">` to
+  the head, so feed readers find it.
 - **Only `.Body` is HTML.** Everything else is plain text and gets escaped.
   Never turn other values into trusted HTML.
 - **Images have no size.** Cress doesn't measure images. To avoid layout

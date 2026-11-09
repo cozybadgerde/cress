@@ -85,6 +85,8 @@ type Page struct {
 	Entries        []Entry
 	// Pagination is nil unless the list is split into numbered pages.
 	Pagination *Pagination
+	// Feed is the list's Atom feed URL, or "" without a host or dated entries.
+	Feed string
 }
 
 // Pagination holds prepared links between the numbered pages of a list.

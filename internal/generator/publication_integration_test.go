@@ -41,9 +41,10 @@ func TestBuildListsAndPublication(t *testing.T) {
 				"content/contact.md":                 "+++\ntitle = 'Contact'\n+++",
 			})
 			result, err := generator.Build(context.Background(), site)
-			if err != nil || result.Pages != 12 || len(result.Warnings) != 1 ||
-				!strings.Contains(result.Warnings[0], "content/blog/undated.md") ||
-				!strings.Contains(result.Warnings[0], "content/blog/list.md") {
+			if err != nil || result.Pages != 12 || len(result.Warnings) != 2 ||
+				!strings.Contains(result.Warnings[0], "content/blog/undated.md: missing published_at; omitted from the feed of content/blog/alphabetical/index.md") ||
+				!strings.Contains(result.Warnings[1], "content/blog/undated.md") ||
+				!strings.Contains(result.Warnings[1], "content/blog/list.md") {
 				t.Fatalf("result = %+v, error = %v", result, err)
 			}
 			read := func(name string) string {
@@ -118,6 +119,55 @@ func TestBuildListsAndPublication(t *testing.T) {
 			}
 			if !strings.Contains(read("robots.txt"), "Sitemap: https://example.org:8443"+prefix+"sitemap.xml\n") {
 				t.Fatal("sitemap not advertised")
+			}
+			origin := "https://example.org:8443" + prefix
+			if !strings.Contains(list, `<link rel="alternate" type="application/atom+xml" href="`+prefix+`blog/list/feed.xml" title="Journal">`) {
+				t.Errorf("feed not advertised: %s", list)
+			}
+			var feed struct {
+				XMLName  xml.Name
+				Language string `xml:"lang,attr"`
+				ID       string `xml:"id"`
+				Updated  string `xml:"updated"`
+				Author   string `xml:"author>name"`
+				Links    []struct {
+					Rel  string `xml:"rel,attr"`
+					Href string `xml:"href,attr"`
+				} `xml:"link"`
+				Entries []struct {
+					ID        string `xml:"id"`
+					Title     string `xml:"title"`
+					Published string `xml:"published"`
+					Updated   string `xml:"updated"`
+					Summary   string `xml:"summary"`
+					Content   struct {
+						Type string `xml:"type,attr"`
+						Base string `xml:"base,attr"`
+						Body string `xml:",chardata"`
+					} `xml:"content"`
+				} `xml:"entry"`
+			}
+			if err := xml.Unmarshal([]byte(read("blog/list/feed.xml")), &feed); err != nil {
+				t.Fatal(err)
+			}
+			if feed.XMLName.Space != "http://www.w3.org/2005/Atom" || feed.Language != "en" || feed.ID != origin+"blog/list/" ||
+				feed.Updated != "2026-10-21T00:00:00Z" || feed.Author != "example.org:8443" || len(feed.Links) != 2 ||
+				feed.Links[0].Href != origin+"blog/list/feed.xml" || len(feed.Entries) != 2 {
+				t.Fatalf("feed = %+v", feed)
+			}
+			entry := feed.Entries[0]
+			if entry.ID != origin+"blog/first/" || entry.Title != "<First>" || entry.Published != "2026-10-20T00:00:00Z" ||
+				entry.Updated != "2026-10-21T00:00:00Z" || entry.Summary != "<Excerpt>" || entry.Content.Type != "html" ||
+				entry.Content.Base != origin+"blog/first/" || !strings.Contains(entry.Content.Body, "<p>Article body must not appear in a list</p>") ||
+				feed.Entries[1].Title != "Second" {
+				t.Fatalf("feed entries = %+v", feed.Entries)
+			}
+			if alphabetical := read("blog/alphabetical/feed.xml"); strings.Contains(alphabetical, "Undated") {
+				t.Fatalf("undated page in feed: %s", alphabetical)
+			}
+			if _, err := os.Stat(filepath.Join(site, "public/blog/empty/list/feed.xml")); !os.IsNotExist(err) ||
+				strings.Contains(empty, "atom+xml") {
+				t.Fatalf("empty list has a feed: %v", err)
 			}
 			first := read("blog/first/index.html")
 			if !strings.Contains(first, `src="`+prefix+`blog/first/seed.svg"`) ||

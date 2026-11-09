@@ -23,6 +23,7 @@ type Page struct {
 	body        []byte
 	pageImage   bool
 	list        listOptions
+	feed        []feedEntry
 }
 
 // Prepare validates a content-relative Markdown source and prepares its page.

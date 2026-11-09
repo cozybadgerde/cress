@@ -28,7 +28,7 @@ func preparePublication(pages []Page, config Config) ([]Asset, []string, error) 
 	files := []Asset{{Source: "generated robots.txt", Destination: robotsPath}}
 	if config.Host == "" {
 		files[0].Data = []byte(robots)
-		return files, []string{"cress.toml: site.host is not configured; set an HTTP/HTTPS public origin to generate canonical URLs, link previews, structured data, and sitemap.xml"}, nil
+		return files, []string{"cress.toml: site.host is not configured; set an HTTP/HTTPS public origin to generate canonical URLs, link previews, structured data, feeds, and sitemap.xml"}, nil
 	}
 	document := sitemap{XMLNS: "http://www.sitemaps.org/schemas/sitemap/0.9"}
 	for _, item := range pages {
@@ -50,5 +50,14 @@ func preparePublication(pages []Page, config Config) ([]Asset, []string, error) 
 		Source: "generated sitemap.xml", Destination: sitemapPath,
 		Data: []byte(xml.Header + string(data) + "\n"),
 	})
+	for _, item := range pages {
+		if item.feed != nil {
+			feed, err := encodeFeed(item, config)
+			if err != nil {
+				return nil, nil, err
+			}
+			files = append(files, feed)
+		}
+	}
 	return files, nil, nil
 }

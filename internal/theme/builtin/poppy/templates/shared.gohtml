@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{.Title}}{{with .Pagination}}{{if gt .Number 1}} ({{label "page"}} {{.Number}}){{end}}{{end}}{{with .Site.Title}} | {{.}}{{end}}</title>
   {{if .Description}}<meta name="description" content="{{.Description}}">{{end}}
+  {{with .Feed}}<link rel="alternate" type="application/atom+xml" href="{{.}}" title="{{$.Title}}">{{end}}
   {{if .Canonical}}<link rel="canonical" href="{{.Canonical}}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="{{.Canonical}}">

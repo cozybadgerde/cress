@@ -200,6 +200,11 @@ settings. `0` shows every entry on one page:
 per_page = 20
 ```
 
+Each list also gets a feed at `feed.xml` next to it, such as
+`/journal/list/feed.xml`, with the 20 newest articles in full. Readers can
+follow your journal with a feed reader. Feeds need `[site] host`, and pages
+without `published_at` stay out of them.
+
 ## Work on drafts
 
 Add `draft = true` to a page's settings to keep it out of the build. Drafts and

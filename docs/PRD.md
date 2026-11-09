@@ -225,9 +225,14 @@ it. `0` keeps every entry on one page. The first page keeps the list's
 route; later pages use `<route>2/`, `<route>3/`, and so on. Every numbered
 page repeats the introduction and title image, has its own canonical URL
 and sitemap entry, and gives themes the page number, the total, and links
-to the previous, next, and all pages. Every list page can also publish a web feed of its
-entries, so readers can follow a journal in a feed reader. Feeds use the
-public origin, like the sitemap.
+to the previous, next, and all pages.
+
+Every list page publishes an Atom feed at `<route>feed.xml`, so readers can
+follow it in a feed reader. The feed holds the 20 newest entries by
+`published_at`, whatever the list's order, with the full rendered body and
+the excerpt as summary. Feeds need the public origin, like the sitemap.
+Warn about each undated entry and leave it out of the feed. A list without
+dated entries has no feed. Themes receive the feed URL to advertise it.
 
 ## Routes and assets
 
@@ -575,7 +580,7 @@ warning.
 25. Every shipped theme generates a `404.html` page in the site language
     with its `404.gohtml` template and translated labels.
 26. Long list pages split into numbered pages with links between them, and
-    each list page publishes a web feed of its entries.
+    each list page publishes an Atom feed of its newest dated entries.
 
 ## Decision records
 

@@ -23,8 +23,6 @@ Follow the [release guide](docs/RELEASE.md) for each release. Tags and
 publication need maintainer approval. Ideas for later releases live in
 [GitHub issues](https://github.com/cozybadgerde/cress/issues).
 
-- [ ] Add feeds for list pages.
-  Publish a web feed for each list page, so readers can follow a journal.
 - [ ] Release `v1.0.0-pre.0`.
   Go through the full release guide. Then confirm the draft gate published
   it as a prerelease with all assets, and that the signature passes and all

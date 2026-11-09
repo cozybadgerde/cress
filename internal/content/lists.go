@@ -96,6 +96,7 @@ func prepareLists(pages []Page, config Config) ([]Page, []string) {
 		}
 		section := path.Dir(path.Dir(list.Destination))
 		var entries []page.Entry
+		var members []feedEntry
 		for _, candidate := range pages {
 			if (candidate.Draft && !config.IncludeDrafts) || candidate.Data.Type != page.Ordinary ||
 				candidate.Destination == list.Destination ||
@@ -108,11 +109,14 @@ func prepareLists(pages []Page, config Config) ([]Page, []string) {
 				continue
 			}
 			data := candidate.Data
-			entries = append(entries, page.Entry{
+			entry := page.Entry{
 				Title: data.Title, URL: data.URL, Description: data.Description, Image: data.Image,
 				PublishedAt: data.PublishedAt, UpdatedAt: data.UpdatedAt, Excerpt: data.Excerpt,
-			})
+			}
+			entries = append(entries, entry)
+			members = append(members, feedEntry{source: candidate.Source, entry: entry, body: data.Body})
 		}
+		warnings = append(warnings, selectFeed(list, members, config)...)
 		slices.SortFunc(entries, func(first, second page.Entry) int {
 			var order int
 			if list.list.order == "title" {
@@ -148,6 +152,7 @@ func paginate(list *Page, config Config) []Page {
 	var numbered []Page
 	for index, link := range links {
 		item := *list
+		item.feed = nil
 		if index > 0 {
 			item.Destination = path.Join(path.Dir(list.Destination), strconv.Itoa(link.Number), "index.html")
 			item.Data.URL = link.URL
