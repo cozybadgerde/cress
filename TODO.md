@@ -23,6 +23,13 @@ Follow the [release guide](docs/RELEASE.md) for each release. Tags and
 publication need maintainer approval. Ideas for later releases live in
 [GitHub issues](https://github.com/cozybadgerde/cress/issues).
 
+- [ ] Generalize the scaffold wording.
+  Replace "business" in the sample site with wording that also fits clubs,
+  nonprofits, and freelancers, matching the `[profile]` types.
+- [ ] Add legal page templates to the scaffold.
+  Add sample legal notice and privacy pages, linked from the footer, with
+  placeholders the site owner must fill in. Don't present them as legal
+  advice.
 - [ ] Release `v1.0.0-pre.0`.
   Go through the full release guide. Then confirm the draft gate published
   it as a prerelease with all assets, and that the signature passes and all
