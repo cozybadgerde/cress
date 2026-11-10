@@ -24,7 +24,7 @@ func TestInitializedSiteBuildsWithAllThemes(t *testing.T) {
 				t.Fatal(err)
 			}
 			result, err := generator.Build(context.Background(), site)
-			if err != nil || result.Pages != 8 || len(result.Warnings) != 1 {
+			if err != nil || result.Pages != 10 || len(result.Warnings) != 1 {
 				t.Fatalf("initialized build: %+v, %v", result, err)
 			}
 			if _, err := generator.Build(context.Background(), site); err != nil {

@@ -51,6 +51,8 @@ main = [
 ]
 footer = [
   { label = "Contact", url = "/contact/" },
+  { label = "Legal notice", url = "/legal-notice/" },
+  { label = "Privacy", url = "/privacy/" },
   { label = "Content tour", url = "/tour/" },
 ]
 # External link example: { label = "Partner", url = "https://example.org/" }

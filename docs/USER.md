@@ -99,7 +99,8 @@ cress site build
 
 Cress writes the finished site to `public/`. Before publishing, check your
 content, contact details, and navigation, and remove the content tour once
-you no longer need it. Then upload the contents of `public/` with your
+you no longer need it. Fill in the sample legal notice and privacy pages,
+or remove them if you don't need them. Then upload the contents of `public/` with your
 hosting provider's tools.
 
 Cress manages `public/` and the hidden `.cress/` folder for you. Don't edit
