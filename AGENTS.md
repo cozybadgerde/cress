@@ -4,8 +4,12 @@
   [the PRD](docs/PRD.md) for scope,
   [the ADRs](docs/PRD.md#decision-records) for decisions,
   [the architecture document](docs/ARCHITECTURE.md) for structure, and
-  [TODO.md](TODO.md) for pending work. Agreed behavior is not necessarily
-  implemented.
+  [GitHub issues](https://github.com/cozybadgerde/cress/issues) for pending
+  work. Agreed behavior is not necessarily implemented.
+- Track work in GitHub issues using `gh`, not a local work plan. Work through
+  one task at a time. Agree on material interfaces and visual choices before
+  implementation. Commits, pushes, tags, and publication require maintainer
+  approval.
 - Follow the [development guidelines](docs/DEVELOPER.md#development-guidelines):
   interface first, standard library first, established libraries over custom
   code, and comments of at most two lines.
@@ -30,4 +34,4 @@
   statements about the document itself. Title each file "X guide" (walks
   through or explains) or "X document" (details to look up), never mixed.
 - Keep product requirements in the PRD, decision rationale in ADRs, and
-  implementation tasks in the work plan. Avoid duplicating those policies.
+  implementation tasks in GitHub issues. Avoid duplicating those policies.
