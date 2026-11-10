@@ -30,14 +30,14 @@ func TestInitializedSiteBuildsWithAllThemes(t *testing.T) {
 			if _, err := generator.Build(context.Background(), site); err != nil {
 				t.Fatal(err)
 			}
-			for _, file := range []string{"index.html", "services/index.html", "journal/list/index.html", "journal/welcome/index.html", "tour/index.html"} {
+			for _, file := range []string{"index.html", "offers/index.html", "journal/list/index.html", "journal/welcome/index.html", "tour/index.html"} {
 				data, err := os.ReadFile(filepath.Join(site, "public", file))
 				if err != nil || !strings.Contains(string(data), `themes/`+name+`/site.css`) ||
 					!strings.Contains(string(data), `id="main"`) {
 					t.Fatalf("%s: %s, %v", file, data, err)
 				}
 				if file == "index.html" && !strings.Contains(string(data),
-					`<p class="standalone-link"><a href="/services/">Explore our services</a></p>`) {
+					`<p class="standalone-link"><a href="/offers/">See what we offer</a></p>`) {
 					t.Errorf("%s: landing action missing standalone-link structure", name)
 				}
 				for _, identity := range []string{`<link rel="icon" href="/images/favicon.svg">`, `class="logo" src="/images/logo.svg" alt=""`} {
@@ -64,14 +64,14 @@ func TestInitializedSiteBuildsWithAllThemes(t *testing.T) {
 				"<em>emphasis</em>", "<strong>strong text</strong>",
 				"<del>previous wording</del>",
 				`<label><input checked="" disabled="" type="checkbox"> Agree the project scope.</label>`,
-				`<label><input disabled="" type="checkbox"> Review the <a href="/services/">services</a>.</label>`,
+				`<label><input disabled="" type="checkbox"> Review <a href="/offers/">what we offer</a>.</label>`,
 				`<label><input disabled="" type="checkbox"> Choose a starting date.</label>`,
 				`<h2 id="heading-levels">Heading levels</h2>`, `<h3 id="a-section-within-a-section">`,
 				`<h4 id="a-smaller-topic">`, `<h5 id="a-detail">`, `<h6 id="the-smallest-heading">`,
 				`href="#heading-levels"`, `href="#links"`, `<h2 id="links">Links</h2>`,
 				"<ul>", "<ol>", "<blockquote>", "<hr", "<br", "<table>",
 				`class="align-left"`, `class="align-center"`, `class="align-right"`,
-				`href="/services/"`, `href="/contact/"`, `src="/placeholder.svg"`,
+				`href="/offers/"`, `href="/contact/"`, `src="/placeholder.svg"`,
 				"<figcaption>", `class="captioned-image"`, `<span class="kn">import</span>`,
 				"&lt;p&gt;This is code", "<pre><code>cress site build",
 				`<abbr title="Frequently asked questions">FAQ</abbr>`,
@@ -130,7 +130,7 @@ func TestInitializedConfigOptionalExamples(t *testing.T) {
 			}
 			if config.Theme != name || !config.Site.Syntax.Highlight ||
 				config.Host != "https://example.org" ||
-				config.Site.Copyright != "Copyright Your business" ||
+				config.Site.Copyright != "Copyright Your name" ||
 				config.Image == nil || config.Image.URL != "/images/team.jpg" ||
 				len(config.Image.Caption) == 0 ||
 				config.Site.Brand.Color != "#346b38" ||

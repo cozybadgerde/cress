@@ -59,7 +59,8 @@ task lists, and more.
 
 Open `cress.toml`. Every setting has a comment explaining what it does.
 
-- Change `[site] title` to your business name and update the description.
+- Change `[site] title` to your name or your organization's name, and update
+  the description.
 - Adjust `[navigation]` when you add pages. Use published addresses such as
   `/about/`, not file names.
 - Replace the placeholder logo and favicon in `static/images/`, or remove

@@ -67,7 +67,7 @@ Keep related information together.
 
 ##### A detail
 
-Most business pages need only two or three heading levels.
+Most pages need only two or three heading levels.
 
 ###### The smallest heading
 
@@ -75,7 +75,7 @@ All six HTML heading levels are available, including the page title.
 
 ## Links
 
-Link to [our services](services.md), [the home page](index.md), or
+Link to [what we offer](offers.md), [the home page](index.md), or
 [a public website](https://example.org/). Source-relative Markdown links
 are resolved to the published page URL.
 
@@ -99,7 +99,7 @@ Angle brackets make explicit automatic links: <https://example.org/> or
 Task lists show completion authored in Markdown, not interactive controls:
 
 - [x] Agree the project scope.
-- [ ] Review the [services](services.md).
+- [ ] Review [what we offer](offers.md).
   - [ ] Choose a starting date.
 
 Edit `[ ]` to `[x]` and rebuild to change a task's state. Visitors cannot

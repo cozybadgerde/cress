@@ -3,14 +3,14 @@ title = "A little room to grow"
 type = "landing"
 +++
 
-Personal service, clear advice, and time for what matters.
-Replace this sample with an introduction to your business.
+Hello and welcome. Here is what we do and how to reach us.
+Replace this sample with an introduction to who you are and what you do.
 
-[Explore our services](services.md)
+[See what we offer](offers.md)
 
 ![Placeholder for a photo](index.assets/placeholder.svg){caption="Placeholder image. Replace it with your own photo and credit."}
 
-## How we can help
+## Find your way
 
-Explore our [services](services.md), learn [about us](about.md), or
+See [what we offer](offers.md), learn [about us](about.md), or
 [get in touch](contact.md).

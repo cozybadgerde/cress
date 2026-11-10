@@ -84,12 +84,12 @@ Our workshop moves to Friday. ~~Saturday~~
 
 Link text should make sense on its own, because people scan links and
 screen readers can list them out of context. "Read our
-[pricing](services.md)" is better than "click [here](services.md)".
+[prices](offers.md)" is better than "click [here](offers.md)".
 
 Link to other pages by their file, relative to the current one:
 
 ```markdown
-[Our services](services.md)
+[What we offer](offers.md)
 [First visit](journal/first-visit.md)
 ```
 
@@ -106,7 +106,7 @@ Task lists show progress, such as a project plan:
 
 ```markdown
 - [x] Agree the project scope.
-- [ ] Review the [services](services.md).
+- [ ] Review [what we offer](offers.md).
 ```
 
 Visitors see checkboxes but can't tick them. Edit the Markdown to update

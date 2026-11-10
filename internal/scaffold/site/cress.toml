@@ -5,12 +5,12 @@
 [site]
 # Site name, shown in the header and browser tab. Each page still needs its
 # own title.
-title = "Your business"
+title = "Your name"
 # Default page description for search engines. A page can override it,
 # or clear it with description = "".
-description = "Practical help, thoughtfully delivered."
+description = "Who we are, what we do, and how to reach us."
 # Footer line, shown as written. No year is added.
-# copyright = "Copyright Your business"
+# copyright = "Copyright Your name"
 # Site language, used for theme labels and screen readers. Built-in themes
 # support "en" and "de". Content is not translated. Default: "en".
 language = "en"
@@ -18,7 +18,7 @@ language = "en"
 # canonical URLs, link previews, structured data, feeds, and sitemap.xml.
 # Leave it out while unknown.
 # host = "https://example.org"
-# Set this when the site lives below a folder, such as "/company/". It must
+# Set this when the site lives below a folder, such as "/site/". It must
 # start and end with "/". Write all other URLs here and in your pages as if
 # the site were at "/": Cress adds the prefix. Default: "/".
 path = "/"
@@ -45,7 +45,7 @@ name = "poppy"
 # file names, or full https:// links. Use [] to hide a group.
 main = [
   { label = "Home", url = "/" },
-  { label = "Services", url = "/services/" },
+  { label = "What we offer", url = "/offers/" },
   { label = "About", url = "/about/" },
   { label = "Journal", url = "/journal/list/" },
 ]
@@ -81,11 +81,11 @@ per_page = 3
 # Who is behind the site, published on the home page as structured data for
 # search engines. Needs [site] host. Fill in only what applies.
 # [profile]
-# Kind of business or organization, from https://schema.org/, such as
-# "LocalBusiness", "Bakery", "NGO", "SportsClub", "ProfessionalService", or
-# "Person". Default: "Organization".
-# type = "LocalBusiness"
-# name = "Your business" # Default: the site title.
+# Who is behind the site, as a type from https://schema.org/, such as
+# "Person", "Organization", "NGO", "SportsClub", "LocalBusiness", or
+# "Bakery". Default: "Organization".
+# type = "Organization"
+# name = "Your name" # Default: the site title.
 # telephone = "+49 30 1234567"
 # email = "hello@example.org"
 

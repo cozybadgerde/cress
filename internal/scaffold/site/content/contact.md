@@ -6,11 +6,11 @@ title = "Contact"
 
 Replace this sample address and contact details before publication.
 
-Your business, Sample Street 1, Your town.
+Your name, Sample Street 1, Your town.
 
 [Email the team](mailto:hello@example.org)
 
-## Opening hours
+## Office hours
 
 | Day | Hours |
 |-----|-------|

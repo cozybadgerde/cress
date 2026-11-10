@@ -25,7 +25,7 @@ func TestAnemoneImageFreePagesAndLocalizedPrefix(t *testing.T) {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(site, "content/index.md"), []byte(
-		"+++\ntitle = '<Quiet work>'\ntype = 'landing'\n+++\nAn introduction without a photo.\n\n[Services](services.md)\n"), 0o644); err != nil {
+		"+++\ntitle = '<Quiet work>'\ntype = 'landing'\n+++\nAn introduction without a photo.\n\n[What we offer](offers.md)\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.Mkdir(filepath.Join(site, "content/empty"), 0o755); err != nil {
@@ -73,7 +73,7 @@ func TestAnemoneImageFreePagesAndLocalizedPrefix(t *testing.T) {
 		switch file {
 		case "index.html":
 			if !strings.Contains(html, `<h1 id="page-title">&lt;Quiet work&gt;</h1>`) ||
-				!strings.Contains(html, `href="/company/services/">Services</a>`) {
+				!strings.Contains(html, `href="/company/offers/">What we offer</a>`) {
 				t.Errorf("landing lost escaped title or resolved action: %s", html)
 			}
 		case "empty/list/index.html":
@@ -178,7 +178,7 @@ func TestBuiltinCompletePageStructure(t *testing.T) {
 		if _, err := generator.Build(context.Background(), site); err != nil {
 			t.Fatal(err)
 		}
-		for _, file := range []string{"index.html", "services/index.html", "about/index.html", "contact/index.html", "journal/list/index.html", "journal/welcome/index.html"} {
+		for _, file := range []string{"index.html", "offers/index.html", "about/index.html", "contact/index.html", "journal/list/index.html", "journal/welcome/index.html"} {
 			data, err := os.ReadFile(filepath.Join(site, "public", file))
 			if err != nil {
 				t.Fatal(err)
