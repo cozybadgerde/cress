@@ -55,6 +55,7 @@ jobs:
         run: goreleaser release --clean --draft
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GORELEASER_CURRENT_TAG: ${{ github.ref_name }}
       - name: Smoke-test packaged archives
         run: mise run test:release
         env:
