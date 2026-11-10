@@ -1,13 +1,9 @@
 # Theme developer guide
 
-A Cress theme decides how a site looks. Cress does the rest: it reads the
-content, checks it, works out the pages, lists, and links, and hands each page
-to your templates as ready-made data. Your theme only presents that data. It
-never picks pages, sorts lists, or builds URLs.
+Cress prepares content and passes page data to a theme. The theme renders
+that data; it does not choose pages, sort lists, or build URLs.
 
-This guide walks you through creating a theme and explains what you can rely
-on. The three built-in themes, Poppy, Clover, and Anemone, are good examples
-to learn from. They live in
+Use Poppy, Clover, and Anemone as examples. Their sources are in
 [`internal/theme/builtin/`](../internal/theme/builtin/).
 
 ## Create your first theme
@@ -38,8 +34,8 @@ save. Refresh the browser to see the result. Look at the landing page, the
 journal list, an ordinary page, and `/tour/`, which shows images, captions,
 code, tables, and task lists.
 
-The new theme is a deliberately bare skeleton, not a copy of a built-in theme.
-It renders everything correctly but plainly, so you can build up from there.
+The scaffold provides the required templates and renders all page types. It
+has minimal markup and styling, so you can add your own layouts and CSS.
 
 ## What a theme contains
 
@@ -136,8 +132,8 @@ Every theme needs a locale file for the site's exact language with non-empty
 unless your templates use them. A language such as `en-US` does not fall back
 to `en`. A locale file that exists must be valid, even if unused.
 
-Templates have no access to files, the network, environment variables, or
-commands. This keeps themes predictable and safe to share.
+Templates cannot read files, access the network, inspect environment
+variables, or run commands.
 
 `404.gohtml` receives site data as a `page.Page`, like the other templates.
 Cress renders it to `404.html` at the output root. Use the `not_found_title`
@@ -174,37 +170,36 @@ most:
 | `.Site.Syntax.Highlight` | Whether syntax coloring is on. |
 | `.Site.Custom` | Free-form data from `[theme.custom]`. |
 
-Some things to keep in mind:
+Templates receive prepared values:
 
-- **Everything is ready to use.** URLs already include the prefix, dates are
-  validated, and descriptions are inherited. Don't rebuild or reinterpret
-  them.
-- **Lists are already decided.** Show `.Entries` in the given order. Entries
-  have the same fields as pages, but no body.
-- **Render pagination.** A long list is split into numbered pages, and
+- URLs already include the prefix, dates are validated, and descriptions are
+  inherited. Don't rebuild or reinterpret them.
+- Show `.Entries` in the given order. Entries have the same fields as pages,
+  but no body.
+- Render pagination. A long list is split into numbered pages, and
   `.Entries` holds only the current page. Link to the others from
   `.Pagination`, or readers can't reach the older entries.
-- **Advertise feeds.** When `.Feed` is set, add
+- When `.Feed` is set, add
   `<link rel="alternate" type="application/atom+xml" href="{{.Feed}}">` to
   the head, so feed readers find it.
-- **Only `.Body` is HTML.** Everything else is plain text and gets escaped.
+- `.Body` is HTML. Everything else is plain text and gets escaped.
   Never turn other values into trusted HTML.
-- **Images have no size.** Cress doesn't measure images. To avoid layout
+- Cress doesn't measure images. To avoid layout
   shifts, give cropped images a fixed shape in CSS. Let uncropped images keep
   their proportions.
-- **Focus helps cropping.** `.Image.Focus` names the part of the image to
+- `.Image.Focus` names the part of the image to
   keep visible, such as `top`. The built-in themes turn it into a
   `focus-<value>` class. Ignore it if you don't crop.
-- **Captions are data.** `.Image.Caption` is a list of parts with `Text` and
+- `.Image.Caption` is a list of parts with `Text` and
   an optional `URL`. Render them inside `figcaption`, and leave the markup out
   when the list is empty.
-- **Link previews are yours to render.** The built-in themes add Open Graph
+- The built-in themes add Open Graph
   tags from the title, description, and `.Image.Canonical` when `.Canonical`
   is set. Leave them out when it is empty.
-- **Structured data is ready to embed.** Write
+- Write
   `<script type="application/ld+json">{{.StructuredData}}</script>` when it
   is set. The template engine encodes it as safe JSON.
-- **Custom data is yours.** Document any `[theme.custom]` keys your theme
+- Document any `[theme.custom]` keys your theme
   reads. It is plain data, never HTML.
 
 Drafts reach templates only in draft preview. Templates never see source
@@ -258,9 +253,8 @@ same switch and leave already highlighted blocks alone.
 
 ## Making your theme accessible
 
-A good theme works for everyone. The
-[accessibility guide](ACCESSIBILITY.md) explains why, and what the built-in
-themes do. The essentials:
+Follow the practices in the
+[accessibility guide](ACCESSIBILITY.md):
 
 - Set `lang` from `.Site.Language`.
 - Use `header`, `nav`, `main`, and `footer`, and label each `nav`.
@@ -289,5 +283,5 @@ Before sharing:
 - Set `cress.minimum` to the oldest Cress version you have tested.
 - Document any `[theme.custom]` keys and the languages you support.
 
-Remember that templates and CSS are trusted code. Site owners should review a
-theme before using it, just like raw HTML in content.
+Templates and CSS are trusted code. Review a theme before using it, as you
+would raw HTML in content.

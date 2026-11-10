@@ -2,12 +2,10 @@
 
 ![Cress: a mouse sheltering beneath a green leaf beside the wordmark.](docs/assets/logo/logo.webp)
 
-A cozy static site generator. Fresh little sites, fast.
-
-Cress turns Markdown content, one TOML configuration file, and a curated
-theme into static website files. It is built by
-[Cozy Badger](https://www.cozybadger.de) for small businesses and
-solopreneurs first.
+Cress is an open-source static site generator for small businesses and
+solopreneurs. It turns Markdown content, a TOML configuration file, and a
+theme into static website files. [Cozy Badger](https://www.cozybadger.de)
+builds Cress; you deploy the files with your hosting tools.
 
 ## Getting started
 
@@ -23,8 +21,8 @@ then refresh the browser. Stop preview with Ctrl-C.
 Run `cress site build my-site` to produce `my-site/public/`.
 Deploy those files with your hosting tools.
 
-The [user guide](docs/USER.md) walks through your first page, configuration,
-preview, and build.
+The [user guide](docs/USER.md) explains how to write a page, configure a site,
+preview it, and build its files.
 
 ## What Cress provides
 
@@ -43,7 +41,7 @@ The [product requirements](docs/PRD.md#scope) define the scope.
 
 ## Documentation
 
-Guides walk you through a task or give background:
+Guides:
 
 - [User guide](docs/USER.md): create, write, preview, and publish a site.
 - [Installation guide](docs/INSTALL.md): download and verify Cress.
@@ -54,7 +52,7 @@ Guides walk you through a task or give background:
 - [Developer guide](docs/DEVELOPER.md): set up, build, and test the source.
 - [Release guide](docs/RELEASE.md): check, tag, and publish a release.
 
-Documents describe details to look up:
+Reference documents:
 
 - [Build and preview document](docs/OUTPUT.md): preview, output protection,
   and recovery.
@@ -67,14 +65,14 @@ Documents describe details to look up:
 
 ## Contributing
 
-Ideas, questions, and bug reports are welcome as
-[issues](https://github.com/cozybadgerde/cress/issues). For code changes,
-please open an issue first so we can agree on the approach before a pull
-request. The [developer guide](docs/DEVELOPER.md) covers setup and checks.
+Open an [issue](https://github.com/cozybadgerde/cress/issues) for ideas,
+questions, or bug reports. Before opening a pull request with code changes,
+open an issue so we can agree on the approach. The
+[developer guide](docs/DEVELOPER.md) covers setup and checks.
 
 ## Contact
 
-For questions or feedback, contact the project maintainers via:
+Contact the project maintainers:
 
 - Website: [cozybadger.de](https://www.cozybadger.de)
 - Email: [devel@cozybadger.de](mailto:devel@cozybadger.de)
@@ -85,6 +83,5 @@ For questions or feedback, contact the project maintainers via:
 Cress's code is licensed under [BSD-3-Clause](LICENSE). The
 [project artwork](docs/assets/logo/README.md) is copyright Daniel Schier
 and licensed under CC BY-SA 4.0 International. Bundled dependencies retain
-their own licenses. Each release includes their notices and
-license reports; see the
-[licensing decision](docs/adr/0011-bsd-3-clause-license.md).
+their own licenses. Releases include dependency notices and license reports.
+See the [licensing decision](docs/adr/0011-bsd-3-clause-license.md).

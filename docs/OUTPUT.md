@@ -1,8 +1,8 @@
 # Build and preview document
 
-This document describes how preview and builds behave, how Cress protects
-your output, and how to recover after an interruption. The
-[user guide](USER.md) covers everyday use.
+Preview uses private temporary output and leaves `public/` unchanged. Builds
+replace `public/` only when it is new, empty, or Cress can verify ownership.
+See the [user guide](USER.md) for everyday use.
 
 ## Preview
 

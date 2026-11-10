@@ -1,17 +1,15 @@
 # Accessibility guide
 
-A website is accessible when people can use it however they browse. Some
-readers are blind and listen to a screen reader. Others navigate with a
-keyboard or switch device, zoom text to 200 percent, read on a small phone in
-bright sunlight, or need plain language and a predictable layout. Many people
-fit several of these at once, and most of us fit one of them at some point,
-with a broken arm, a tired evening, or an old laptop.
+People use websites in different ways. Some use a screen reader or keyboard.
+Others enlarge text, use a small screen, or need plain language and a
+predictable layout. A broken arm, tired eyes, or an older device can also
+affect how someone uses a site.
 
-Cress tries to make the accessible result the default one. It follows common
-best practices and uses the
+Cress's bundled themes follow accessibility best practices. The
 [Web Content Accessibility Guidelines (WCAG) 2.2](https://www.w3.org/TR/WCAG22/)
-at level AA as a reference. The [product requirements](PRD.md#accessibility)
-describe how responsibility is shared.
+at level AA provide a reference. The
+[product requirements](PRD.md#accessibility) describe how responsibility is
+shared.
 
 ## Meaningful structure
 
@@ -91,8 +89,8 @@ Cress can only preserve what the content provides.
 
 ## What theme authors can do
 
-Third-party themes own their markup and styles. The bundled themes are good
-starting points.
+Third-party themes own their markup and styles. Use the bundled themes as
+examples.
 
 - Keep landmarks, the skip link, and visible focus styles.
 - Respect user settings such as `prefers-reduced-motion` and

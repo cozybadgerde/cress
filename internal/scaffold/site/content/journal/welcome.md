@@ -4,9 +4,9 @@ published_at = 2026-10-21
 excerpt = "A place to share our work and what comes next."
 +++
 
-## A fresh beginning
+## What we'll share
 
-This is an example article. Keep it, change it, or remove it.
+We'll share project updates, useful ideas, and news about our work here.
 
 ```go caption="Code stays literal and readable."
 fmt.Println("Hello, Cress")

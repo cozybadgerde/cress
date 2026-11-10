@@ -24,11 +24,10 @@ Business owners can prepare Markdown in their preferred editor and send it
 to the maintainer. The maintainer builds locally or through continuous
 integration and continuous delivery (CI/CD).
 
-This document describes product needs, scope, and observable acceptance
-criteria. The [ADRs](adr/) provide architectural guidance and guardrails.
-Agreed field names and observable behavior are part of the product
-contract. Remaining authoring syntax, package layouts, algorithms, and
-setup instructions belong to implementation and its documentation.
+The [ADRs](adr/) provide architectural guidance and guardrails. Agreed field
+names and observable behavior are part of the product contract. Implementation
+and its documentation define the remaining authoring syntax, package layouts,
+algorithms, and setup instructions.
 
 ## Product principles
 

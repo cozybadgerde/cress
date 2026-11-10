@@ -1,15 +1,14 @@
 # User guide
 
-Cress turns a folder of Markdown files into a small, fast website. It runs
-on your computer, needs no internet connection, and produces plain HTML and
-CSS that any web host can serve. This guide walks you from an empty folder to
-a published site. Your site's `cress.toml` explains every setting.
-The [content guide](CONTENT.md) helps you write good pages, and the
-[build and preview document](OUTPUT.md) covers the details.
+Cress turns Markdown files into a static website. It runs locally, needs no
+internet connection, and writes plain HTML and CSS that any host can serve.
+Your site's `cress.toml` explains every setting. The
+[content guide](CONTENT.md) explains how to write pages. The
+[build and preview document](OUTPUT.md) explains output handling.
 
 ## Install Cress
 
-Follow [installation guide](INSTALL.md), then check that it works:
+Follow the [installation guide](INSTALL.md), then check that it works:
 
 ```sh
 cress --version
@@ -52,8 +51,7 @@ This page appears at `/about/`. Add another `.md` file under `content/` for
 each new page.
 
 The sample site includes a content tour at `content/tour.md`. Open it next to
-its preview to see everything Cress supports: images, captions, code, tables,
-task lists, and more.
+its preview to see examples of images, captions, code, tables, and task lists.
 
 ## Make the site yours
 
@@ -109,17 +107,15 @@ to learn why.
 
 ## Choosing a theme
 
-All three built-in themes work without JavaScript or external resources,
-support every page type, and come in English and German.
+All three built-in themes work without JavaScript or external resources.
+They support every page type and include English and German text.
 
-- **Poppy** is calm and spacious: an off-white background, dark green
-  accents, and a single reading column. A good fit for freelancers.
-- **Clover** is clean and businesslike: white and slate with dark blue
-  accents and a solid title block. A good fit for established small
-  businesses.
-- **Anemone** is warm and editorial: paper tones, serif headings, and
-  framed photos that tilt slightly on wide screens. A good fit for makers,
-  shops, and cafes.
+- **Poppy** uses an off-white background, dark green accents, and a single
+  reading column. It suits freelancers.
+- **Clover** uses white and slate, dark blue accents, and a solid title
+  block. It suits established small businesses.
+- **Anemone** uses paper tones, serif headings, and framed photos that tilt
+  slightly on wide screens. It suits makers, shops, and cafes.
 
 Switch themes any time by changing `[theme] name` in `cress.toml`. To compare
 them, create a separate test site for each. To build your own, see the
@@ -143,7 +139,7 @@ See [add images](CONTENT.md#add-images) for details.
 
 ## Writing good content
 
-A few habits make your site easier for everyone to read and use:
+Use these practices to make your content easier to read and navigate:
 
 - Use headings in order, and write link text that makes sense on its own.
 - Describe every meaningful image with `alt` text. Use `alt = ""` for purely
@@ -159,9 +155,9 @@ trust, and review anything copied from elsewhere.
 
 ## Keeping your output safe
 
-Cress treats `public/` as its own. Each build replaces it completely, removing
-old pages and anything added by hand. Keep everything you want to publish in
-`content/` or `static/`.
+Cress manages `public/` and replaces it completely on each build, including
+removing manual additions. Keep everything you want to publish in `content/`
+or `static/`.
 
 To protect your other files, Cress refuses to write into a `public/` folder it
 didn't create. Builds also happen in a separate staging area first, so a
@@ -197,7 +193,7 @@ links and theme compatibility, so a build remains the final check.
 
 ## Getting help
 
-Every command explains itself:
+Use `--help` to see available commands and flags:
 
 ```sh
 cress --help

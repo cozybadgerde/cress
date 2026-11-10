@@ -1,9 +1,7 @@
 # Architecture document
 
-This document describes Cress's structure: its boundary, main
-responsibilities, data flow, and failure boundaries. The
-[PRD](PRD.md) owns product behavior. The [ADRs](adr/) own decision
-rationale.
+The [PRD](PRD.md) defines product behavior. The [ADRs](adr/) record
+decision rationale.
 
 ## System context
 

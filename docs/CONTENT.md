@@ -1,9 +1,8 @@
 # Content guide
 
-Every page on your site is a Markdown file in `content/`. This guide shows
-how to write pages that read well, look good in every theme, and work for
-every visitor. Open `content/tour.md` next to its preview to see each
-example in action.
+Every page on your site is a Markdown file in `content/`. Use headings,
+links, lists, images, tables, and code to organize its content. Open
+`content/tour.md` beside its preview to see how Cress renders these examples.
 
 ## Start a page
 
@@ -26,10 +25,10 @@ description = "Who we are and how we work."
 We help small businesses build a useful presence online.
 ```
 
-The theme shows the title as the page's main heading. A good description is
+The theme shows the title as the page's main heading. A clear description is
 one plain sentence that tells search engines and visitors what the page is
-about. Once `[site] host` is set, the title, description, and title image
-also form the preview shown when someone shares a link to the page.
+about. Once `[site] host` is set, the title, description, and title image also
+form the preview shown when someone shares a link to the page.
 
 The settings at the top of `content/tour.md` explain every page setting in a
 comment. The [frontmatter schema](../schemas/frontmatter.schema.json) lets

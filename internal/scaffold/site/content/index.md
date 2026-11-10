@@ -3,8 +3,8 @@ title = "A little room to grow"
 type = "landing"
 +++
 
-Hello and welcome. Here is what we do and how to reach us.
-Replace this sample with an introduction to who you are and what you do.
+Tell visitors what you offer and how to contact you. Keep the introduction to
+one or two sentences.
 
 [See what we offer](offers.md)
 
