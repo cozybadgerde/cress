@@ -607,3 +607,4 @@ Accepted ADRs record architectural decisions and their rationale.
 - [0020: Third bundled theme](adr/0020-third-bundled-theme.md).
 - [0021: Markdown captions](adr/0021-markdown-captions.md).
 - [0022: Build-time syntax highlighting](adr/0022-build-time-syntax-highlighting.md).
+- [0023: External theme distribution](adr/0023-external-theme-distribution.md).

@@ -121,6 +121,12 @@ Switch themes any time by changing `[theme] name` in `cress.toml`. To compare
 them, create a separate test site for each. To build your own, see the
 [theme developer guide](THEMES.md).
 
+Cozy Badger maintains more themes in
+[cress-themes](https://github.com/cozybadgerde/cress-themes). Its
+[themes document](https://github.com/cozybadgerde/cress-themes/blob/trunk/docs/themes.md)
+shows each one, and its README explains how to install them. Themes are
+trusted code, so review any theme before you use it.
+
 ## Organizing your pages
 
 Most sites need only ordinary pages. Two other page types help:
