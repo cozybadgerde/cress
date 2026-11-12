@@ -146,6 +146,54 @@ func TestBuiltinIdentityHomeLink(t *testing.T) {
 	}
 }
 
+func TestBuiltinScaffoldBuildsInSupportedLanguages(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping filesystem integration test")
+	}
+	for _, themeName := range []string{"poppy", "clover", "anemone"} {
+		for _, language := range []string{"en", "de"} {
+			t.Run(themeName+"/"+language, func(t *testing.T) {
+				site := t.TempDir()
+				if err := scaffold.Init(context.Background(), site, themeName); err != nil {
+					t.Fatal(err)
+				}
+				configPath := filepath.Join(site, "cress.toml")
+				config, err := os.ReadFile(configPath)
+				if err != nil {
+					t.Fatal(err)
+				}
+				config = []byte(strings.Replace(string(config),
+					`language = "en"`, `language = "`+language+`"`, 1))
+				if err := os.WriteFile(configPath, config, 0o644); err != nil {
+					t.Fatal(err)
+				}
+				if _, err := generator.Build(context.Background(), site); err != nil {
+					t.Fatalf("build %s site: %v", language, err)
+				}
+				notFoundTitle := "Page not found"
+				if language == "de" {
+					notFoundTitle = "Seite nicht gefunden"
+				}
+				for _, test := range []struct {
+					file string
+					want string
+				}{
+					{"index.html", `<html lang="` + language + `">`},
+					{"404.html", "<h1>" + notFoundTitle + "</h1>"},
+				} {
+					data, err := os.ReadFile(filepath.Join(site, "public", test.file))
+					if err != nil {
+						t.Fatal(err)
+					}
+					if !strings.Contains(string(data), test.want) {
+						t.Errorf("%s missing %q", test.file, test.want)
+					}
+				}
+			})
+		}
+	}
+}
+
 func TestBuiltinCompletePageStructure(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping filesystem integration test")
