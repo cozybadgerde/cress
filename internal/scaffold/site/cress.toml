@@ -34,6 +34,8 @@ path = "/"
 [theme]
 # Built-in themes: "poppy" (default), "clover", or "anemone". A theme folder
 # in themes/<name>/ is used instead, including one with a built-in name.
+# Find more themes and installation instructions at:
+# https://github.com/cozybadgerde/cress-themes
 name = "poppy"
 
 # Extra settings for a local theme. Built-in themes don't use any. Add only

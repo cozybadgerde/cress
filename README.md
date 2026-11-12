@@ -34,6 +34,8 @@ preview it, and build its files.
   metadata.
 - Three accessible themes without JavaScript, for freelancers, small
   businesses, and makers.
+- More themes and installation instructions in
+  [cress-themes](https://github.com/cozybadgerde/cress-themes).
 - English and German theme text.
 - Local theme packages, explicit navigation, and automatic preview rebuilds.
 
