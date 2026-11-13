@@ -1,9 +1,9 @@
 [tools]
-go = "1.27.3"
+go = "1.27.4"
 golangci-lint = "2.15.0"
-goreleaser = "2.20.0"
+goreleaser = "2.20.1"
 "github:shinagawa-web/gomarklint" = "3.3.2"
-typos = "1.52.1"
+typos = "1.52.2"
 taplo = "0.10.0"
 "go:github.com/google/go-licenses/v2" = "2.0.1"
 cosign = "3.1.4"
