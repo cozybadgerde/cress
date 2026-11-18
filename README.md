@@ -14,10 +14,14 @@ A cozy static site generator. Fresh little sites, fast.
 Static site generators such as Jekyll, Hugo, and MkDocs can produce websites,
 but some focus on specific use cases while others bring complex, opinionated
 workflows. Hugo, for example, documents build pipelines for CSS, images,
-JavaScript, Sass, and Tailwind CSS. For small-business sites with pages for
-services, menus, opening hours, contact details, and occasional articles, that
-machinery can add setup and decisions beyond the site's needs. Cress focuses
-on generating those sites from local content, configuration, and a theme.
+JavaScript, Sass, and Tailwind CSS.
+
+For small-business sites with pages for services, menus, opening hours,
+contact details, and occasional articles, that machinery can add setup and
+decisions beyond the site's needs.
+
+Cress focuses on generating those sites from local content, configuration,
+and a theme.
 
 ## Getting started
 
