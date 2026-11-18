@@ -1,5 +1,12 @@
 # Cress
 
+[![CI](https://github.com/cozybadgerde/cress/actions/workflows/ci.yml/badge.svg?branch=trunk)](https://github.com/cozybadgerde/cress/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/cozybadgerde/cress?include_prereleases&label=release)](https://github.com/cozybadgerde/cress/releases)
+[![Open issues](https://img.shields.io/github/issues/cozybadgerde/cress?label=issues)](https://github.com/cozybadgerde/cress/issues)
+![Languages](https://img.shields.io/github/languages/count/cozybadgerde/cress)
+
+A cozy static site generator. Fresh little sites, fast.
+
 ![Cress: a mouse sheltering beneath a green leaf beside the wordmark.](docs/assets/logo/logo.webp)
 
 Cress is an open-source static site generator for small businesses and
