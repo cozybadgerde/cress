@@ -9,10 +9,15 @@ A cozy static site generator. Fresh little sites, fast.
 
 ![Cress: a mouse sheltering beneath a green leaf beside the wordmark.](docs/assets/logo/logo.webp)
 
-Cress is an open-source static site generator for small businesses and
-solopreneurs. It turns Markdown content, a TOML configuration file, and a
-theme into static website files. [Cozy Badger](https://www.cozybadger.de)
-builds Cress; you deploy the files with your hosting tools.
+## Motivation
+
+Static site generators such as Jekyll, Hugo, and MkDocs can produce websites,
+but some focus on specific use cases while others bring complex, opinionated
+workflows. Hugo, for example, documents build pipelines for CSS, images,
+JavaScript, Sass, and Tailwind CSS. For small-business sites with pages for
+services, menus, opening hours, contact details, and occasional articles, that
+machinery can add setup and decisions beyond the site's needs. Cress focuses
+on generating those sites from local content, configuration, and a theme.
 
 ## Getting started
 
@@ -25,13 +30,20 @@ cress site preview --port 0 my-site
 
 Open the printed URL. Edit `my-site/content/` and `my-site/cress.toml`,
 then refresh the browser. Stop preview with Ctrl-C.
-Run `cress site build my-site` to produce `my-site/public/`.
-Deploy those files with your hosting tools.
+Run `cress site build my-site` to produce `my-site/public/`, then deploy those
+files with your hosting tools.
 
 The [user guide](docs/USER.md) explains how to write a page, configure a site,
 preview it, and build its files.
 
-## What Cress provides
+## Description
+
+Cress is an open-source static site generator for small businesses and
+solopreneurs. It turns Markdown content, a TOML configuration file, and a
+theme into static website files. Run it locally or in continuous integration,
+then deploy the files with your hosting tools.
+
+## Features
 
 - Ordinary pages, landing pages, and journal-style lists.
 - Markdown content with page-owned images and shared static files.
